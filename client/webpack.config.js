@@ -4,7 +4,7 @@ const webpack = require('webpack');
 const HtmlWebpackPlugin =  require('html-webpack-plugin');
 // const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-
+require('dotenv').config();
 /*const ExtractTextPlugin = require('extract-text-webpack-plugin');*/
 
 const srcDir = path.resolve(__dirname, 'src');
@@ -103,6 +103,10 @@ const config = {
 			inject: 'head',
 			template: path.resolve(srcDir, 'index.ejs'),
 			favicon: path.resolve(srcDir, 'favicon.ico')
+		}),
+		new webpack.DefinePlugin({
+			'process.env.IS_LOCALHOST': JSON.stringify(process.env.IS_LOCALHOST || false),
+			'process.env.WS_PORT': JSON.stringify(process.env.WS_PORT || 8081),
 		}),
 		/*new ScriptExtHtmlWebpackPlugin({
 			defaultAttribute: 'async'
