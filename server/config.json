@@ -1,0 +1,7 @@
+{
+	"defaultPquota": "48,4",
+	"captchaSecurity": 0,
+	"maxConnectionsPerIp": 6,
+	"motd": "",
+	"appealMessage": "lol stay banned"
+}
