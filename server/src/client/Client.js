@@ -95,9 +95,10 @@ export class Client {
 			let response = await fetch('https://neomoth.dev/req/account/get', {
 				method: 'POST',
 				headers: {
-					'Content-Type': 'application/json'
+					'Content-Type': 'application/json',
+					'Cookie': `nmToken=${this.accountToken}`
 				},
-				credentials: 'same-origin',
+				credentials: 'include',
 			});
 			console.log(response);
 			let data = await response.json();
