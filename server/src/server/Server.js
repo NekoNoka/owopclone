@@ -80,7 +80,7 @@ export class Server {
 					let origin = req.getHeader("origin");
 					let cookies = req.getHeader('cookie');
 					let token = '';
-					cookies.split('; ').map(cookie => cookie.split('='))
+					token = cookies.split('; ').map(cookie => cookie.split('='))
 					.reduce((acc, [key, value])=>{
 						acc[key] = value;
 						return acc;
