@@ -92,7 +92,7 @@ export class Client {
 		}
 		console.log("fetching")
 		try{
-			let response = await fetch('https://neomoth.dev/account', {
+			let response = await fetch('https://neomoth.dev/req/account/get', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
