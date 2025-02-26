@@ -17,6 +17,7 @@ export default {
 			text: `Usage: /${this.data.usage}`
 		});
 		if(!client.localStaff){
+			console.log("bruhg");
 			if(args.length<2) return client.sendMessage({
 				sender: 'server',
 				data:{
@@ -76,13 +77,13 @@ export default {
 			},
 			text: `Invalid user id. Usage: /${this.data.usage}`
 		});
-		if(!client.world.bannedIps.map(entry => entry.ip).includes(target.ip)) return client.sendMessage({
+		if(!client.world.bannedIps.map(entry => entry.ip).includes(target.ip)) { console.log("farrtttrgfd"); return client.sendMessage({
 			sender: 'server',
 			data:{
 				type: 'error',
 			},
 			text: `IP not banned from world ${client.world.name}. Usage: /${this.data.usage}`
-		});
+		}); }
 		client.world.bannedIps.splice(client.world.bannedIps.indexOf(target), 1);
 		client.sendMessage({
 			sender: 'server',
