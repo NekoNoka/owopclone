@@ -80,14 +80,11 @@ export class Server {
 					let origin = req.getHeader("origin");
 					let cookies = req.getHeader('cookie');
 					let token = '';
-					cookies.split(`;`).forEach((c) => {
-						let [name, ...rest] = c.split(`=`);
-						name = name?.trim();
-						if (!name) return;
-						let val = rest.join(`=`).trim();
-						if (!val) return;
-						if (name === 'nmdevToken') token = val;
-					});
+					cookies.split('; ').map(cookie => cookie.split('='))
+					.reduce((acc, [key, value])=>{
+						acc[key] = value;
+						return acc;
+					}, {})['nmdevToken'] || null;
 					console.log(cookies);
 					console.log(token);
 					//handle abort
