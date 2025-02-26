@@ -41,6 +41,7 @@ export default {
 				},
 				text: `IP not found. Usage: /${this.data.usage}`
 			});
+			console.log(target);
 			if(type==='global'){
 				target.setProp("banExpiration", 0);
 				return client.sendMessage({
