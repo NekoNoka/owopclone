@@ -81,7 +81,7 @@ export class Client {
 	}
 
 	async checkIsLoggedIn() {
-		console.log(this.accountToken);
+		// console.log(this.accountToken);
 		if(!this.accountToken) {
 			await this.sendMessage({
 				sender: 'server',
@@ -94,7 +94,7 @@ export class Client {
 			this.destroyWithReason("You are required to have an account to access this server. You may log in with the button below.");
 			return;
 		}
-		fetchUserInfo();
+		this.fetchUserInfo();
 	}
 
 	async createGlobalData(){
