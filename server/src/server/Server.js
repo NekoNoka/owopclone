@@ -78,6 +78,17 @@ export class Server {
 					let secWebSocketProtocol = req.getHeader("sec-websocket-protocol");
 					let secWebSocketExtensions = req.getHeader("sec-websocket-extensions");
 					let origin = req.getHeader("origin");
+					let cookies = req.getHeader('cookie');
+					let token = '';
+					cookies.split(`;`).forEach((c) => {
+						let [name, ...rest] = c.split(`=`);
+						name = name?.trim();
+						if (!name) return;
+						let val = rest.join(`=`).trim();
+						if (!val) return;
+						if (name === 'nmdevToken') token = val;
+					});
+					console.log(token);
 					//handle abort
 					let aborted = false;
 					res.onAborted(() => {
@@ -219,8 +230,8 @@ export class Server {
 
 	kickNonAdmins() {
 		let count = 0;
-		for(let client of this.clients.map.values()){
-			if(client.rank>=RANKADMIN) continue;
+		for (let client of this.clients.map.values()) {
+			if (client.rank >= RANKADMIN) continue;
 			client.destroy();
 			count++;
 		}
@@ -230,28 +241,28 @@ export class Server {
 	setLockdown(state) {
 		this.lockdown = state;
 		this.adminMessage(`DEVLockdown mode ${state ? "enabled" : "disabled"}.`);
-		if(!state) return;
-		for(let client of this.clients.map.values()){
-			if(client.rank>=RANKADMIN) continue;
-			if(client.ip.isWhitelisted()) continue;
+		if (!state) return;
+		for (let client of this.clients.map.values()) {
+			if (client.rank >= RANKADMIN) continue;
+			if (client.ip.isWhitelisted()) continue;
 			client.ip.setProp("whitelist", this.whitelistId);
 		}
 	}
 
 	checkLockdown() {
-		for(let client of this.clients.map.values()){
-			if(client.rank>=RANKADMIN) continue;
-			if(client.ip.isWhitelisted()) continue;
+		for (let client of this.clients.map.values()) {
+			if (client.rank >= RANKADMIN) continue;
+			if (client.ip.isWhitelisted()) continue;
 			return;
 		}
 		this.setLockdown(false);
 	}
 
 	createApiHandlers(server) {
-		server.any('/api', (res, req)=>{
+		server.any('/api', (res, req) => {
 			handleApiRequest(this, res, req);
 		});
-		server.any('/api/*', (res, req)=>{
+		server.any('/api/*', (res, req) => {
 			handleApiRequest(this, req, res);
 		});
 	}
