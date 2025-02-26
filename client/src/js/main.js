@@ -194,6 +194,7 @@ function receiveMessage(rawText) {
 			if(!data.text) return;
 		}
 		if (data.action === 'updateStatusMessage') {
+			console.log(text);
 			statusMessage = text;
 			return;
 		}
