@@ -6,6 +6,6 @@ required setup:
 - set up the websocket url in `/client/src/js/conf.js` (if you can't find it, search for `export const options` in the file)
 
 to run server, you must be on nodejs v18.x.x.
-executing `npm start` in either directory will run that respective part of the project.
+run `./start.sh` in the project root to simultaneously start both the client and server.
 
 [licensed under GPLv3](https://github.com/neomoth/owopclone/LICENSE).
