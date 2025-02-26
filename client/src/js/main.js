@@ -433,6 +433,8 @@ function showWorldUI(bool) {
 	misc.guiShown = bool;
 	elements.xyDisplay.style.transform = bool ? "initial" : "";
 	elements.playerCountDisplay.style.transform = bool ? "initial" : "";
+	elements.pBucketDisplay.style.transform = bool ? "initial" : "";
+	elements.rankDisplay.style.transform = bool ? "initial" : "";
 	elements.palette.style.transform = bool ? "translateY(-50%)" : "";
 	elements.chat.style.transform = bool ? "initial" : "";
 	elements.chatInput.disabled = !bool;
@@ -440,6 +442,9 @@ function showWorldUI(bool) {
 	elements.paletteBg.style.visibility = bool ? "" : "hidden";
 	elements.helpButton.style.visibility = bool ? "" : "hidden";
 	elements.topRightDisplays.classList[bool ? 'remove' : 'add']('hideui');
+	elements.topLeftDisplays.classList[bool ? 'remove' : 'add']('hideui');
+	elements.paletteBg.classList[bool ? 'remove' : 'add']('hideui');
+	elements.pBucketDisplay.textContent = `Place bucket: ${net.protocol.placeBucket.allowance.toFixed(1)} (${net.protocol.placeBucket.rate}/${net.protocol.placeBucket.time}s).`;
 }
 
 function showLoadScr(bool, showOptions) {
@@ -510,9 +515,6 @@ export function retryingConnect(serverGetter, worldName, token) {
 			eventSys.removeListener(e.net.disconnected, disconnected);
 			eventSys.once(e.net.disconnected, inGameDisconnected);
 			misc.connecting = false;
-			elements.topLeftDisplays.classList.remove('hide');
-			elements.paletteBg.classList.remove('hide');
-			elements.pBucketDisplay.textContent = `Place bucket: ${net.protocol.placeBucket.allowance.toFixed(1)} (${net.protocol.placeBucket.rate}/${net.protocol.placeBucket.time}s).`;
 			// net.protocol.placeBucket.update();
 		};
 
@@ -1170,6 +1172,7 @@ window.addEventListener("load", () => {
 	elements.playerCountDisplay = document.getElementById("playercount-display");
 	elements.topRightDisplays = document.getElementById("topright-displays");
 	elements.dInfoDisplay = document.getElementById("dinfo-display");
+	elements.rankDisplay = document.getElementById("rank-display");
 
 	elements.palette = document.getElementById("palette");
 	elements.paletteColors = document.getElementById("palette-colors");

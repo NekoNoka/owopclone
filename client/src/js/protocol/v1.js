@@ -29,7 +29,6 @@ export const ProtocolV1 = {
 	worldBorder: 0xFFFFF,
 	chatBucket: [4, 6],
 	placeBucket: {
-		[RANK.SHITHEAD]: [0,1],
 		[RANK.NONE]: [0,1],
 		[RANK.USER]: [32,4],
 		// [RANK.DONOR]: [32,3],
@@ -39,17 +38,16 @@ export const ProtocolV1 = {
 		[RANK.DEVELOPER]: [128,0],
 		[RANK.OWNER]: [128,0],
 	},
-	maxMessageLength: new Map([
-		[RANK.SHITHEAD, 1],
-		[RANK.NONE, 128],
-		[RANK.USER, 128],
+	maxMessageLength: {
+		[RANK.NONE]: 128,
+		[RANK.USER]: 128,
 		// [RANK.DONOR]: 256,
-		[RANK.ARTIST, 256],
-		[RANK.MODERATOR, 512],
-		[RANK.ADMIN, 16384],
-		[RANK.DEVELOPER, 16384],
-		[RANK.OWNER, 33760],
-	]),
+		[RANK.ARTIST]: 256,
+		[RANK.MODERATOR]: 512,
+		[RANK.ADMIN]: 16384,
+		[RANK.DEVELOPER]: 16384,
+		[RANK.OWNER]: 33760,
+	},
 	tools: {
 		id: {},
 		0: 'cursor',
@@ -155,7 +153,7 @@ class ProtocolV1Impl extends Protocol {
 
 		const rankChanged = rank => {
 			this.placeBucket.infinite = rank >= RANK.ADMIN;
-			elements.chatInput.maxLength = ProtocolV1.maxMessageLength.get(rank);
+			elements.chatInput.maxLength = ProtocolV1.maxMessageLength[rank];
 		};
 
 		this.leaveFunc = () => {

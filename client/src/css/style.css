@@ -238,12 +238,15 @@ button:focus {
 #xy-display {
 	padding-left: 2px;
 }
-#playercount-display, #palette, #topright-displays > *{
+#playercount-display{
+	padding-right: 2px;
+}
+#palette, #topright-displays > *, #topleft-displays > * {
 	pointer-events: none;
 	transform: translateY(-100%);
 	transition: transform 0.75s;
 }
-#topleft-displays > *{
+#topleft-displays > *, #topright-displays > * {
 	pointer-events: none;
 	transition: transform 0.75s;
 }
@@ -282,7 +285,7 @@ button:focus {
 #toole-container {
 	overflow: hidden;
 }
-#playercount-display, #xy-display, #palette-create, #palette, .framed, #pbucket-display {
+#playercount-display, #xy-display, #palette-create, #palette, .framed, #pbucket-display, #rank-display {
 	border: 5px #7f10c9 solid;
 	border-image: url(../img/small_border.png) 5 repeat;
 	border-image-outset: 1px;

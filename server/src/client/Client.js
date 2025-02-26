@@ -115,7 +115,6 @@ export class Client {
 			if (this.rank === RANK.MODERATOR) return `${this.world.modPrefix.value} ${this.nick}`;
 			if (this.rank === RANK.ARTIST) return `[${this.uid}] ${this.nick}`;
 			if (this.rank === RANK.DONOR) return `[${this.uid}] ${this.world.donoPrefix} ${this.nick}`;
-			if (this.rank === RANK.SHITHEAD) return `[${this.uid}] ${this.nick} (shithead)`
 			return `[${this.uid}] ${this.nick}`;
 		}
 		if (this.rank === RANK.OWNER) return `(O) ${this.uid}`;
@@ -124,7 +123,6 @@ export class Client {
 		if (this.rank === RANK.MODERATOR) return `${this.world.modPrefix.value} ${this.uid}`;
 		if (this.rank === RANK.ARTIST) return `${this.uid}`;
 		if (this.rank === RANK.DONOR) return `${this.world.donoPrefix} ${this.uid}`;
-		if (this.rank === RANK.SHITHEAD) return `${this.uid} (shithead)`
 		return this.uid.toString();
 	}
 
@@ -152,9 +150,6 @@ export class Client {
 		let pquota = this.world.pquota.value ? this.world.pquota.value : this.server.config.defaultPquota;
 		pquota = pquota.split(',').map(value => parseInt(value));
 		switch (rank) {
-			case RANK.SHITHEAD:
-				pquota[0] = 0;
-				break;
 			case RANK.NONE:
 				pquota[0] = 0;
 				break;
@@ -166,6 +161,7 @@ export class Client {
 					pquota[0] = Math.floor(pquota[0] * 8);
 					pquota[1] = Math.ceil(pquota[1] / 2);
 					setTimeout(() => {
+						if(this.destroyed) return;
 						this.sendMessage({
 							data: {
 								eval: 'NWOP.tools.allTools.fill.extra.tickAmount = 80'
@@ -179,6 +175,7 @@ export class Client {
 					pquota[0] = Math.floor(pquota[0] * 8);
 					pquota[1] = Math.ceil(pquota[1] / 2);
 					setTimeout(() => {
+						if(this.destroyed) return;
 						this.sendMessage({
 							data: {
 								eval: 'NWOP.tools.allTools.fill.extra.tickAmount = 80'
@@ -190,6 +187,7 @@ export class Client {
 			case RANK.ADMIN:
 				pquota[1] = 0;
 				setTimeout(() => {
+					if(this.destroyed) return;
 					this.sendMessage({
 						data: {
 							eval: 'NWOP.tools.allTools.fill.extra.tickAmount = 200'
@@ -200,6 +198,7 @@ export class Client {
 			case RANK.DEVELOPER:
 				pquota[1] = 0;
 				setTimeout(() => {
+					if(this.destroyed) return;
 					this.sendMessage({
 						data: {
 							eval: 'NWOP.tools.allTools.fill.extra.tickAmount = 400'
@@ -210,6 +209,7 @@ export class Client {
 			case RANK.OWNER:
 				pquota[1] = 0;
 				setTimeout(() => {
+					if(this.destroyed) return;
 					this.sendMessage({
 						data: {
 							eval: 'NWOP.tools.allTools.fill.extra.tickAmount = 1200'

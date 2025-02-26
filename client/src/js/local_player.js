@@ -229,6 +229,7 @@ eventSys.on(e.net.sec.rank, newRank => {
 			//PublicAPI.tools = toolsApi; /* this is what lazyness does to you */
 			break;
 	}
+	elements.rankDisplay.textContent = `Rank: ${Object.keys(RANK).find(key => RANK[key] === rank)}`;
 	updateToolbar();
 });
 
