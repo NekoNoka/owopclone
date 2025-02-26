@@ -375,16 +375,18 @@ export class Client {
 			}
 			this.ip.setProp("banExpiration", 0);
 		}
-		if(this.accountInfo?.user.owopData.global.isBanned){
-			this.sendMessage({
-				sender: 'server',
-				data: {
-					type: 'error',
-				},
-				text: 'You are banned from this server.'
-			});
-			this.destroyWithReason('You are banned.');
-			return;
+		if(this.accountInfo){
+			if(this.accountInfo.user.owopData.global.isBanned){
+				this.sendMessage({
+					sender: 'server',
+					data: {
+						type: 'error',
+					},
+					text: 'You are banned from this server.'
+				});
+				this.destroyWithReason('You are banned.');
+				return;
+			}
 		}
 		let whitelisted = this.ip.isWhitelisted();
 		if (this.server.lockdown && !whitelisted) {
