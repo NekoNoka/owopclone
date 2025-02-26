@@ -38,6 +38,7 @@ export class Client {
 		this.localStaff = false;
 		this.uid = null;
 		this.world = null;
+		console.log("ws token:", ws.token);
 		this.accountToken = ws.token;
 		this.accountInfo = null;
 		let pquota = this.server.config.defaultPquota.split(',').map(value => parseInt(value));
