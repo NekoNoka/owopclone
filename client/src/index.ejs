@@ -32,7 +32,13 @@
 					<button id="login-button" class="hide" onclick="NWOP.windowSys.addWindow(new NWOP.windowSys.class.window('Log in',
 					{closeable:false,immobile:false,centerOnce:true}, (w)=>{
 						w.container.style.cssText='width:1280px;height:760px;overflow:hidden;';
-						w.container.innerHTML='<iframe onload style=\'width:100%;height:100%;border:none;\' src=\'https://neomoth.dev/login?fromOwop=1\'></iframe>'}));">Log in</button>
+						w.container.innerHTML='<iframe onload style=\'width:100%;height:100%;border:none;\' src=\'https://neomoth.dev/login?fromOwop=1\'></iframe>'
+						}
+					)); window.addEventListener('message', (event)=>{
+						if(event.data==='loggedIn'){
+							location.reload();
+						}
+					})">Log in</button>
 					<button id="reconnect-btn">Reconnect</button>
 					<button id="loading-funny-btn">Do something funny</button>
 				</li>
