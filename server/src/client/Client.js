@@ -123,13 +123,13 @@ export class Client {
 	async createWorldData(worldName){}
 
 	async fetchUserInfo() {
-		async function doFetch(){
+		async function doFetch(token){
 			try{
 				let response = await fetch('https://neomoth.dev/req/account/get', {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',
-						'Cookie': `nmToken=${this.accountToken}`
+						'Cookie': `nmToken=${token}`
 					},
 					credentials: 'include',
 				});
@@ -138,10 +138,10 @@ export class Client {
 				console.error(e);
 			}
 		}
-		let response = await doFetch();
+		let response = await doFetch(this.accountToken);
 		if(!response.data.owopData){
 			if(!await this.createGlobalData()) return this.destroyWithReason('Failed to create global OWOP data.');
-			response = await doFetch();
+			response = await doFetch(this.accountToken);
 		}
 		this.accountInfo = response;
 		console.log(response);
