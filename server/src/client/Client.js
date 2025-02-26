@@ -67,7 +67,7 @@ export class Client {
 		this.deferredAmount = 0;
 
 		this.destroyed = false;
-		this.checkIsLoggedIn();
+		(async()=>{this.checkIsLoggedIn()})();
 	}
 
 	async destroyWithReason(reason){
