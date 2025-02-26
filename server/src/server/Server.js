@@ -120,6 +120,7 @@ export class Server {
 			},
 			open: ws => {
 				ws.subscribe(this.globalTopic);
+				console.log("hi");
 				console.log(ws.token)
 				try {
 					this.stats.totalConnections++;
