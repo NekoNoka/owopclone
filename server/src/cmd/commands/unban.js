@@ -52,7 +52,7 @@ export default {
 					text: `Globally unbanned ${target.ip}.`
 				});
 			}
-			if(!client.server.bannedIps.map(entry => entry.ip).includes(target.ip)) return client.sendMessage({
+			if(!client.world.bannedIps.map(entry => entry.ip).includes(target.ip)) return client.sendMessage({
 				sender: 'server',
 				data:{
 					type: 'error',
