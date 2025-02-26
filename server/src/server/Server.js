@@ -123,8 +123,9 @@ export class Server {
 				// console.log(ws.token)
 				try {
 					this.stats.totalConnections++;
-					let client = await this.clients.createClient(ws);
+					let client = this.clients.createClient(ws);
 					ws.client = client;
+					await client.checkIsLoggedIn();
 					client.startProtocol();
 				}
 				catch (err) {

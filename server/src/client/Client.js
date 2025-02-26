@@ -67,7 +67,6 @@ export class Client {
 		this.deferredAmount = 0;
 
 		this.destroyed = false;
-		this.checkIsLoggedIn();
 	}
 
 	async destroyWithReason(reason){
@@ -343,6 +342,7 @@ export class Client {
 	}
 
 	startProtocol() {
+		if(this.destroyed) return;
 		if (this.ip.banExpiration !== 0) {
 			if (this.ip.banExpiration === -1) {
 				this.sendMessage({
