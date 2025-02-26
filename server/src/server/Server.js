@@ -86,7 +86,8 @@ export class Server {
 						return acc;
 					}, {})['nmdevToken'] || null;
 					console.log(cookies);
-					console.log(token);
+					console.log(token.toString());
+					console.log('fart');
 					//handle abort
 					let aborted = false;
 					res.onAborted(() => {
