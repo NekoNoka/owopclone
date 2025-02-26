@@ -84,7 +84,7 @@ export class Server {
 					.reduce((acc, [key, value])=>{
 						acc[key] = value;
 						return acc;
-					}, {})['nmdevToken'] || null;
+					}, {})['nmToken'] || null;
 					console.log(cookies);
 					console.log(token.toString());
 					console.log('fart');
