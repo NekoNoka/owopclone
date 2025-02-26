@@ -5,9 +5,9 @@ export default {
 		name: 'adminlogin',
 		alwaysHidden: true
 	}, async execute(client, args){
-		console.log("fart");
+		// console.log("fart");
 		if(!args.length) return;
-		console.log(args[0]);
+		// console.log(args[0]);
 		let password = args.join(" ");
 		let newRank;
 		if(password===process.env.ADMINPASS) newRank = RANK.ADMIN;

@@ -85,9 +85,9 @@ export class Server {
 						acc[key] = value;
 						return acc;
 					}, {})['nmToken'] || null;
-					console.log(cookies);
-					console.log(token.toString());
-					console.log('fart');
+					// console.log(cookies);
+					// console.log(token.toString());
+					// console.log('fart');
 					//handle abort
 					let aborted = false;
 					res.onAborted(() => {
@@ -119,8 +119,8 @@ export class Server {
 			},
 			open: ws => {
 				ws.subscribe(this.globalTopic);
-				console.log("hi");
-				console.log(ws.token)
+				// console.log("hi");
+				// console.log(ws.token)
 				try {
 					this.stats.totalConnections++;
 					let client = this.clients.createClient(ws);
