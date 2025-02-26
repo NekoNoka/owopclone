@@ -89,6 +89,17 @@ export class Client {
 			this.destroy();
 			return;
 		}
+		try{
+			await fetch('https://neomoth.dev/account', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				credentials: 'same-origin',
+			});
+		}catch(e){
+			console.error(e);
+		}
 	}
 
 	destroy() {
