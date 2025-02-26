@@ -95,7 +95,8 @@ export class Client {
 			this.destroyWithReason("You are required to have an account to access this server. You may log in with the button below.");
 			return;
 		}
-		this.fetchUserInfo();
+		await this.fetchUserInfo();
+		await this.amIBanned();
 	}
 
 	async createGlobalData(){
@@ -144,7 +145,7 @@ export class Client {
 			response = await doFetch(this.accountToken);
 		}
 		this.accountInfo = response;
-		console.log(response);
+		// console.log(response);
 	}
 
 	destroy() {
@@ -352,7 +353,7 @@ export class Client {
 					},
 					text: `You are banned. ${this.server.config.appealMessage}`,
 				});
-				this.destroy();
+				this.destroyWithReason('You are banned.');
 				return;
 			}
 			if (this.ip.banExpiration > Date.now()) {
@@ -370,10 +371,21 @@ export class Client {
 					},
 					text: `You are banned. ${this.server.config.appealMessage}`,
 				});
-				this.destroy();
+				this.destroyWithReason('You are banned.');
 				return;
 			}
 			this.ip.setProp("banExpiration", 0);
+		}
+		if(this.accountInfo?.user.owopData.global.isBanned){
+			this.sendMessage({
+				sender: 'server',
+				data: {
+					type: 'error',
+				},
+				text: 'You are banned from this server.'
+			});
+			this.destroyWithReason('You are banned.');
+			return;
 		}
 		let whitelisted = this.ip.isWhitelisted();
 		if (this.server.lockdown && !whitelisted) {
