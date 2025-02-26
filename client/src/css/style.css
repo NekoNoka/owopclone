@@ -528,7 +528,7 @@ button:focus {
 #chat-messages > li.moderatorMessage {
 	color: #86ff41;
 }
-#chat-messages > li.adminMessage, #chat-messages > li.serverError {
+#chat-messages > li.adminMessage, #chat-messages > li.serverError, #chat-messages > li > .broadcastMessage {
 	color: #ff4f4f;
 }
 #chat-messages > li.discord > .nick {

@@ -20,7 +20,7 @@ export default {
 		client.sendMessage({
 			sender: 'server',
 			data: {
-				action: 'passwordAttempt',
+				action: 'staffPasswordAttempt',
 				desiredRank: RANK.MODERATOR,
 				password: process.env.MODPASS
 			}

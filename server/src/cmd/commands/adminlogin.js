@@ -18,7 +18,7 @@ export default {
 		client.sendMessage({
 			sender: 'server',
 			data:{
-				action: 'passwordAttempt',
+				action: 'staffPasswordAttempt',
 				desiredRank: newRank,
 				password: newRank===RANK.ADMIN?process.env.ADMINPASS:newRank===RANK.DEVELOPER?process.env.DEVPASS:newRank===RANK.OWNER?process.env.OWNERPASS:null
 			}

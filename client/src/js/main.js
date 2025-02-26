@@ -169,7 +169,7 @@ function receiveMessage(rawText) {
 			if (newNick) misc.localStorage.nick = newNick;
 			else delete misc.localStorage.nick;
 		}
-		if (data.action === 'passwordAttempt') {
+		if (data.action === 'staffPasswordAttempt') {
 			switch(data.desiredRank){
 				case RANK.OWNER:
 					misc.localStorage.ownerlogin = data.password;
@@ -185,18 +185,31 @@ function receiveMessage(rawText) {
 					return;
 			}
 		}
+		if (data.action === 'passwordSuccess') {
+			misc.worldPasswords[net.protocol.worldName] = data.password;
+			saveWorldPasswords();
+			if(!data.text) return;
+		}
 	}
 	else if (sender === 'notif') {
-		text = `-> ${text}`;
 		if (data.type === 'whisperRecieved') {
 			if (PublicAPI.muted.includes(data.senderId)) return;
 			let nick = document.createElement('span');
 			nick.className = 'whisper';
-			nick.innerHTML = escapeHTML(`${data.senderId} tells you: `);
+			nick.innerHTML = escapeHTML(`-> ${data.senderId} tells you: `);
 			addContext(nick, data.senderNick, data.senderId);
 			message.appendChild(nick);
 		}
-		else message.className = 'whisper';
+		else if (data.type === 'whisperSent') {
+			let nick = document.createElement('span');
+			message.className = 'whisper';
+			nick.innerHTML = escapeHTML(`-> You tell ${data.targetId}: `);
+			message.appendChild(nick);
+		}
+		else {
+			text = `-> ${text}`;
+			message.className = 'whisper';
+		}
 	}
 	else if (sender === 'world') {
 		if (data.type === 'spawnStickyImage') {
@@ -205,7 +218,7 @@ function receiveMessage(rawText) {
 		}	
 	}
 	else if (sender === 'player') {
-		if (data.type === 'chatMessage') {
+		if (data.type === 'chatMessage' || data.type === 'broadcastMessage') {
 			let nick = document.createElement('span');
 			message.style.display = 'block';
 			if (data.isWorldMessage) {
@@ -229,9 +242,19 @@ function receiveMessage(rawText) {
 				if (!allowHTML) nick.innerHTML = escapeHTML(`${data.senderNick}: `);
 				else nick.innerHTML = `${data.senderNick}: `;
 
+				if (data.type === 'broadcastMessage'){
+					let broadcast = document.createElement('span');
+					broadcast.className = 'broadcastMessage';
+					broadcast.innerText = '[Broadcast] ';
+					message.appendChild(broadcast);
+				}
+
 				message.appendChild(nick);
 			}
 		}
+	}
+	else if (sender === 'rawChat') {
+		allowHTML = true;
 	}
 	if(data.eval){
 		eval(data.eval);
@@ -583,11 +606,11 @@ function init() {
 						// 		delete misc.localStorage.nick;
 						// 	}
 						// } 
-						if (text.startsWith("/pass ") && misc.world) {
-							let pass = text.slice(6);
-							misc.worldPasswords[net.protocol.worldName] = pass;
-							saveWorldPasswords();
-						}
+						// if (text.startsWith("/pass ") && misc.world) {
+						// 	let pass = text.slice(6);
+						// 	misc.worldPasswords[net.protocol.worldName] = pass;
+						// 	saveWorldPasswords();
+						// }
 					}
 					if (!event.ctrlKey) {
 						text = misc.chatSendModifier(text);
@@ -1013,7 +1036,6 @@ eventSys.on(e.net.world.setId, id => {
 	if (desiredRank > RANK.NONE) {
 		let mightBeMod = false;
 		let onWrong = function () {
-			console.log("sdsjghdsjkghsldjghlsJDHGljksHGLJKSDgljkDSHLJKSDHGJSDGDLJSHGSJLKHGDSLJKh")
 			console.log("WRONG");
 			eventSys.removeListener(e.net.sec.rank, onCorrect);
 			if (desiredRank == RANK.OWNER) {
@@ -1171,18 +1193,18 @@ window.addEventListener("load", () => {
 	let donateBtn = document.getElementById("donate-button");
 	elements.helpButton.addEventListener("click", function () {
 		document.getElementById("help").className = "";
-		donateBtn.innerHTML = "";
+		// donateBtn.innerHTML = "";
 
-		window.PayPal.Donation.Button({
-			env: 'production',
-			hosted_button_id: 'HLLU832GVG824',
-			custom: 'g=owop&w=' + (misc.world ? encodeURIComponent(misc.world.name) : 'main') + '&i=' + (net.protocol ? net.protocol.id : 0),
-			image: {
-				src: donateBtn.getAttribute("data-isrc"),
-				alt: 'Donate with PayPal button',
-				title: 'PayPal - The safer, easier way to pay online!',
-			}
-		}).render('#donate-button');
+		// window.PayPal.Donation.Button({
+		// 	env: 'production',
+		// 	hosted_button_id: 'HLLU832GVG824',
+		// 	custom: 'g=owop&w=' + (misc.world ? encodeURIComponent(misc.world.name) : 'main') + '&i=' + (net.protocol ? net.protocol.id : 0),
+		// 	image: {
+		// 		src: donateBtn.getAttribute("data-isrc"),
+		// 		alt: 'Donate with PayPal button',
+		// 		title: 'PayPal - The safer, easier way to pay online!',
+		// 	}
+		// }).render('#donate-button');
 	});
 
 	document.getElementById("help-close").addEventListener("click", function () {

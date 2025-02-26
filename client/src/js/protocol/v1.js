@@ -462,17 +462,18 @@ class ProtocolV1Impl extends Protocol {
 
 	sendMessage(str) {
 		if (str.length && this.id !== null) {
-			if (player.rank == RANK.ADMIN || this.chatBucket.canSpend(1)) {
+			if (player.rank >= RANK.ADMIN || this.chatBucket.canSpend(1)) {
 				this.ws.send(str + ProtocolV1.misc.chatVerification);
 				return true;
 			} else {
-				eventSys.emit(e.net.chat, {
+				console.log("slow down");
+				eventSys.emit(e.net.chat, JSON.stringify({
 					sender: 'server',
 					data: {
 						type: 'error',
 					},
 					text: `Slow down! You're talking too fast!`
-				});
+				}));
 				return false;
 			}
 		}

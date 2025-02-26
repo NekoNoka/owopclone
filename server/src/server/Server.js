@@ -181,17 +181,35 @@ export class Server {
 		this.wsServer.publish(this.globalTopic, arrayBuffer, true);
 	}
 
-	broadcastMessage(message, client) {
-		this.wsServer.publish(this.globalTopic, JSON.stringify({
-			sender: 'server',
-			data: {
-				type: 'serverBroadcast',
+	broadcastMessage(message) {
+		this.wsServer.publish(this.globalTopic, JSON.stringify(message), false);
+		// this.wsServer.publish(this.globalTopic, JSON.stringify({
+		// 	sender: 'server',
+		// 	data: {
+		// 		type: 'serverBroadcast',
+		// 		senderNick: client.getNick(),
+		// 		senderRank: client.rank,
+		// 		senderId: client.uid,
+		// 	},
+		// 	text: message
+		// }), false);
+	}
+
+	sendBroadcast(client, message, sender = 'player', data = null) {
+		if (!data) {
+			data = {
+				senderId: client.uid,
 				senderNick: client.getNick(),
 				senderRank: client.rank,
-				senderId: client.uid,
-			},
+				isLocalStaff: client.localStaff,
+				type: 'broadcastMessage',
+			};
+		}
+		this.broadcastMessage({
+			sender,
+			data,
 			text: message
-		}), false);
+		});
 	}
 
 	resetWhitelist() {

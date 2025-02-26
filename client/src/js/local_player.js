@@ -221,6 +221,8 @@ eventSys.on(e.net.sec.rank, newRank => {
 
 		case RANK.MODERATOR:
 		case RANK.ADMIN:
+		case RANK.DEVELOPER:
+		case RANK.OWNER:
 			showDevChat(true);
 			showPlayerList(true);
 			revealSecrets(true);

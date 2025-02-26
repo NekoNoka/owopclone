@@ -64,12 +64,12 @@
 		</div>
 		<div id="help" class="hidden">
 			<span class="title">Information & Help</span>
-			<button id="help-close" class="windowCloseBtn"></button>
+			<button id="help-close" class="windowCloseButton"></button>
 			<div class="content whitetext">
 				<div class="links">
-					<a target="_blank" href="https://ourworldofpixels.com" tooltip="Original Website"><img src="<%=require('./img/nwop.png')%>"></a>
-					<a target="_blank" href="https://neomoth.dev" tooltip="My main website :3"><img src="<%=require('./img/nmoth.png')%>"></a>
-					<a target="_blank" href="https://github.com/neomoth/owopclone" tooltip="Source Code"><img src="<%=require('./img/git.png')%>"></a>
+					<a target="_blank" href="https://ourworldofpixels.com" tooltip="Original Website"><img style="pointer-events:none" src="<%=require('./img/nwop.png')%>"></a>
+					<a target="_blank" href="https://neomoth.dev" tooltip="My main website :3"><img style="pointer-events:none" src="<%=require('./img/nmoth.png')%>"></a>
+					<a target="_blank" href="https://github.com/neomoth/owopclone" tooltip="Source Code"><img style="pointer-events:none" src="<%=require('./img/git.png')%>"></a>
 				</div>
 				<hr>
 				Type <span class="blue">/help</span> for a list of commands.
@@ -94,6 +94,9 @@
 					<li><b>C</b> - Circle tool</li>
 					<li><b>E</b> - Export tool</li>
 				</ul>
+				<hr>
+				Chat color guide: <span style="color:#ff41e4">Server</span> | <span style="color:#0b7961">Artist</span> | <span style="color:#86ff41">Mod</span> | <span style="color:#ff4f4f">Admin</span> | <span style="color:#ec6f08">Developer</span> | <span style="color:#ac70f1">Owner</span>
+				<hr>
 				<label><input id="no-sound" type="checkbox">Disable audio</label>
 				<label><input id="hex-coords" type="checkbox">Hex Coords</label>
 			</div>

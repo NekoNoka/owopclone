@@ -25,13 +25,13 @@ let maxMessageLengths = [
 ]
 
 export class Client {
-	constructor(serverClientManager, ws, id){
+	constructor(serverClientManager, ws, id) {
 		this.serverClientManager = serverClientManager;
 		this.server = serverClientManager.server;
 		this.id = id;
 		this.ws = ws;
 		this.ip = ws.ip;
-		
+
 		this.ip.addClient(this);
 
 		this.lastUpdate = null;
@@ -40,7 +40,7 @@ export class Client {
 		this.localStaff = false;
 		this.uid = null;
 		this.world = null;
-		let pquota = this.server.config.defaultPquota.split(',').map(value=>parseInt(value));
+		let pquota = this.server.config.defaultPquota.split(',').map(value => parseInt(value));
 		this.pquota = new Quota(pquota[0], pquota[1]);
 		this.protectquota = new Quota(5000, 7);
 		this.pquota.deplete();
@@ -68,31 +68,31 @@ export class Client {
 		this.destroyed = false;
 	}
 
-	destroy(){
-		if(this.destroyed) return;
+	destroy() {
+		if (this.destroyed) return;
 		this.destroyed = true;
 		this.deferredRegionActions = null;
-		if(!this.ws.closed) this.ws.end();
-		if(this.world) this.world.removeClient(this);
+		if (!this.ws.closed) this.ws.end();
+		if (this.world) this.world.removeClient(this);
 		this.ip.removeClient(this);
 		this.serverClientManager.clientDestroyed(this);
 	}
 
-	keepAlive(tick){
-		if(!this.world) return tick - this.connectionTick < 9000;
-		if(this.rank>=RANK.MODERATOR) return true;
+	keepAlive(tick) {
+		if (!this.world) return tick - this.connectionTick < 9000;
+		if (this.rank >= RANK.MODERATOR) return true;
 		return tick - this.lastUpdate < 18000;
 	}
 
-	sendBuffer(buffer){
+	sendBuffer(buffer) {
 		this.ws.send(buffer.buffer, true);
 	}
 
-	async sendMessage(message){
-		return new Promise((resolve,reject)=>{
+	async sendMessage(message) {
+		return new Promise((resolve, reject) => {
 			// console.log("sending");
-			const success = this.ws.send(JSON.stringify(message),false, sent=>{
-				if(sent) {
+			const success = this.ws.send(JSON.stringify(message), false, sent => {
+				if (sent) {
 					// console.log("sent late");
 					resolve();
 				}
@@ -101,36 +101,36 @@ export class Client {
 				}
 			});
 
-			if(success){
+			if (success) {
 				// console.log("success");
 				resolve();
 			}
 		});
 	}
 
-	getNick(){
-		if(this.nick){
-			if(this.rank>=RANK.ADMIN) {
-				if(this.localStaff) return `(A) ${this.nick}`;
+	getNick() {
+		if (this.nick) {
+			if (this.rank >= RANK.ADMIN) {
+				if (this.localStaff) return `(A) ${this.nick}`;
 				return this.nick;
 			}
-			if(this.rank===RANK.MODERATOR) return `${this.world.modPrefix.value} ${this.nick}`;
-			if(this.rank===RANK.ARTIST) return `[${this.uid}] ${this.nick}`;
-			if(this.rank===RANK.DONOR) return `[${this.uid}] ${this.world.donoPrefix} ${this.nick}`;
-			if(this.rank===RANK.SHITHEAD) return `[${this.uid}] ${this.nick} (shithead)`
+			if (this.rank === RANK.MODERATOR) return `${this.world.modPrefix.value} ${this.nick}`;
+			if (this.rank === RANK.ARTIST) return `[${this.uid}] ${this.nick}`;
+			if (this.rank === RANK.DONOR) return `[${this.uid}] ${this.world.donoPrefix} ${this.nick}`;
+			if (this.rank === RANK.SHITHEAD) return `[${this.uid}] ${this.nick} (shithead)`
 			return `[${this.uid}] ${this.nick}`;
 		}
-		if(this.rank===RANK.OWNER) return `(O) ${this.uid}`;
-		if(this.rank===RANK.DEVELOPER) return `(D) ${this.uid}`;
-		if(this.rank===RANK.ADMIN) return `(A) ${this.uid}`;
-		if(this.rank===RANK.MODERATOR) return `${this.world.modPrefix.value} ${this.uid}`;
-		if(this.rank===RANK.ARTIST) return `${this.uid}`;
-		if(this.rank===RANK.DONOR) return `${this.world.donoPrefix} ${this.uid}`;
-		if(this.rank===RANK.SHITHEAD) return `${this.uid} (shithead)`
+		if (this.rank === RANK.OWNER) return `(O) ${this.uid}`;
+		if (this.rank === RANK.DEVELOPER) return `(D) ${this.uid}`;
+		if (this.rank === RANK.ADMIN) return `(A) ${this.uid}`;
+		if (this.rank === RANK.MODERATOR) return `${this.world.modPrefix.value} ${this.uid}`;
+		if (this.rank === RANK.ARTIST) return `${this.uid}`;
+		if (this.rank === RANK.DONOR) return `${this.world.donoPrefix} ${this.uid}`;
+		if (this.rank === RANK.SHITHEAD) return `${this.uid} (shithead)`
 		return this.uid.toString();
 	}
 
-	setUid(id){
+	setUid(id) {
 		this.uid = id;
 		let buffer = Buffer.allocUnsafeSlow(5);
 		buffer[0] = 0x00;
@@ -147,13 +147,13 @@ export class Client {
 		this.sendBuffer(buffer)
 	}
 
-	setRank(rank){
-		if(rank===this.rank) return;
-		if(rank>=RANK.ADMIN) this.ws.subscribe(this.server.adminTopic);
-		else if (this.rank>=RANK.ADMIN && rank<RANK.ADMIN) this.ws.unsubscribe(this.server.adminTopic);
+	setRank(rank) {
+		if (rank === this.rank) return;
+		if (rank >= RANK.ADMIN) this.ws.subscribe(this.server.adminTopic);
+		else if (this.rank >= RANK.ADMIN && rank < RANK.ADMIN) this.ws.unsubscribe(this.server.adminTopic);
 		let pquota = this.world.pquota.value ? this.world.pquota.value : this.server.config.defaultPquota;
-		pquota = pquota.split(',').map(value=>parseInt(value));
-		switch(rank){
+		pquota = pquota.split(',').map(value => parseInt(value));
+		switch (rank) {
 			case RANK.SHITHEAD:
 				pquota[0] = 0;
 				break;
@@ -161,38 +161,63 @@ export class Client {
 				pquota[0] = 0;
 				break;
 			case RANK.USER:
-				pquota = this.server.config.defaultPquota.split(',').map(value=>parseInt(value));
+				pquota = this.server.config.defaultPquota.split(',').map(value => parseInt(value));
 				break;
 			case RANK.ARTIST:
-				if(this.world.doubleModPquota.value) {
-					pquota[0] = Math.floor(pquota[0]*8);
-					pquota[1] = Math.ceil(pquota[1]/2);
-					this.sendMessage({
-						data:{
-							eval: 'NWOP.tools.allTools.fill.extra.tickAmount = 80'
-						}
-					})
+				if (this.world.doubleModPquota.value) {
+					pquota[0] = Math.floor(pquota[0] * 8);
+					pquota[1] = Math.ceil(pquota[1] / 2);
+					setTimeout(() => {
+						this.sendMessage({
+							data: {
+								eval: 'NWOP.tools.allTools.fill.extra.tickAmount = 80'
+							}
+						});
+					}, 50);
 				}
 				break;
 			case RANK.MODERATOR:
-				if(this.world.doubleModPquota.value) {
-					pquota[0] = Math.floor(pquota[0]*8);
-					pquota[1] = Math.ceil(pquota[1]/2);
-					this.sendMessage({
-						data:{
-							eval: 'NWOP.tools.allTools.fill.extra.tickAmount = 80'
-						}
-					})
+				if (this.world.doubleModPquota.value) {
+					pquota[0] = Math.floor(pquota[0] * 8);
+					pquota[1] = Math.ceil(pquota[1] / 2);
+					setTimeout(() => {
+						this.sendMessage({
+							data: {
+								eval: 'NWOP.tools.allTools.fill.extra.tickAmount = 80'
+							}
+						});
+					}, 50);
 				}
 				break;
 			case RANK.ADMIN:
 				pquota[1] = 0;
+				setTimeout(() => {
+					this.sendMessage({
+						data: {
+							eval: 'NWOP.tools.allTools.fill.extra.tickAmount = 200'
+						}
+					});
+				}, 50);
 				break;
 			case RANK.DEVELOPER:
 				pquota[1] = 0;
+				setTimeout(() => {
+					this.sendMessage({
+						data: {
+							eval: 'NWOP.tools.allTools.fill.extra.tickAmount = 400'
+						}
+					});
+				}, 50);
 				break;
 			case RANK.OWNER:
 				pquota[1] = 0;
+				setTimeout(() => {
+					this.sendMessage({
+						data: {
+							eval: 'NWOP.tools.allTools.fill.extra.tickAmount = 1200'
+						}
+					});
+				}, 50);
 				break;
 		}
 		this.setPquota(pquota[0], pquota[1]);
@@ -201,46 +226,46 @@ export class Client {
 		buffer[0] = 0x04;
 		buffer[1] = rank;
 		this.sendBuffer(buffer);
-		if(rank===RANK.ARTIST) this.sendMessage({
+		if (rank === RANK.ARTIST) this.sendMessage({
 			sender: 'server',
 			data: {
 				type: 'info',
 			},
-			text:'[Server]: You have been granted artist rank. You now have access to more utilities.',
+			text: '[Server]: You have been granted artist rank. You now have access to more utilities.',
 		});
-		else if(rank===RANK.MODERATOR) this.sendMessage({
+		else if (rank === RANK.MODERATOR) this.sendMessage({
 			sender: 'server',
 			data: {
 				type: 'info',
 			},
-			text:'[Server]: You are now a moderator. Do /help for a list of commands.',
+			text: '[Server]: You are now a moderator. Do /help for a list of commands.',
 		});
-		else if(rank===RANK.ADMIN) this.sendMessage({
+		else if (rank === RANK.ADMIN) this.sendMessage({
 			sender: 'server',
 			data: {
 				type: 'info',
 			},
-			text:'[Server]: You are now an administrator. Do /help for a list of commands.',
+			text: '[Server]: You are now an administrator. Do /help for a list of commands.',
 		});
-		else if(rank===RANK.DEVELOPER) this.sendMessage({
+		else if (rank === RANK.DEVELOPER) this.sendMessage({
 			sender: 'server',
 			data: {
 				type: 'info',
 			},
-			text:'[Server]: You are now a developer. You have been granted additional access.',
+			text: '[Server]: You are now a developer. You have been granted additional access.',
 		});
-		else if(rank===RANK.OWNER) this.sendMessage({
+		else if (rank === RANK.OWNER) this.sendMessage({
 			sender: 'server',
 			data: {
 				type: 'info',
 			},
-			text:'[Server]: hi pookie smooch smooch :3',
+			text: '[Server]: hi pookie smooch smooch :3',
 		});
 	}
 
-	startProtocol(){
-		if(this.ip.banExpiration!==0){
-			if(this.ip.banExpiration===-1){
+	startProtocol() {
+		if (this.ip.banExpiration !== 0) {
+			if (this.ip.banExpiration === -1) {
 				this.sendMessage({
 					sender: 'server',
 					data: {
@@ -251,13 +276,13 @@ export class Client {
 				this.destroy();
 				return;
 			}
-			if(this.ip.banExpiration>Date.now()){
+			if (this.ip.banExpiration > Date.now()) {
 				this.sendMessage({
 					sender: 'server',
 					data: {
 						type: 'error',
 					},
-					text: `Remaining time: ${Math.floor((this.ip.banExpiration - Date.now())/1000)} seconds.`
+					text: `Remaining time: ${Math.floor((this.ip.banExpiration - Date.now()) / 1000)} seconds.`
 				});
 				this.sendMessage({
 					sender: 'server',
@@ -272,7 +297,7 @@ export class Client {
 			this.ip.setProp("banExpiration", 0);
 		}
 		let whitelisted = this.ip.isWhitelisted();
-		if(this.server.lockdown && !whitelisted){
+		if (this.server.lockdown && !whitelisted) {
 			this.sendMessage({
 				sender: 'server',
 				data: {
@@ -283,7 +308,7 @@ export class Client {
 			this.destroy();
 			return;
 		}
-		if(this.ip.tooManyClients()){
+		if (this.ip.tooManyClients()) {
 			this.sendMessage({
 				sender: 'server',
 				data: {
@@ -309,7 +334,7 @@ export class Client {
 		else this.setCaptchaState(0x03);
 	}
 
-	setCaptchaState(value){
+	setCaptchaState(value) {
 		this.captchaState = value;
 		let buffer = Buffer.allocUnsafeSlow(2);
 		buffer[0] = 0x05;
@@ -317,20 +342,20 @@ export class Client {
 		this.sendBuffer(buffer);
 	}
 
-	handleMessage(message, isBinary){
+	handleMessage(message, isBinary) {
 		// console.log("got message:", message);
-		if(!this.world){
+		if (!this.world) {
 			// console.log(message);
 			this.handlePreWorld(message, isBinary);
 			return;
 		}
-		if(!isBinary){
+		if (!isBinary) {
 			// console.log(message);
 			this.handleString(message, isBinary);
 			return;
 		}
 		message = Buffer.from(message);
-		switch(message.length){
+		switch (message.length) {
 			case 8: {
 				let chunkX = message.readInt32LE(0);
 				if (chunkX > maxChunkCoord || chunkX < minChunkCoord) {
@@ -422,11 +447,11 @@ export class Client {
 					this.destroy();
 					return;
 				}
-					let chunkY = message.readInt32LE(4);
-					if (chunkY > maxChunkCoord || chunkY < minChunkCoord) {
-						this.destroy();
-						return;
-					}
+				let chunkY = message.readInt32LE(4);
+				if (chunkY > maxChunkCoord || chunkY < minChunkCoord) {
+					this.destroy();
+					return;
+				}
 				let regionId = ((chunkX >> 4) + 0x10000) + (((chunkY >> 4) + 0x10000) * 0x20000);
 				let region = this.world.getRegion(regionId);
 				if (!region.loaded) {
@@ -639,14 +664,14 @@ export class Client {
 				this.destroy();
 				return;
 			}
-		  	//check worldVerification (minecraft port owo)
+			//check worldVerification (minecraft port owo)
 			if (message.readUint16LE(message.length - 2) !== 25565) {
 				this.destroy();
 				return;
 			}
 			//validate world name
 			for (let i = message.length - 2; i--;) {
-			let charCode = message[i];
+				let charCode = message[i];
 				if (!((charCode > 96 && charCode < 123) || (charCode > 47 && charCode < 58) || charCode === 95 || charCode === 46)) {
 					this.destroy();
 					return;
@@ -667,7 +692,7 @@ export class Client {
 				this.destroy();
 				return;
 			}
-			
+
 			world.addClient(this);
 			this.joiningWorld = false;
 			return;
@@ -684,8 +709,8 @@ export class Client {
 		}
 		let slice = message.substring(7);
 		if (slice.startsWith("LETMEINPLZ")) {
-		  	slice = slice.substring(10);
-		  	if (slice !== process.env.CAPTCHAPASS) {
+			slice = slice.substring(10);
+			if (slice !== process.env.CAPTCHAPASS) {
 				this.destroy();
 				return;
 			}
@@ -715,28 +740,28 @@ export class Client {
 		this.setCaptchaState(0x03);
 	}
 
-	handleString(message){
-		if(this.rank<=RANK.ADMIN && !this.cquota.canSpend()) return;
+	handleString(message) {
+		if (this.rank <= RANK.ADMIN && !this.cquota.canSpend()) return;
 		message = textDecoder.decode(message);
-		if(!message.endsWith("\n")){
+		if (!message.endsWith("\n")) {
 			this.destroy();
 			return;
 		}
-		message = message.substring(0, message.length-1);
-		if(message.length>maxMessageLengths[this.rank]) return;
-		if(message.startsWith("/")){
+		message = message.substring(0, message.length - 1);
+		if (message.length > maxMessageLengths[this.rank]) return;
+		if (message.startsWith("/")) {
 			message = message.trim();
 			handleCommand(this, message);
 		}
-		else{
-			if(this.rank<RANK.ADMIN && this.mute) return;
+		else {
+			if (this.rank < RANK.ADMIN && this.mute) return;
 			message = message.trim();
-			if(message.length===0) return;
+			if (message.length === 0) return;
 			this.world.sendChat(this, message);
 		}
 	}
 
-	teleport(x, y){
+	teleport(x, y) {
 		this.updated = true;
 		this.x = x;
 		this.y = y;
@@ -748,12 +773,12 @@ export class Client {
 		this.sendBuffer(buffer);
 	}
 
-	tick(tick){
-		if(!this.updated) return;
+	tick(tick) {
+		if (!this.updated) return;
 		this.updated = false;
 		this.lastUpdate = tick;
 		this.sentX = this.x;
 		this.sentY = this.y;
-		if(!this.stealth) this.world.playerUpdates.add(this);
+		if (!this.stealth) this.world.playerUpdates.add(this);
 	}
 }
