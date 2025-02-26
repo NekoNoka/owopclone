@@ -375,6 +375,7 @@ export class Client {
 			}
 			this.ip.setProp("banExpiration", 0);
 		}
+		console.log(this.accountInfo);
 		if(this.accountInfo){
 			console.log(this.accountInfo);
 			console.log(this.accountInfo.user.owopData.global.isBanned)
