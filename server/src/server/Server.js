@@ -125,9 +125,9 @@ export class Server {
 					this.stats.totalConnections++;
 					let client = this.clients.createClient(ws);
 					ws.client = client;
-					client.setStatus("Logging in...");
+					await client.setStatus("Logging in...");
 					if(!await client.checkIsLoggedIn()) client.destroy();
-					client.setStatus("Logged in!");
+					await client.setStatus("Logged in!");
 					client.startProtocol();
 				}
 				catch (err) {
