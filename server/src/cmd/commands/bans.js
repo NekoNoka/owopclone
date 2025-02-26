@@ -16,12 +16,7 @@ export default {
 			text: `Currently banned users: ${client.world.bannedIps.length?client.world.bannedIps.map(ip=>ip.ip).join(", "):"None"}`
 		});
 		if(client.localStaff) return;
-		let ips = [];
-		for(let ip of client.server.ips.map.values()){
-			if(ip.banExpiration===-1||ip.banExpiration>Date.now()){
-				ips.push(ip.ip);
-			}
-		}
+		let ips = client.server.ips.map.map(entry => entry.ip);
 		client.sendMessage({
 			sender: 'server',
 			data:{
