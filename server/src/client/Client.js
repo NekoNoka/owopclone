@@ -139,7 +139,7 @@ export class Client {
 			}
 		}
 		let response = await doFetch(this.accountToken);
-		if(!response.data.owopData){
+		if(!response.data.user.owopData){
 			if(!await this.createGlobalData()) return this.destroyWithReason('Failed to create global OWOP data.');
 			response = await doFetch(this.accountToken);
 		}
