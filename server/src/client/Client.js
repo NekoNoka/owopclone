@@ -92,13 +92,15 @@ export class Client {
 		}
 		console.log("fetching")
 		try{
-			await fetch('https://neomoth.dev/account', {
+			let response = await fetch('https://neomoth.dev/account', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
 				},
 				credentials: 'same-origin',
 			});
+			let data = await response.json();
+			console.log(data);
 		}catch(e){
 			console.error(e);
 		}
