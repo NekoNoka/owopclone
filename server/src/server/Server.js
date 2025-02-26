@@ -117,13 +117,13 @@ export class Server {
 					console.error(error);
 				}
 			},
-			open: ws => {
+			open: async ws => {
 				ws.subscribe(this.globalTopic);
 				// console.log("hi");
 				// console.log(ws.token)
 				try {
 					this.stats.totalConnections++;
-					let client = this.clients.createClient(ws);
+					let client = await this.clients.createClient(ws);
 					ws.client = client;
 					client.startProtocol();
 				}

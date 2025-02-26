@@ -67,13 +67,7 @@ export class Client {
 		this.deferredAmount = 0;
 
 		this.destroyed = false;
-
-		this.aIPromise, this.aIPromiseResolve;
-		this.aIPromise = new Promise(res=>this.aIPromiseResolve=res);
-		this.aIPromise.finally(()=>{this.aIPromise.done = true});
-		
 		this.checkIsLoggedIn();
-		(async()=>{await aIPromise});
 	}
 
 	async destroyWithReason(reason){
@@ -150,10 +144,6 @@ export class Client {
 			response = await doFetch(this.accountToken);
 		}
 		this.accountInfo = response;
-		if(!this.aIPromise.done) {
-			this.aIPromise.done = true;
-			this.aIPromiseResolve();
-		}
 		// console.log(response);
 	}
 
