@@ -119,7 +119,7 @@ export const options = propertyDefaults(userOptions, {
 		default: true,
 		title: 'Official Server',
 		proto: 'v1',
-		url: process.env.IS_LOCALHOST ? `ws://localhost:${process.env.WS_PORT}` : location.href.replace("http", "ws"),
+		url: location.hostname === 'localhost' ? `ws://localhost:8081` : location.href.replace("http", "ws"),
 	}],
 	fallbackFps: 30,
 	maxChatBuffer: 512,

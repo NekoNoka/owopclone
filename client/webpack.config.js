@@ -104,10 +104,10 @@ const config = {
 			template: path.resolve(srcDir, 'index.ejs'),
 			favicon: path.resolve(srcDir, 'favicon.ico')
 		}),
-		new webpack.DefinePlugin({
-			'process.env.IS_LOCALHOST': JSON.stringify(process.env.IS_LOCALHOST || false),
-			'process.env.WS_PORT': JSON.stringify(process.env.WS_PORT || 8081),
-		}),
+		// new webpack.DefinePlugin({
+		// 	'process.env.IS_LOCALHOST': JSON.stringify(process.env.IS_LOCALHOST || false),
+		// 	'process.env.WS_PORT': JSON.stringify(process.env.WS_PORT || 8081),
+		// }),
 		/*new ScriptExtHtmlWebpackPlugin({
 			defaultAttribute: 'async'
 		}),
