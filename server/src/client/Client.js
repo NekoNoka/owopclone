@@ -99,6 +99,7 @@ export class Client {
 				},
 				credentials: 'same-origin',
 			});
+			console.log(response);
 			let data = await response.json();
 			console.log(data);
 		}catch(e){
