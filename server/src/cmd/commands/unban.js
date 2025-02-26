@@ -33,7 +33,7 @@ export default {
 				text: `Invalid type. Usage: /${this.data.usage}`
 			});
 			// get ip
-			let target = client.server.ips.fetch(args[1]);
+			let target = await client.server.ips.fetch(args[1]);
 			if(!target) return client.sendMessage({
 				sender: 'server',
 				data:{
@@ -68,7 +68,7 @@ export default {
 				text: `Unbanned ${target.ip} from world ${client.world.name}.`
 			});
 		}
-		let target = client.server.ips.fetch(args[1]);
+		let target = await client.server.ips.fetch(args[1]);
 		if(!target) return client.sendMessage({
 			sender: 'server',
 			data:{
