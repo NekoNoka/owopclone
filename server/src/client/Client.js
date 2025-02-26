@@ -70,14 +70,18 @@ export class Client {
 	}
 
 	async destroyWithReason(reason){
+		this.setStatus(reason);
+		this.destroy();
+	}
+
+	async setStatus(message){
 		await this.sendMessage({
 			sender: 'server',
 			data: {
 				action: 'updateStatusMessage',
 			},
-			text: reason
+			text: message
 		});
-		this.destroy();
 	}
 
 	async checkIsLoggedIn() {
@@ -94,7 +98,9 @@ export class Client {
 			this.destroyWithReason("You are required to have an account to access this server. You may log in with the button below.");
 			return;
 		}
-		await this.fetchUserInfo();
+		let status = await this.fetchUserInfo();
+		if(!status && !this.destroyed) return this.destroyWithReason("You are required to have an account to access this server. You may log in with the button below.");
+		return true;
 	}
 
 	async createGlobalData(){
@@ -143,6 +149,7 @@ export class Client {
 			response = await doFetch(this.accountToken);
 		}
 		this.accountInfo = response;
+		return true;
 		// console.log(response);
 	}
 
