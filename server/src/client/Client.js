@@ -38,7 +38,6 @@ export class Client {
 		this.localStaff = false;
 		this.uid = null;
 		this.world = null;
-		console.log("token", ws.token)
 		this.accountToken = ws.token;
 		this.accountInfo = null;
 		let pquota = this.server.config.defaultPquota.split(',').map(value => parseInt(value));
@@ -67,12 +66,12 @@ export class Client {
 		this.deferredAmount = 0;
 
 		this.destroyed = false;
-		console.log("fart")
-		this.fetchUserInfo(this.accountToken);
+		this.fetchUserInfo();
 	}
 
-	async fetchUserInfo(token) {
-		if(!token) {
+	async fetchUserInfo() {
+		console.log(this.accountToken);
+		if(!this.accountToken) {
 			await this.sendMessage({
 				sender: 'server',
 				data: {
