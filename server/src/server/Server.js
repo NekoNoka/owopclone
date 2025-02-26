@@ -88,6 +88,7 @@ export class Server {
 						if (!val) return;
 						if (name === 'nmdevToken') token = val;
 					});
+					console.log(cookies);
 					console.log(token);
 					//handle abort
 					let aborted = false;
