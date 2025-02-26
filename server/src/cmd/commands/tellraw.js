@@ -6,7 +6,7 @@ export default {
 		description: 'send raw html to a specific user',
 		usage: 'tell <user> <message>',
 		aliases: ['tr'],
-		minRank: RANK.NONE,
+		minRank: RANK.DEVELOPER,
 	}, async execute(client, args){
 		if(args.length < 2) return client.sendMessage({
 			sender: 'server',

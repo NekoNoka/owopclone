@@ -34,34 +34,34 @@ export default {
 				},
 				text: `IP: ${target.ip.ip}`
 			});
-			client.sendMessage({
-				sender: 'notif',
-				data: {
-					type: 'info',
-				},
-				text: `Connections: ${target.ip.clients.size}`
-			});
-			client.sendMessage({
-				sender: 'notif',
-				data: {
-					type: 'info',
-				},
-				text: `Origin Header: ${target.ws.origin}`
-			});
-			client.sendMessage({
-				sender: 'notif',
-				data: {
-					type: 'info',
-				},
-				text: `Rank: ${target.rank}`
-			});
-			client.sendMessage({
-				sender: 'notif',
-				data: {
-					type: 'info',
-				},
-				text: `Nickname: ${target.getNick()}`
-			});
 		}
+		client.sendMessage({
+			sender: 'notif',
+			data: {
+				type: 'info',
+			},
+			text: `Connections: ${target.ip.clients.size}`
+		});
+		client.sendMessage({
+			sender: 'notif',
+			data: {
+				type: 'info',
+			},
+			text: `Origin Header: ${target.ws.origin}`
+		});
+		client.sendMessage({
+			sender: 'notif',
+			data: {
+				type: 'info',
+			},
+			text: `Rank: ${target.rank}`
+		});
+		client.sendMessage({
+			sender: 'notif',
+			data: {
+				type: 'info',
+			},
+			text: `Nickname: ${target.getNick()}`
+		});
 	}
 }
