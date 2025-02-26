@@ -10,16 +10,16 @@ export class Ip {
 		this.clients = new Map();
 		this.captchaquota = new Quota(5, 10);
 
-		if(data===null){
-			this.banExpiration = 0;
-			this.whitelist = -1;
-			this.dataModified = false;
-		} else {
+		this.banExpiration = 0;
+		this.whitelist = -1;
+		this.dataModified = false;
+
+		
+		if(!!data){
 			data = JSON.parse(data);
 			for(let key in data){
 				this[key] = data[key];
 			}
-			this.dataModified = false;
 		}
 
 		this.lastHeld = this.server.currentTick;
