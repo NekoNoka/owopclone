@@ -60,7 +60,7 @@ export default {
 				text: `IP not banned from world ${client.world.name}. Usage: /${this.data.usage}`
 			});
 			client.world.bannedIps.splice(client.world.bannedIps.indexOf(target), 1);
-			client.sendMessage({
+			return client.sendMessage({
 				sender: 'server',
 				data:{
 					type: 'info',
