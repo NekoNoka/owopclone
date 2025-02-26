@@ -12,16 +12,15 @@ let maxChunkCoord = 0xFFFFF;
 let minPixelCoord = ~0xFFFFF;
 let maxPixelCoord = 0xFFFFF;
 
-let maxMessageLengths = new Map([
-	[RANK.SHITHEAD, 1],
-	[RANK.NONE, 128],
-	[RANK.USER, 128],
-	[RANK.ARTIST, 256],
-	[RANK.MODERATOR, 512],
-	[RANK.ADMIN, Infinity],
-	[RANK.DEVELOPER, Infinity],
-	[RANK.OWNER, Infinity],
-])
+let maxMessageLengths = [
+	128,
+	128,
+	256,
+	512,
+	Infinity,
+	Infinity,
+	Infinity,
+]
 
 export class Client {
 	constructor(serverClientManager, ws, id) {
@@ -747,7 +746,7 @@ export class Client {
 			return;
 		}
 		message = message.substring(0, message.length - 1);
-		if (message.length > maxMessageLengths.get(this.rank)) return;
+		if (message.length > maxMessageLengths[this.rank]) return;
 		if (message.startsWith("/")) {
 			message = message.trim();
 			handleCommand(this, message);

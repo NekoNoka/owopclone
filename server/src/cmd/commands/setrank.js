@@ -4,7 +4,7 @@ export default {
 	data: {
 		name: 'setrank',
 		description: 'Set a user\'s rank.',
-		usage: 'setrank <user> <rank (-1: shithead, 0: none, 1: user, 2: artist, 3: moderator, 4: admin, 5: developer, 6: owner)>',
+		usage: 'setrank <user> <rank (0: none, 1: user, 2: artist, 3: moderator, 4: admin, 5: developer, 6: owner)>',
 		minRank: RANK.MODERATOR,
 	}, async execute(client, args){
 		if(client.rank<RANK.ADMIN&&client.world.simpleMods.value) return client.sendMessage({
@@ -30,7 +30,7 @@ export default {
 			text: `Invalid user id. Usage: /${this.data.usage}`
 		});
 		let rank = parseInt(args[1]);
-		if(isNaN(rank)||!rank||rank<RANK.SHITHEAD||rank>RANK.OWNER) return client.sendMessage({
+		if(!(rank>=RANK.NONE&&rank<=RANK.OWNER)) return client.sendMessage({
 			sender: 'server',
 			data:{
 				type: 'error',

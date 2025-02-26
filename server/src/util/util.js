@@ -33,7 +33,6 @@ export function getIpFromHeader(string) {
 }
 
 export const RANK = {
-	SHITHEAD: -1,
 	NONE: 0,
 	USER: 1,
 	ARTIST: 2,

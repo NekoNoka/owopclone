@@ -236,8 +236,7 @@ function receiveMessage(rawText) {
 				else if (data.senderRank === RANK.ARTIST) nick.className = 'artistMessage';
 				// else if (data.senderRank === RANK.DONOR) nick.className = 'donorMessage';
 				else if (data.senderRank === RANK.USER) nick.className = 'userMessage';
-				else if (data.senderRank === RANK.NONE) message.className = 'noneMessage';
-				else if (data.senderRank === RANK.SHITHEAD) nick.className = 'shitheadMessage';
+				else if (data.senderRank === RANK.NONE) nick.className = 'noneMessage';
 
 				if (!allowHTML) nick.innerHTML = escapeHTML(`${data.senderNick}: `);
 				else nick.innerHTML = `${data.senderNick}: `;
