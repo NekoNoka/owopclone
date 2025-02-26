@@ -62,7 +62,7 @@ export class World {
 
 	destroy() {
 		if (this.destroyed) return;
-		console.log("destroying");
+		// console.log("destroying");
 		this.destroyed = true;
 		for (let region of this.regions.values()) {
 			region.destroy();
@@ -130,8 +130,8 @@ export class World {
 	addClient(client) {
 		for(let bannedIp in this.bannedIps){
 			if(this.bannedIps[bannedIp].ip===client.ip.ip){
-				console.log("banned")
-				console.log(bannedIp);
+				// console.log("banned")
+				// console.log(bannedIp);
 				if(this.bannedIps[bannedIp].time===-1){
 					client.sendMessage({
 						sender: 'server',
@@ -161,7 +161,7 @@ export class World {
 					client.destroy();
 					return;
 				}
-				console.log("unbanned");
+				// console.log("unbanned");
 				this.bannedIps.splice(this.bannedIps.indexOf(this.bannedIps[bannedIp]), 1);
 				this.dataModified = true;
 				break;

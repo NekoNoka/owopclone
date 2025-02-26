@@ -66,19 +66,23 @@ export class Client {
 		this.deferredAmount = 0;
 
 		this.destroyed = false;
-		this.fetchUserInfo();
+		this.checkIsLoggedIn();
 	}
 
-	async fetchUserInfo() {
+	async destroyWithReason(reason){
+		await this.sendMessage({
+			sender: 'server',
+			data: {
+				action: 'updateStatusMessage',
+			},
+			text: reason
+		});
+		this.destroy();
+	}
+
+	async checkIsLoggedIn() {
 		console.log(this.accountToken);
 		if(!this.accountToken) {
-			await this.sendMessage({
-				sender: 'server',
-				data: {
-					action: 'updateStatusMessage',
-				},
-				text: `You are required to have an account to<br>access this server. You may log in with the button below.`
-			});
 			await this.sendMessage({
 				sender: 'server',
 				data: {
@@ -86,13 +90,16 @@ export class Client {
 					object: 'login',
 					state: 'show'
 				}
-			})
-			this.destroy();
+			});
+			this.destroyWithReason("You are required to have an account to access this server. You may log in with the button below.");
 			return;
 		}
-		console.log("fetching")
+		fetchUserInfo();
+	}
+
+	async createGlobalData(){
 		try{
-			let response = await fetch('https://neomoth.dev/req/account/get', {
+			let response = await fetch('https://neomoth.dev/req/account/owop/createGlobal', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -100,12 +107,43 @@ export class Client {
 				},
 				credentials: 'include',
 			});
-			console.log(response);
-			let data = await response.json();
-			console.log(data);
+			if(response.status===200) {
+				console.log('realistically this should never happen');
+				return true;
+			}
+			else if(response.status===201) return true;
+			return false;
 		}catch(e){
 			console.error(e);
+			return false;
 		}
+	}
+
+	async createWorldData(worldName){}
+
+	async fetchUserInfo() {
+		async function doFetch(){
+			try{
+				let response = await fetch('https://neomoth.dev/req/account/get', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						'Cookie': `nmToken=${this.accountToken}`
+					},
+					credentials: 'include',
+				});
+				return await response.json();
+			}catch(e){
+				console.error(e);
+			}
+		}
+		let response = await doFetch();
+		if(!response.data.owopData){
+			if(!await this.createGlobalData()) return this.destroyWithReason('Failed to create global OWOP data.');
+			response = await doFetch();
+		}
+		this.accountInfo = response;
+		console.log(response);
 	}
 
 	destroy() {
