@@ -9,7 +9,6 @@ export let protocol = null;
 let evtId = 0;
 
 export const RANK = {
-	SHITHEAD: -1,
 	NONE: 0,
 	USER: 1,
 	// DONOR: 2,

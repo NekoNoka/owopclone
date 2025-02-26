@@ -20,5 +20,12 @@ rl.on('SIGINT', async ()=>{
 	process.exit(0);
 });
 
+process.on('SIGINT', async ()=>{
+	console.log("Attempting graceful shutdown...");
+	await server.destroy();
+	if(rl) rl.close();
+	process.exit(0);
+});
+
 let config = JSON.parse(await fs.readFile("./config.json"));
 let server = new Server(config);

@@ -109,7 +109,8 @@ export class Server {
 							res.upgrade({
 								origin,
 								ip,
-								closed: false
+								closed: false,
+								token: token,
 							}, secWebSocketKey, secWebSocketProtocol, secWebSocketExtensions, context);
 						});
 					}

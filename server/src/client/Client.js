@@ -38,6 +38,8 @@ export class Client {
 		this.localStaff = false;
 		this.uid = null;
 		this.world = null;
+		this.accountToken = ws.token;
+		this.accountInfo = null;
 		let pquota = this.server.config.defaultPquota.split(',').map(value => parseInt(value));
 		this.pquota = new Quota(pquota[0], pquota[1]);
 		this.protectquota = new Quota(5000, 7);
@@ -64,6 +66,29 @@ export class Client {
 		this.deferredAmount = 0;
 
 		this.destroyed = false;
+		this.fetchUserInfo(this.accountToken);
+	}
+
+	async fetchUserInfo(token) {
+		if(!token) {
+			await this.sendMessage({
+				sender: 'server',
+				data: {
+					action: 'updateStatusMessage',
+				},
+				text: `You are required to have an account to<br>access this server. You may log in with the button below.`
+			});
+			await this.sendMessage({
+				sender: 'server',
+				data: {
+					action: 'updateConnectionScreen',
+					object: 'login',
+					state: 'show'
+				}
+			})
+			this.destroy();
+			return;
+		}
 	}
 
 	destroy() {

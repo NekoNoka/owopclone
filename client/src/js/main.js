@@ -30,6 +30,8 @@ export { showDevChat, showPlayerList, statusMsg };
 
 export const keysDown = {};
 
+let statusMessage = null;
+
 export const mouse = {
 	x: 0,
 	y: 0,
@@ -162,6 +164,7 @@ function receiveMessage(rawText) {
 	let clientInfo = parsedJson.clientInfo;
 	let allowHTML = false;
 	if (sender === 'server') {
+		allowHTML = true;
 		if (data.type === 'info') message.className = 'serverInfo';
 		if (data.type === 'error') message.className = 'serverError';
 		if (data.action === 'updateNick') {
@@ -189,6 +192,16 @@ function receiveMessage(rawText) {
 			misc.worldPasswords[net.protocol.worldName] = data.password;
 			saveWorldPasswords();
 			if(!data.text) return;
+		}
+		if (data.action === 'updateStatusMessage') {
+			statusMessage = text;
+			return;
+		}
+		if (data.action === 'updateConnectionScreen') {
+			if(data.object==='login'){
+				elements.loginButton.className = data.state==='show'?'':'hide';
+				// elements.register.style.display = data.state==='show'?'none':'';
+			}
 		}
 	}
 	else if (sender === 'notif') {
@@ -478,7 +491,7 @@ function statusMsg(showSpinner, message) {
 function inGameDisconnected() {
 	showWorldUI(false);
 	showLoadScr(true, true);
-	statusMsg(false, "Lost connection with the server.");
+	statusMsg(false, !!statusMessage?statusMessage:"Lost connection with the server.");
 	misc.world = null;
 	elements.chat.style.transform = "initial";
 	elements.chatInput.style.display = "";
@@ -1181,6 +1194,7 @@ window.addEventListener("load", () => {
 	elements.paletteBg = document.getElementById("palette-bg");
 
 	elements.animCanvas = document.getElementById("animations");
+	elements.loginButton = document.getElementById("login-button");
 
 	elements.viewport = document.getElementById("viewport");
 	elements.windows = document.getElementById("windows");
