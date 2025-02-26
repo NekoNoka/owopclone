@@ -96,7 +96,6 @@ export class Client {
 			return;
 		}
 		await this.fetchUserInfo();
-		await this.amIBanned();
 	}
 
 	async createGlobalData(){
