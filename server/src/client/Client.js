@@ -378,8 +378,8 @@ export class Client {
 		console.log(this.accountInfo);
 		if(this.accountInfo){
 			console.log(this.accountInfo);
-			console.log(this.accountInfo.user.owopData.global.isBanned)
-			if(this.accountInfo.user.owopData.global.isBanned){
+			console.log(this.accountInfo.data.user.owopData.global.isBanned)
+			if(this.accountInfo.data.user.owopData.global.isBanned){
 				console.log("yeag")
 				this.sendMessage({
 					sender: 'server',
