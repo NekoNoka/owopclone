@@ -24,7 +24,7 @@ export function stickyimg(path, w, h, o) {
 		var sc = camera.zoom / 16;
 		var tx = ((-camera.x - 29) * camera.zoom);
 		var ty = ((-camera.y - 25) * camera.zoom);
-		if (tx > -512 * sc && ty > -512 * sc && tx < window.innerWidth && ty < window.innerHeight) {
+		if (tx > -w * sc && ty > -h * sc && tx < window.innerWidth && ty < window.innerHeight) {
 			if (sc > 1.0 && !ismag) {
 				ismag = true;
 				elem.style.imageRendering = 'pixelated';
