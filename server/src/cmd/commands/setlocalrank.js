@@ -1,10 +1,10 @@
-import { RANK } from "../../util/util.js";
+import { RANK, setAccountProperty } from "../../util/util.js";
 
 export default {
 	data: {
 		name: 'setrank',
-		description: 'Set a user\'s rank.',
-		usage: 'setrank <user> <rank (0: none, 1: user, 2: artist, 3: moderator, 4: admin, 5: developer, 6: owner)>',
+		description: 'Set a user\'s local rank.',
+		usage: 'setrank <username/id> <rank (0: none, 1: user, 2: artist, 3: moderator, 4: admin, 5: developer, 6: owner)>',
 		minRank: RANK.MODERATOR,
 	}, async execute(client, args){
 		if(client.rank<RANK.ADMIN&&client.world.simpleMods.value) return client.sendMessage({
@@ -21,14 +21,29 @@ export default {
 			},
 			text: `Usage: /${this.data.usage}`
 		});
-		let target = client.world.clients.get(parseInt(args[0]));
-		if(!target) return client.sendMessage({
-			sender: 'server',
-			data:{
-				type: 'error',
-			},
-			text: `Invalid user id. Usage: /${this.data.usage}`
-		});
+		let target;
+		let targets = [];
+		if(isNaN(args[0])){
+			targets = client.world.getClientsByUsername(args[0]);
+			if(!targets) return client.sendMessage({
+				sender: 'server',
+				data:{
+					type: 'error',
+				},
+				text: 'User must be online to set their local rank.'
+			});
+			target = targets[0];
+		}
+		else {
+			target = client.world.clients.get(parseInt(args[0]));
+			if(!target) return client.sendMessage({
+				sender: 'server',
+				data:{
+					type: 'error',
+				},
+				text: `Invalid user id. Usage: /${this.data.usage}`
+			});
+		}
 		let rank = parseInt(args[1]);
 		if(!(rank>=RANK.NONE&&rank<=RANK.OWNER)) return client.sendMessage({
 			sender: 'server',
@@ -60,7 +75,15 @@ export default {
 			},
 			text: `Target already has that rank.`
 		});
-		target.setRank(rank);
+		if(targets.length>1){
+			for(let c of targets){
+				c.setRank(rank);
+				setAccountProperty(client, c, "local", "rank", rank);
+			}
+		}else{
+			target.setRank(rank);
+			setAccountProperty(client, target, "local", "rank", rank);
+		}
 		client.sendMessage({
 			sender: 'server',
 			data:{
