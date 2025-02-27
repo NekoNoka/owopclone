@@ -31,7 +31,7 @@ export default {
 				data:{
 					type: 'error',
 				},
-				text: 'User must be online to set their local rank.'
+				text: 'User must be in your world to set their local rank.'
 			});
 			target = targets[0];
 		}
