@@ -105,6 +105,7 @@ export class Client {
 	}
 
 	async createGlobalData(){
+		this.setStatus("Doing first time setup...", true);
 		try{
 			let response = await fetch('https://neomoth.dev/req/account/owop/createGlobal', {
 				method: 'POST',
@@ -127,6 +128,7 @@ export class Client {
 	}
 
 	async createWorldData(worldName){
+		this.setStatus("Creating world data...", true);
 		try{
 			let response = await fetch('https://neomoth.dev/req/account/owop/createWorld', {
 				method: 'POST',

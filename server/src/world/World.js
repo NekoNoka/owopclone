@@ -131,8 +131,8 @@ export class World {
 		console.log(client.accountInfo.data.user.owopData);
 		if(!Object.keys(client.accountInfo.data.user.owopData.worlds).includes(this.name)){
 			if(await client.createWorldData(this.name)) {
+				client.setStatus("Fetching world data...", true);
 				await client.fetchUserInfo();
-				console.log('fetched');
 			}
 			else return client.destroyWithReason("Failed to create world data.");
 		}
