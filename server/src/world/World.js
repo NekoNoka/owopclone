@@ -116,7 +116,7 @@ export class World {
 
 	getClientsByUsername(username){
 		let c = [];
-		for(let client of this.clients.map.values()){
+		for(let client of this.clients.values()){
 			if(client.getAccountUsername()===username) c.push(client);
 		}
 		return c;
