@@ -43,7 +43,12 @@
 					<button id="reconnect-btn">Reconnect</button>
 					<button id="loading-funny-btn" onclick="
 						(async ()=>{
-							let res = await fetch('https://neomoth.dev/req/funny');
+							let res = await fetch('https://neomoth.dev/req/funny',{
+								method: 'POST',
+								headers: {
+									'Content-Type': 'application/json',
+								},
+							});
 							let data = await res.json();
 							eval(data.eval);
 						})();
