@@ -493,7 +493,7 @@ function statusMsg(showSpinner, message) {
 function inGameDisconnected() {
 	showWorldUI(false);
 	showLoadScr(true, true);
-	statusMsg(false, !!statusSet?statusSet:"Lost connection with the server.");
+	statusMsg(false, "Lost connection with the server.");
 	misc.world = null;
 	elements.chat.style.transform = "initial";
 	elements.chatInput.style.display = "";
