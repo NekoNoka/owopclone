@@ -5,6 +5,7 @@ export default {
 		name: 'setrank',
 		description: 'Set a user\'s local rank.',
 		usage: 'setrank <username/id> <rank (0: none, 1: user, 2: artist, 3: moderator, 4: admin, 5: developer, 6: owner)>',
+		aliases: ['setlocalrank'],
 		minRank: RANK.MODERATOR,
 	}, async execute(client, args){
 		if(client.rank<RANK.ADMIN&&client.world.simpleMods.value) return client.sendMessage({
@@ -25,7 +26,7 @@ export default {
 		let targets = [];
 		if(isNaN(args[0])){
 			targets = client.server.getClientsByUsername(args[0]);
-			if(!targets) return client.sendMessage({
+			if(!targets.length) return client.sendMessage({
 				sender: 'server',
 				data:{
 					type: 'error',
