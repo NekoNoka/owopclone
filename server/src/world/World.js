@@ -129,6 +129,7 @@ export class World {
 
 	async addClient(client) {
 		console.log(client.accountInfo.data.user.owopData);
+		console.log(Object.keys(client.accountInfo.data.user.owopData.worlds).length);
 		if(!Object.keys(client.accountInfo.data.user.owopData.worlds).length){
 			if(await client.createWorldData(this.name)) {
 				client.setStatus("Fetching world data...", true);
@@ -136,6 +137,7 @@ export class World {
 			}
 			else return client.destroyWithReason("Failed to create world data.");
 		}
+		console.log(Object.keys(client.accountInfo.data.user.owopData.worlds).includes(this.name));
 		if(!Object.keys(client.accountInfo.data.user.owopData.worlds).includes(this.name)){
 			if(await client.createWorldData(this.name)) {
 				client.setStatus("Fetching world data...", true);
