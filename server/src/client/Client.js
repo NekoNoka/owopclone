@@ -171,12 +171,21 @@ export class Client {
 		return highestRank;
 	}
 	getAccountNickname(){
-		let nick = this.accountInfo.data.user.info.displayName;
-		this.nick = nick; // set so when other things try to reference it that don't use this, it should hopefully be up to date.
-		return nick;
+		return this.accountInfo.data.user.info.displayName;
 	}
 	getAccountUsername(){
 		return this.accountInfo.data.user.account.username;
+	}
+
+	updateNick(){
+		this.nick = this.getAccountNickname();
+		this.sendMessage({
+			sender: 'server',
+			data: {
+				type: 'info',
+			},
+			text: `[Server]: Updated nickname to ${this.nick}.`
+		})
 	}
 
 	async fetchUserInfo() {

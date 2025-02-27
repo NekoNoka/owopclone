@@ -128,7 +128,7 @@ export class World {
 	}
 
 	async addClient(client) {
-		console.log(client.accountInfo.data.user.owopData);
+		// console.log(client.accountInfo.data.user.owopData);
 		// console.log(client.accountInfo.data.user.owopData.worlds.length);
 		client.setStatus("Fetching world data...", true, true);
 		if(!client.accountInfo.data.user.owopData.worlds.length || !client.accountInfo.data.user.owopData.worlds.some(entry=>entry.worldName===this.name)){
@@ -183,6 +183,7 @@ export class World {
 		client.world = this;
 		client.ws.subscribe(this.wsTopic);
 		client.setUid(id);
+		client.updateNick();
 		if (this.motd.value) client.sendMessage({
 			sender: 'world',
 			data: {

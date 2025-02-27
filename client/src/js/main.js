@@ -1039,11 +1039,11 @@ eventSys.on(e.net.world.setId, id => {
 		return;
 	}
 
-	function autoNick() {
-		if (misc.localStorage.nick) {
-			net.protocol.sendMessage("/nick " + misc.localStorage.nick);
-		}
-	}
+	// function autoNick() {
+	// 	if (misc.localStorage.nick) {
+	// 		net.protocol.sendMessage("/nick " + misc.localStorage.nick);
+	// 	}
+	// }
 
 	// Automatic login
 	// let desiredRank = misc.localStorage.adminlogin ? RANK.ADMIN : misc.localStorage.modlogin ? RANK.MODERATOR : net.protocol.worldName in misc.worldPasswords ? RANK.USER : RANK.NONE;
@@ -1075,7 +1075,7 @@ eventSys.on(e.net.world.setId, id => {
 			if((mightBeMod && (newrank==RANK.ADMIN||newrank==RANK.MODERATOR))||!mightBeMod&&newrank==desiredRank){
 				eventSys.removeListener(e.net.disconnected, onWrong);
 				eventSys.removeListener(e.net.sec.rank, onCorrect);
-				autoNick();
+				// autoNick();
 			}
 			// if (newrank == desiredRank || (mightBeMod && (newrank == RANK.MODERATOR || newrank == RANK.ADMIN))) {
 			// 	eventSys.removeListener(e.net.disconnected, onWrong);
@@ -1104,7 +1104,7 @@ eventSys.on(e.net.world.setId, id => {
 		}
 		net.protocol.sendMessage(msg);
 	} else {
-		autoNick();
+		// autoNick();
 	}
 });
 
