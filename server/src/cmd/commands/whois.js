@@ -63,5 +63,12 @@ export default {
 			},
 			text: `Nickname: ${target.getNick()}`
 		});
+		client.sendMessage({
+			sender: 'notif',
+			data: {
+				type: 'info',
+			},
+			text: `Username: ${target.getAccountUsername()}`
+		});
 	}
 }
