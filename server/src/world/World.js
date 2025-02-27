@@ -203,7 +203,8 @@ export class World {
 			});
 			return;
 		}
-		client.setRank(RANK.USER);
+		
+		client.setRank(client.getTargetRank());
 		if (this.stickyImage.value) client.sendMessage({
 			sender: 'world',
 			data: {

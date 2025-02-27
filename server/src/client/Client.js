@@ -36,6 +36,7 @@ export class Client {
 		this.connectionTick = this.server.currentTick;
 		this.rank = 0;
 		this.localStaff = false;
+		this.localArtist = false; // maybe unused
 		this.uid = null;
 		this.world = null;
 		console.log("ws token:", ws.token);
@@ -152,6 +153,27 @@ export class Client {
 			console.error(e);
 			return false;
 		}
+	}
+
+	getAccountGlobalRank(){
+		return this.accountInfo.data.user.owopData.rank;
+	}
+	getAccountWorldRank(){
+		return this.accountInfo.data.user.worlds.find(entry=>entry.worldName===this.world.name).rank;
+	}
+	getTargetRank(){
+		let highestRank = Math.max(this.getAccountGlobalRank(),this.getAccountWorldRank());
+		if(highestRank===RANK.MODERATOR||highestRank===RANK.ADMIN){
+			if (this.getAccountWorldRank()>this.getAccountGlobalRank()) this.localStaff = true;
+			else this.localStaff = false;
+		}
+		return highestRank;
+	}
+	getAccountNickname(){
+		return this.accountInfo.data.user.info.displayName;
+	}
+	getAccountUsername(){
+		return this.accountInfo.data.user.account.username;
 	}
 
 	async fetchUserInfo() {
