@@ -196,7 +196,7 @@ function receiveMessage(rawText) {
 		if (data.action === 'updateStatusMessage') {
 			console.log(text);
 			statusSet = true;
-			if(data.immediate) statusMsg(data, text);
+			if(data.immediate) statusMsg(data.showLoad, text);
 			return;
 		}
 		if (data.action === 'updateConnectionScreen') {
