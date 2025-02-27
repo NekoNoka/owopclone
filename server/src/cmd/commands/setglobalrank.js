@@ -56,7 +56,7 @@ export default {
 			data:{
 				type: 'info',
 			},
-			text: `[Server]: Set user ${target.uid}'s rank to ${target.rank}.`
+			text: `[Server]: Set user ${target.uid||target}'s rank to ${target.rank||rank}.`
 		});
 	}
 }
