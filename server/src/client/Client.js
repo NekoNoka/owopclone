@@ -99,7 +99,7 @@ export class Client {
 					state: 'show'
 				}
 			});
-			this.destroyWithReason("You are required to have an account to access this server. You may log in with the button below.");
+			await this.destroyWithReason("You are required to have an account to access this server. You may log in with the button below.");
 			return;
 		}
 		let status = await this.fetchUserInfo();
