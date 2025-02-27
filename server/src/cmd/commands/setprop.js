@@ -43,7 +43,7 @@ export default {
 						valueToSet = args[1];
 						break;
 					case "motd":
-						valueToSet = args[1];
+						valueToSet = args.splice(1).join(" ");
 						break;
 					case "bgcolor":
 						valueToSet = parseColor(args[1]);
@@ -80,7 +80,7 @@ export default {
 							text: `Invalid value. Must be between -1 and 134217728.`
 						});
 					case "modprefix":
-						valueToSet = args[1];
+						valueToSet = args.slice(1).join(" ");
 						break;
 					case "simplemods":
 						valueToSet = args[1] == "true";
@@ -89,7 +89,7 @@ export default {
 						valueToSet = args[1] == "true";
 						break;
 					case "stickyimage":
-						valueToSet = args[1];
+						valueToSet = args.slice(1).join(" ");
 						break;
 					case "stickyimagesize":
 						valueToSet = args[1];
