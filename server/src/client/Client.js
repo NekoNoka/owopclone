@@ -39,7 +39,7 @@ export class Client {
 		this.localArtist = false; // maybe unused
 		this.uid = null;
 		this.world = null;
-		console.log("ws token:", ws.token);
+		// console.log("ws token:", ws.token);
 		this.accountToken = ws.token;
 		this.accountInfo = null;
 		let pquota = this.server.config.defaultPquota.split(',').map(value => parseInt(value));
@@ -432,12 +432,12 @@ export class Client {
 			}
 			this.ip.setProp("banExpiration", 0);
 		}
-		console.log(this.accountInfo);
+		// console.log(this.accountInfo);
 		if(this.accountInfo){
-			console.log(this.accountInfo);
-			console.log(this.accountInfo.data.user.owopData.global.isBanned)
+			// console.log(this.accountInfo);
+			// console.log(this.accountInfo.data.user.owopData.global.isBanned)
 			if(this.accountInfo.data.user.owopData.global.isBanned){
-				console.log("yeag")
+				// console.log("yeag")
 				this.sendMessage({
 					sender: 'server',
 					data: {
