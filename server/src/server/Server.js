@@ -126,7 +126,7 @@ export class Server {
 					let client = this.clients.createClient(ws);
 					ws.client = client;
 					await client.setStatus("Logging in...", true, true);
-					if(!await client.checkIsLoggedIn()) client.destroy();
+					if(!await client.checkIsLoggedIn()) return;
 					if(client.destroyed) return;
 					await client.setStatus("Logged in!", true);
 					client.startProtocol();
