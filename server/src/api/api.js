@@ -63,6 +63,7 @@ async function logMeOut(server, res, req) {
 			client.destroy();
 		}
 	}
+	res.end(JSON.stringify({message:'Logged out.'}));
 }
 
 async function printStatus(server, res, req) {
