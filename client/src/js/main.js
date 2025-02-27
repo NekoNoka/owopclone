@@ -30,8 +30,6 @@ export { showDevChat, showPlayerList, statusMsg };
 
 export const keysDown = {};
 
-let statusMessage = null;
-
 export const mouse = {
 	x: 0,
 	y: 0,
@@ -493,7 +491,7 @@ function statusMsg(showSpinner, message) {
 function inGameDisconnected() {
 	showWorldUI(false);
 	showLoadScr(true, true);
-	statusMsg(false, !!statusMessage?statusMessage:"Lost connection with the server.");
+	statusMsg(false, "Lost connection with the server.");
 	misc.world = null;
 	elements.chat.style.transform = "initial";
 	elements.chatInput.style.display = "";
