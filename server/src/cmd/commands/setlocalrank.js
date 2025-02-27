@@ -76,6 +76,15 @@ export default {
 			},
 			text: `Target already has that rank.`
 		});
+		if(rank<target.getAccountGlobalRank()){
+			return client.sendMessage({
+				sender: 'server',
+				data:{
+					type: 'error',
+				},
+				text: `You cannot set a user's rank lower than their global rank.`
+			});
+		}
 		if(targets.length>1){
 			for(let c of targets){
 				c.setRank(rank);

@@ -4,7 +4,7 @@ export default {
 	data: {
 		name: 'setglobalrank',
 		description: 'Set a user\'s global rank.',
-		usage: 'setrank <username> <rank (0: none, 1: user, 2: artist, 3: moderator, 4: admin, 5: developer, 6: owner)>',
+		usage: 'setglobalrank <username> <rank (0: none, 1: user, 2: artist, 3: moderator, 4: admin, 5: developer, 6: owner)>',
 		minRank: RANK.DEVELOPER,
 	}, async execute(client, args){
 		if(args.length<2) return client.sendMessage({
