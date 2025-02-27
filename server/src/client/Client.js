@@ -158,9 +158,11 @@ export class Client {
 
 	getAccountGlobalRank(){
 		if (this.accountInfo.data.user.account.id===0) return RANK.OWNER; // always make me owner rank
+		if(!this.accountInfo) return RANK.NONE;
 		return this.accountInfo.data.user.owopData.global.rank;
 	}
 	getAccountWorldRank(){
+		if(!this.accountInfo) return RANK.NONE;
 		return this.accountInfo.data.user.owopData.worlds.find(entry=>entry.worldName===this.world.name).rank;
 	}
 	getTargetRank(){
@@ -172,9 +174,11 @@ export class Client {
 		return highestRank;
 	}
 	getAccountNickname(){
+		if(!this.accountInfo) return null;
 		return this.accountInfo.data.user.info.displayName;
 	}
 	getAccountUsername(){
+		if(!this.accountInfo) return null;
 		return this.accountInfo.data.user.account.username;
 	}
 

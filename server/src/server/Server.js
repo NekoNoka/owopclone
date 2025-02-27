@@ -53,6 +53,14 @@ export class Server {
 		await saveAndClose();
 	}
 
+	getClientsByUsername(username){
+		let c = [];
+		for(let client of this.clients.map.values()){
+			if(client.getAccountUsername()===username) c.push(client);
+		}
+		return c;
+	}
+
 	createServer() {
 		let server;
 		if (process.env.HTTPS === "true") {

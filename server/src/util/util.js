@@ -1,4 +1,5 @@
 import fetch from "node-fetch";
+import { Client } from "../client/Client.js";
 
 export async function verifyCaptchaToken(token) {
 	try {
@@ -68,4 +69,25 @@ export function formatPropValue(prop, value) {
 		return `#${value.toString(16).padStart(6, "0")}`;
 	}
 	return value;
+}
+
+// export async function getAccountInformation(username){
+// 	let response = await fetch(`https://neomoth.dev/req/account/get/${username}`);
+// 	return await response.json();
+// }
+
+export async function setAccountProperty(client, scope, prop, value){
+	if(client.constructor===Client) client = client.getAccountUsername();
+	fetch(`https://neomoth.dev/req/owop/set/${client}`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			'Cookie': `nmToken=${client.nmToken};secret=${process.env.OWOP_SECRET}`,
+		},
+		body:JSON.stringify({
+			scope,
+			property: prop,
+			value
+		})
+	});
 }
