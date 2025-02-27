@@ -114,6 +114,14 @@ export class World {
 		return false;
 	}
 
+	getClientsByUsername(username){
+		let c = [];
+		for(let client of this.clients.map.values()){
+			if(client.getAccountUsername()===username) c.push(client);
+		}
+		return c;
+	}
+
 	broadcastBuffer(buffer) {
 		let arrayBuffer = buffer.buffer;
 		this.server.wsServer.publish(this.wsTopic, arrayBuffer, true);

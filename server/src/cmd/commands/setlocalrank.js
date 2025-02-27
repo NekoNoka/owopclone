@@ -25,7 +25,7 @@ export default {
 		let target;
 		let targets = [];
 		if(isNaN(args[0])){
-			targets = client.server.getClientsByUsername(args[0]);
+			targets = client.world.getClientsByUsername(args[0]);
 			if(!targets.length) return client.sendMessage({
 				sender: 'server',
 				data:{
