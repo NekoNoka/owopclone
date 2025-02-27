@@ -30,6 +30,8 @@ export { showDevChat, showPlayerList, statusMsg };
 
 export const keysDown = {};
 
+statusSet = false;
+
 export const mouse = {
 	x: 0,
 	y: 0,
@@ -193,8 +195,8 @@ function receiveMessage(rawText) {
 		}
 		if (data.action === 'updateStatusMessage') {
 			console.log(text);
-			statusMessage = text;
-			if(data.immediate) statusMsg(data.showLoad, text);
+			statusSet = true;
+			if(data.immediate) statusMsg(data, text);
 			return;
 		}
 		if (data.action === 'updateConnectionScreen') {
@@ -491,7 +493,7 @@ function statusMsg(showSpinner, message) {
 function inGameDisconnected() {
 	showWorldUI(false);
 	showLoadScr(true, true);
-	statusMsg(false, "Lost connection with the server.");
+	statusMsg(false, !!statusSet?statusSet:"Lost connection with the server.");
 	misc.world = null;
 	elements.chat.style.transform = "initial";
 	elements.chatInput.style.display = "";
