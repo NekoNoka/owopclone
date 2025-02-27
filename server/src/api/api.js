@@ -47,7 +47,7 @@ async function logMeOut(server, res, req) {
 	}, {})['nmToken'] || null;
 	if (!token) aborted = true;
 	if (aborted) return;
-	loggedout = false;
+	let loggedout = false;
 	for (let client of server.clients.map.values()) {
 		if (client.accountToken === token) {
 			loggedout = true;
