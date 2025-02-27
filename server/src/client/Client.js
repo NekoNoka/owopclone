@@ -74,12 +74,13 @@ export class Client {
 		this.destroy();
 	}
 
-	async setStatus(message, immediate=false){
+	async setStatus(message, immediate=false, showLoad=false){
 		await this.sendMessage({
 			sender: 'server',
 			data: {
 				action: 'updateStatusMessage',
-				immediate
+				immediate,
+				showLoad
 			},
 			text: message
 		});

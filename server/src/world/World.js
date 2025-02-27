@@ -130,14 +130,15 @@ export class World {
 	async addClient(client) {
 		console.log(client.accountInfo.data.user.owopData);
 		// console.log(client.accountInfo.data.user.owopData.worlds.length);
-		client.setStatus("Fetching world data...", true);
+		client.setStatus("Fetching world data...", true, true);
 		if(!client.accountInfo.data.user.owopData.worlds.length || !client.accountInfo.data.user.owopData.worlds.some(entry=>entry.worldName===this.name)){
 			if(await client.createWorldData(this.name)) {
-				client.setStatus("Fetching world data...", true);
+				client.setStatus("Fetching world data...", true, true);
 				await client.fetchUserInfo();
 			}
 			else return client.destroyWithReason("Failed to create world data.");
 		}
+		client.setStatus("Got world data.", true, false);
 		for(let bannedIp in this.bannedIps){
 			if(this.bannedIps[bannedIp].ip===client.ip.ip){
 				// console.log("banned")
