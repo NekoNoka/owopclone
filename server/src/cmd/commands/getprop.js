@@ -20,7 +20,7 @@ export default {
 		for(let prop in DEFAULT_PROPS){
 			if(prop.toLowerCase()===args[0].toLowerCase()){
 				let value = client.world[prop].value;
-				console.log(value);
+				console.log(!value);
 				if(!value) return client.sendMessage({
 					sender: 'server',
 					data:{
