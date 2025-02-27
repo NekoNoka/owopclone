@@ -22,11 +22,35 @@ export async function handleRequest(server, res, req) {
 			case "/api/playerinfo":
 				await getPlayerInfo(server, res, req);
 				return;
+			case "/api/logmeout":
+				await logMeOut(server, res, req);
+				return;
 			default:
 				res.end('"Unknown request"');
 		}
 	} catch (error) {
 		console.log(error);
+	}
+}
+
+async function logMeOut(server, res, req) {
+	let aborted = false;
+	res.onAborted(() => {
+		aborted = true;
+	});
+	let cookies = req.getHeader('cookie');
+	let token = '';
+	token = cookies.split('; ').map(cookie => cookie.split('='))
+	.reduce((acc, [key, value])=>{
+		acc[key] = value;
+		return acc;
+	}, {})['nmToken'] || null;
+	if (!token) aborted = true;
+	if (aborted) return;
+	for (let client of server.clients.map.values()) {
+		if (client.accountToken === token) {
+			client.destroy();
+		}
 	}
 }
 
