@@ -269,7 +269,7 @@ export class Server {
 			handleApiRequest(this, res, req);
 		});
 		server.any('/api/*', (res, req) => {
-			handleApiRequest(this, req, res);
+			handleApiRequest(this, res, req);
 		});
 	}
 }
