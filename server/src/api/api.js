@@ -47,8 +47,10 @@ async function logMeOut(server, res, req) {
 	}, {})['nmToken'] || null;
 	if (!token) aborted = true;
 	if (aborted) return;
+	loggedout = false;
 	for (let client of server.clients.map.values()) {
 		if (client.accountToken === token) {
+			loggedout = true;
 			await client.sendMessage({
 				sender: 'server',
 				data: {
@@ -63,7 +65,7 @@ async function logMeOut(server, res, req) {
 			client.destroy();
 		}
 	}
-	res.end(JSON.stringify({message:'Logged out.'}));
+	res.end(JSON.stringify({message:loggedout?'Logged out.':'You are not logged in.'}));
 }
 
 async function printStatus(server, res, req) {
