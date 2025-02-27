@@ -22,8 +22,8 @@ export function stickyimg(path, w, h, o) {
 	elem.style.backgroundImage = `url("${path}")`;
 	var move = function () {
 		var sc = camera.zoom / 16;
-		var tx = ((-camera.x) * camera.zoom);
-		var ty = ((-camera.y) * camera.zoom);
+		var tx = ((-camera.x - w/2) * camera.zoom);
+		var ty = ((-camera.y - h/2) * camera.zoom);
 		if (tx > -w * sc && ty > -h * sc && tx < window.innerWidth && ty < window.innerHeight) {
 			if (sc > 1.0 && !ismag) {
 				ismag = true;
