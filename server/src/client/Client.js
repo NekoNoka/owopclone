@@ -540,7 +540,7 @@ export class Client {
 					let buffer = Buffer.allocUnsafe(1);
 					buffer[0] = (chunkY & 0xf) << 4 | chunkX & 0xf
 					deferredActions.push(buffer);
-					if (++this.deferredAmount >= 100000 && this.rank < 3) {
+					if (++this.deferredAmount >= 100000 && this.rank < RANK.ADMIN) {
 						this.destroy();
 					}
 					return;
@@ -717,14 +717,14 @@ export class Client {
 				this.g = message[9];
 				this.b = message[10];
 				let tool = message[11];
-				if (this.rank < 2) {
+				if (this.rank < RANK.MODERATOR) {
 					if (tool === 3 || tool === 6 || tool === 9 || tool === 10) tool = 0;
-					if (this.rank < 1) {
+					if (this.rank < RANK.USER) {
 						if (tool === 0 || tool === 2 || tool === 5 || tool === 8) tool = 1;
 					}
 				}
 				this.tool = tool;
-				if (this.rank < 2) {
+				if (this.rank < RANK.MODERATOR) {
 					let maxTpDistance = this.world.maxTpDistance.value;
 					if (Math.abs(x >> 4) > maxTpDistance || Math.abs(y >> 4) > maxTpDistance) {
 						let distance = Math.sqrt(Math.pow(x - this.sentX, 2) + Math.pow(y - this.sentY, 2));
@@ -754,7 +754,7 @@ export class Client {
 
 	handleUnloaded(region) {
 		if (!region.beganLoading) {
-			if (this.rank < 3 && !this.regionloadquota.canSpend()) {
+			if (this.rank < RANK.ADMIN && !this.regionloadquota.canSpend()) {
 				this.server.adminMessage(`DEVKicked ${this.uid} (${this.world.name}, ${this.ip.ip}) for loading too many regions`);
 				this.destroy();
 				return false;

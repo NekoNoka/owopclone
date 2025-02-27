@@ -109,7 +109,7 @@ async function banSelf(server, res, req) {
 		return;
 	}
 	for (let client of ip.clients.values()) {
-		if (client.rank < 3) continue;
+		if (client.rank < RANK.ADMIN) continue;
 		res.end("No, you can't ban an admin with this.");
 		return;
 	}
