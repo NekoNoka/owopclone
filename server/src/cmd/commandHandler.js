@@ -21,6 +21,7 @@ function handleCommand(client, message) {
 		if(!cmd) return;
 	};
 	if(client.rank<(!!cmd.data.minRank?cmd.data.minRank:RANK.NONE)) return;
+	if(cmd.data.disabled) return;
 	cmd.execute(client, args);
 }
 

@@ -15,6 +15,7 @@ export default {
 			let commandsList = [];
 			for(const [name, command] of commands){
 				if(command.data.alwaysHidden) continue;
+				if(cmd.data.disabled) continue;
 				if(command.data.minRank>client.rank) continue;
 				commandsList.push(name);
 			}

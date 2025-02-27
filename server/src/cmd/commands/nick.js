@@ -8,6 +8,7 @@ export default {
 		aliases: [],
 		minRank: RANK.NONE,
 		alwaysHidden: false,
+		disabled: true,
 	},
 	async execute(client, args){
 		if(!args.length){

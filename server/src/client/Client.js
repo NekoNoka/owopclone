@@ -171,7 +171,9 @@ export class Client {
 		return highestRank;
 	}
 	getAccountNickname(){
-		return this.accountInfo.data.user.info.displayName;
+		let nick = this.accountInfo.data.user.info.displayName;
+		this.nick = nick; // set so when other things try to reference it that don't use this, it should hopefully be up to date.
+		return nick;
 	}
 	getAccountUsername(){
 		return this.accountInfo.data.user.account.username;
