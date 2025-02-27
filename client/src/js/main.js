@@ -163,6 +163,7 @@ function receiveMessage(rawText) {
 	let data = parsedJson.data;
 	let clientInfo = parsedJson.clientInfo;
 	let allowHTML = false;
+	statusSet = false;
 	if (sender === 'server') {
 		allowHTML = data.allowHTML || false;
 		if (data.type === 'info') message.className = 'serverInfo';
@@ -494,7 +495,7 @@ function statusMsg(showSpinner, message) {
 function inGameDisconnected() {
 	showWorldUI(false);
 	showLoadScr(true, true);
-	statusMsg(false, "Lost connection with the server.");
+	if(!statusSet) statusMsg(false, "Lost connection with the server.");
 	misc.world = null;
 	elements.chat.style.transform = "initial";
 	elements.chatInput.style.display = "";
