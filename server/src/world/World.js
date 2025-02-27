@@ -130,6 +130,7 @@ export class World {
 	async addClient(client) {
 		console.log(client.accountInfo.data.user.owopData);
 		// console.log(client.accountInfo.data.user.owopData.worlds.length);
+		client.setStatus("Fetching world data...", true);
 		if(!client.accountInfo.data.user.owopData.worlds.length || !client.accountInfo.data.user.owopData.worlds.some(entry=>entry.worldName===this.name)){
 			if(await client.createWorldData(this.name)) {
 				client.setStatus("Fetching world data...", true);
