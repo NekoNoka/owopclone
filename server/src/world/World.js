@@ -185,7 +185,7 @@ export class World {
 		client.setUid(id);
 		client.updateNick();
 		if (this.motd.value) client.sendMessage({
-			sender: 'world',
+			sender: 'server',
 			data: {
 				type: 'motd'
 			},

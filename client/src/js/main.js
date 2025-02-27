@@ -167,6 +167,7 @@ function receiveMessage(rawText) {
 		allowHTML = data.allowHTML || false;
 		if (data.type === 'info') message.className = 'serverInfo';
 		if (data.type === 'error') message.className = 'serverError';
+		if (data.type === 'motd') allowHTML = true;
 		if (data.action === 'updateNick') {
 			let newNick = data.newNick;
 			if (newNick) misc.localStorage.nick = newNick;
