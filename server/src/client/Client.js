@@ -71,7 +71,7 @@ export class Client {
 	}
 
 	async destroyWithReason(reason){
-		this.setStatus(reason);
+		await this.setStatus(reason);
 		this.destroy();
 	}
 
