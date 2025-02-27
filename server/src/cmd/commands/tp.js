@@ -21,7 +21,7 @@ export default {
 				},
 				text: `Invalid user id. Usage: /${this.data.usage}`
 			});
-			if (client.rank < 3) {
+			if (client.rank < RANK.ADMIN) {
 				if (Math.abs(target.x) > client.world.maxTpDistance.value || Math.abs(target.y) > client.world.maxTpDistance.value) return client.sendMessage({
 					sender: 'server',
 					data: {
@@ -65,7 +65,7 @@ export default {
 					},
 					text: `Invalid position. Usage: /${this.data.usage}`
 				});
-				if (client.rank < 3) {
+				if (client.rank < RANK.ADMIN) {
 					if (Math.abs(x) > client.world.maxTpDistance.value || Math.abs(y) > client.world.maxTpDistance.value) return client.sendMessage({
 						sender: 'server',
 						data: {
@@ -74,7 +74,7 @@ export default {
 						text: `Target destination is too far away!`
 					});
 				}
-				if (client.rank < 3) {
+				if (client.rank < RANK.ADMIN) {
 					if (Math.abs(x) > client.world.maxTpDistance.value || Math.abs(y) > client.world.maxTpDistance.value) return client.sendMessage({
 						sender: 'server',
 						data: {
@@ -116,7 +116,7 @@ export default {
 					},
 					text: `Invalid user id. Usage: /${this.data.usage}`
 				});
-				if (client.rank < 3) {
+				if (client.rank < RANK.ADMIN) {
 					if (Math.abs(target2.x) > client.world.maxTpDistance.value || Math.abs(target2.y) > client.world.maxTpDistance.value) return client.sendMessage({
 						sender: 'server',
 						data: {

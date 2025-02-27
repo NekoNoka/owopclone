@@ -49,6 +49,17 @@ async function logMeOut(server, res, req) {
 	if (aborted) return;
 	for (let client of server.clients.map.values()) {
 		if (client.accountToken === token) {
+			await client.sendMessage({
+				sender: 'server',
+				data: {
+					type: 'error',
+					action: 'updateConnectionScreen',
+					object: 'login',
+					state: 'show'
+				},
+				text: 'You have been logged out.'
+			});
+			await client.setStatus("You have been logged out.", true);
 			client.destroy();
 		}
 	}
