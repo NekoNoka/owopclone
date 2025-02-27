@@ -90,6 +90,7 @@ export class Client {
 	async checkIsLoggedIn() {
 		// console.log(this.accountToken);
 		if(!this.accountToken) {
+			console.log("not logged in");
 			await this.sendMessage({
 				sender: 'server',
 				data: {
