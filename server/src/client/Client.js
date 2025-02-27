@@ -156,10 +156,10 @@ export class Client {
 	}
 
 	getAccountGlobalRank(){
-		return this.accountInfo.data.user.owopData.rank;
+		return this.accountInfo.data.user.owopData.global.rank;
 	}
 	getAccountWorldRank(){
-		return this.accountInfo.data.user.worlds.some(entry=>entry.worldName===this.world.name).rank;
+		return this.accountInfo.data.user.owopData.worlds.find(entry=>entry.worldName===this.world.name).rank;
 	}
 	getTargetRank(){
 		let highestRank = Math.max(this.getAccountGlobalRank(),this.getAccountWorldRank());
