@@ -47,7 +47,7 @@ export default {
 		// 	text: `Target already has that rank.`
 		// });
 		// target.setRank(rank);
-		setAccountProperty(target, "global", "rank", rank);
+		setAccountProperty(client, target, "global", "rank", rank);
 		for(let c of client.server.getClientsByUsername(target)){
 			c.setRank(rank);
 		}

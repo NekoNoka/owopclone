@@ -76,9 +76,9 @@ export function formatPropValue(prop, value) {
 // 	return await response.json();
 // }
 
-export async function setAccountProperty(client, scope, prop, value){
-	if(client.constructor===Client) client = client.getAccountUsername();
-	let response = await fetch(`https://neomoth.dev/req/account/owop/set/${client}`, {
+export async function setAccountProperty(client, target, scope, prop, value){
+	if(target.constructor===Client) target = target.getAccountUsername();
+	let response = await fetch(`https://neomoth.dev/req/account/owop/set/${target}`, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
