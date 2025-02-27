@@ -128,6 +128,7 @@ export class World {
 	}
 
 	async addClient(client) {
+		console.log(client.accountInfo.data.user.owopData);
 		if(!Object.keys(client.accountInfo.data.user.owopData.worlds).includes(this.name)){
 			if(await client.createWorldData(this.name)) await client.fetchUserInfo();
 			else return client.destroyWithReason("Failed to create world data.");
