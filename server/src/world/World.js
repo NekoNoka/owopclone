@@ -127,7 +127,11 @@ export class World {
 		return this.clients.size >= this.maxPlayers;
 	}
 
-	addClient(client) {
+	async addClient(client) {
+		if(!Object.keys(client.accountInfo.data.user.owopData.worlds).includes(this.name)){
+			if(await client.createWorldData(this.name)) await client.fetchUserInfo();
+			else return client.destroyWithReason("Failed to create world data.");
+		}
 		for(let bannedIp in this.bannedIps){
 			if(this.bannedIps[bannedIp].ip===client.ip.ip){
 				// console.log("banned")

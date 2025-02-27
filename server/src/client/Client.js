@@ -126,7 +126,30 @@ export class Client {
 		}
 	}
 
-	async createWorldData(worldName){}
+	async createWorldData(worldName){
+		try{
+			let response = await fetch('https://neomoth.dev/req/account/owop/createWorld', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'Cookie': `nmToken=${this.accountToken}`
+				},
+				credentials: 'include',
+				body:JSON.stringify({
+					worldName
+				}),
+			});
+			if(response.status===200) {
+				console.log('realistically this should never happen');
+				return true;
+			}
+			else if(response.status===201) return true;
+			return false;
+		}catch(e){
+			console.error(e);
+			return false;
+		}
+	}
 
 	async fetchUserInfo() {
 		async function doFetch(token){
@@ -142,6 +165,7 @@ export class Client {
 				return await response.json();
 			}catch(e){
 				console.error(e);
+				return false;
 			}
 		}
 		let response = await doFetch(this.accountToken);
