@@ -83,7 +83,7 @@ export async function setAccountProperty(client, target, scope, prop, value){
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
-			'Cookie': `nmToken=${client.accountToken};secret=${process.env.OWOP_SECRET}`,
+			'Cookie': `nmToken=${client.accountToken};secret=${process.env.ACCOUNT_SECRET}`,
 		},
 		body:JSON.stringify({
 			scope,
