@@ -30,7 +30,7 @@ export { showDevChat, showPlayerList, statusMsg };
 
 export const keysDown = {};
 
-statusSet = false;
+let statusSet = false;
 
 export const mouse = {
 	x: 0,
