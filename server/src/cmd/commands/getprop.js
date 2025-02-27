@@ -26,7 +26,7 @@ export default {
 					data:{
 						type: 'info',
 					},
-					text: `${prop}: &lt;no value&gt;`
+					text: `${prop}: <no value>`
 				});
 				let formatted = formatPropValue(prop, value);
 				return client.sendMessage({

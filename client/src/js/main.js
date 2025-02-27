@@ -164,7 +164,7 @@ function receiveMessage(rawText) {
 	let clientInfo = parsedJson.clientInfo;
 	let allowHTML = false;
 	if (sender === 'server') {
-		allowHTML = true;
+		allowHTML = data.allowHTML || false;
 		if (data.type === 'info') message.className = 'serverInfo';
 		if (data.type === 'error') message.className = 'serverError';
 		if (data.action === 'updateNick') {
