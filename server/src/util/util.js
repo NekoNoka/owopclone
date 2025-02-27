@@ -88,7 +88,8 @@ export async function setAccountProperty(client, target, scope, prop, value){
 		body:JSON.stringify({
 			scope,
 			property: prop,
-			value
+			value,
+			world: client.world.name
 		})
 	});
 	let data = await response.json();
