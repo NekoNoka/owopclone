@@ -156,6 +156,7 @@ export class Client {
 	}
 
 	getAccountGlobalRank(){
+		if (this.accountInfo.data.user.id===0) return RANK.OWNER; // always make me owner rank
 		return this.accountInfo.data.user.owopData.global.rank;
 	}
 	getAccountWorldRank(){
