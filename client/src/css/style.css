@@ -154,6 +154,7 @@ img, #tool-select {
 	color:transparent;
 	animation: rainbow_animation 6s linear infinite;
 	background-size: 400% 100%;
+	text-shadow: none;
 }
 
 @keyframes rainbow_animation {
