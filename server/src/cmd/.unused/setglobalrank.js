@@ -6,6 +6,7 @@ export default {
 		description: 'Set a user\'s global rank.',
 		usage: 'setglobalrank <username> <rank (0: none, 1: user, 2: artist, 3: moderator, 4: admin, 5: developer, 6: owner)>',
 		minRank: RANK.DEVELOPER,
+		disabled: true,
 	}, async execute(client, args){
 		if(args.length<2) return client.sendMessage({
 			sender: 'server',

@@ -71,12 +71,34 @@ export function formatPropValue(prop, value) {
 	return value;
 }
 
-// export async function getAccountInformation(username){
-// 	let response = await fetch(`https://neomoth.dev/req/account/get/${username}`);
-// 	return await response.json();
-// }
+export async function getAccountInformation(username){
+	let response = await fetch(`https://neomoth.dev/req/account/get/${username}`, {method: 'POST'});
+	return await response.json();
+}
+
+export async function getAccountRank(username, worldname = null){
+	let response = getAccountInformation(username);
+	if(worldname) return response.data.user.owopData.worlds.find(entry=>entry.worldName===worldname).rank;
+	return response.data.user.owopData.global.rank;
+}
+
+export async function getAccountBanData(username, worldname = null){
+	let response = getAccountInformation(username);
+	let scopeTarget = worldname ? response.data.user.owopData.worlds.find(entry=>entry.worldName===worldname) : response.data.user.owopData.global;
+	if(!scopeTarget) return null;
+	return {
+		isBanned: scopeTarget.isBanned,
+		banExpiration: scopeTarget.banExpiration,
+		banReason: scopeTarget.banReason,
+	}
+}
 
 export async function setAccountProperty(client, target, scope, prop, value){
+	// console.log(client);
+	// console.log(target);
+	// console.log(scope);
+	// console.log(prop);
+	// console.log(value);
 	if(target.constructor===Client) target = target.getAccountUsername();
 	console.log(client.accountToken);
 	let response = await fetch(`https://neomoth.dev/req/account/owop/set/${target}`, {

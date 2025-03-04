@@ -7,6 +7,7 @@ export default {
 		usage: 'setrank <username/id> <rank (0: none, 1: user, 2: artist, 3: moderator, 4: admin, 5: developer, 6: owner)>',
 		aliases: ['setlocalrank'],
 		minRank: RANK.MODERATOR,
+		disabled: true,
 	}, async execute(client, args){
 		if(client.rank<RANK.ADMIN&&client.world.simpleMods.value) return client.sendMessage({
 			sender: 'server',

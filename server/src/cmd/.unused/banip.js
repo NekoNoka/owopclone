@@ -7,6 +7,7 @@ export default {
 		usage: 'banid <world/global> <ip> [time] [reason]',
 		aliases: [],
 		minRank: RANK.ADMIN,
+		disabled:true,
 	},
 	async execute(client, args) {
 		if (!args.length) return client.sendMessage({

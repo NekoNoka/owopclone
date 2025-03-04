@@ -7,6 +7,7 @@ export default {
 		usage: 'bans',
 		aliases: [],
 		minRank: RANK.ADMIN,
+		disabled:true,
 	}, async execute(client, args){
 		client.sendMessage({
 			sender: 'server',

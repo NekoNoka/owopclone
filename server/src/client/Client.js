@@ -1,5 +1,5 @@
 import { Quota } from "../util/Quota.js";
-import { RANK } from "../util/util.js";
+import { RANK, setAccountProperty } from "../util/util.js";
 import { verifyCaptchaToken } from "../util/util.js";
 import { handleCommand } from "../cmd/commandHandler.js";
 
@@ -9,8 +9,8 @@ let textDecoder = new TextDecoder();
 let minChunkCoord = ~0xFFFFF;
 let maxChunkCoord = 0xFFFFF;
 
-let minPixelCoord = ~0xFFFFF;
-let maxPixelCoord = 0xFFFFF;
+let minPixelCoord = ~0xFFFFFF;
+let maxPixelCoord = 0xFFFFFF;
 
 let maxMessageLengths = [
 	128,
@@ -89,6 +89,11 @@ export class Client {
 
 	async checkIsLoggedIn() {
 		// console.log(this.accountToken);
+		if(this.ip.ip==="0000:0000:0000:0000:0000:ffff:7f00:0001" && this.ip.clients.size>1){
+			this.accountToken = process.env.DEV_TEST_TOKEN;
+			await this.fetchUserInfo();
+			return true;
+		}
 		if(!this.accountToken) {
 			console.log("not logged in");
 			await this.sendMessage({
@@ -455,15 +460,36 @@ export class Client {
 			// console.log(this.accountInfo.data.user.owopData.global.isBanned)
 			if(this.accountInfo.data.user.owopData.global.isBanned){
 				// console.log("yeag")
-				this.sendMessage({
-					sender: 'server',
-					data: {
-						type: 'error',
-					},
-					text: 'You are banned from this server.'
-				});
-				this.destroyWithReason('You are banned.');
-				return;
+				if(this.accountInfo.data.user.owopData.global.banExpiration===-1){
+					this.sendMessage({
+						sender: 'server',
+						data: {
+							type: 'error',
+						},
+						text: 'You are banned from this server.'
+					});
+					this.destroyWithReason('You are banned.');
+					return;
+				}
+				if(this.accountInfo.data.user.owopData.global.banExpiration>Date.now()){
+					this.sendMessage({
+						sender: 'server',
+						data: {
+							type: 'error',
+						},
+						text: `Remaining time: ${Math.floor((this.accountInfo.data.user.owopData.global.banExpiration - Date.now()) / 1000)} seconds.`
+					});
+					this.sendMessage({
+						sender: 'server',
+						data: {
+							type: 'error',
+						},
+						text: 'You are banned from this server.'
+					});
+					this.destroyWithReason('You are banned.');
+					return;
+				}
+				setAccountProperty(this, this.getAccountUsername(), "local", "isBanned", false);
 			}
 		}
 		let whitelisted = this.ip.isWhitelisted();

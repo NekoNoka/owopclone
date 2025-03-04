@@ -122,6 +122,13 @@ export class World {
 		return c;
 	}
 
+	getClientByUsername(username){
+		for(let client of this.clients.values()){
+			if(client.getAccountUsername()===username) return client;
+		}
+		return null;
+	}
+
 	broadcastBuffer(buffer) {
 		let arrayBuffer = buffer.buffer;
 		this.server.wsServer.publish(this.wsTopic, arrayBuffer, true);
@@ -184,6 +191,46 @@ export class World {
 				this.bannedIps.splice(this.bannedIps.indexOf(this.bannedIps[bannedIp]), 1);
 				this.dataModified = true;
 				break;
+			}
+		}
+		if(client.accountInfo){
+			// console.log("has info");
+			// console.log(this.accountInfo);
+			// console.log(this.accountInfo.data.user.owopData.global.isBanned)
+			const userworlddata = client.accountInfo.data.user.owopData.worlds.find(entry=>entry.worldName===this.name);
+			// console.log(userworlddata);
+			if(userworlddata.isBanned){
+				// console.log("yeag")
+				if(userworlddata.banExpiration===-1){
+					client.sendMessage({
+						sender: 'server',
+						data: {
+							type: 'error',
+						},
+						text: 'You are banned from this server.'
+					});
+					client.destroyWithReason('You are banned.');
+					return;
+				}
+				if(userworlddata.banExpiration>Date.now()){
+					client.sendMessage({
+						sender: 'server',
+						data: {
+							type: 'error',
+						},
+						text: `Remaining time: ${Math.floor((userworlddata.banExpiration - Date.now()) / 1000)} seconds.`
+					});
+					client.sendMessage({
+						sender: 'server',
+						data: {
+							type: 'error',
+						},
+						text: 'You are banned from this server.'
+					});
+					client.destroyWithReason('You are banned.');
+					return;
+				}
+				setAccountProperty(client, client.getAccountUsername(), "local", "isBanned", false);
 			}
 		}
 		let id = this.incrementingId++;
