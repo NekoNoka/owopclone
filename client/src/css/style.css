@@ -146,6 +146,26 @@ img, #tool-select {
 	height: 100%;
 }
 
+.rainbow{	
+	background: linear-gradient(to right, #db2a2a, #d16d15, #d4b413, #18fa14, #192abf, #760dd9, #db2a2a);
+	-webkit-background-clip: text;
+	background-clip:text;
+	background-repeat:repeat-x;
+	color:transparent;
+	animation: rainbow_animation 6s linear infinite;
+	background-size: 400% 100%;
+}
+
+@keyframes rainbow_animation {
+    0% {
+        background-position: 0 0;
+    }
+
+	100% {
+        background-position: 132% 0;
+    }
+}
+
 #windows > div, .winframe { /* Frame */
 	position: absolute;
 	pointer-events: initial;
