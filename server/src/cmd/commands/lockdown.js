@@ -8,6 +8,13 @@ export default {
 		aliases: [],
 		minRank: RANK.ADMIN,
 	}, async execute(client, args){
+		if(client.localStaff) return client.sendMessage({
+			sender: 'server',
+			data:{
+				type: 'error',
+			},
+			text: `Only global admins have access to this command.`
+		});
 		if(!args.length) return client.sendMessage({
 			sender: 'server',
 			data:{

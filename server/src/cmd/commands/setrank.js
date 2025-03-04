@@ -152,20 +152,20 @@ export default {
 
 		if(targetData){
 			// console.log(targetData);
-			setAccountProperty(client, targetData.data.user.account.username, scope, "rank", rank);
+			await setAccountProperty(client, targetData.data.user.account.username, scope, "rank", rank);
 		} else {
-			setAccountProperty(client, target.getAccountUsername(), scope, "rank", rank);
+			await setAccountProperty(client, target.getAccountUsername(), scope, "rank", rank);
 		}
 		
 		if(targetOnline) {
 			if (Array.isArray(target)) {
 				for (let c of target) {
 					c.setRank(rank);
-					c.getTargetRank(); // used here to just update localstaff
+					if(rank===RANK.ADMIN||rank===RANK.MODERATOR) c.localStaff = scope==="local"
 				}
 			} else {
 				target.setRank(rank);
-				target.getTargetRank();
+				if(rank===RANK.ADMIN||rank===RANK.MODERATOR) target.localStaff = scope==="local"
 			}
 		}
 
