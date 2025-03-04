@@ -99,11 +99,21 @@ export default {
 			text: `User not found or not in your world.`
 		});
 
-		if(scope==="local" && !targetData.data.user.owopData.worlds.some(entry=>entry.worldName===client.world.name)) return client.sendMessage({
-			sender: 'server',
-			data: { type: 'error' },
-			text: `User does not have data for this world.`
-		});
+		if(scope==="local"){
+			if(!targetData){
+				if(!client.accountInfo.data.user.owopData.worlds.some(entry=>entry.worldName===client.world.name)) return client.sendMessage({
+					sender: 'server',
+					data: { type: 'error' },
+					text: `User does not have data for this world.`
+				});
+			}
+			else if(!targetData.data.user.owopData.worlds.some(entry=>entry.worldName===client.world.name))
+				return client.sendMessage({
+					sender: 'server',
+					data: { type: 'error' },
+					text: `User does not have data for this world.`
+				});
+		}
 
 		if (!(rank >= RANK.NONE && rank <= RANK.OWNER)) return client.sendMessage({
 			sender: 'server',
