@@ -95,25 +95,6 @@ export default {
 		setAccountProperty(client, targetData ? targetData.data.user.account.username : target.getAccountUsername(), scope, "banExpiration", 0);
 		setAccountProperty(client, targetData ? targetData.data.user.account.username : target.getAccountUsername(), scope, "banReason", null);
 
-		// Disconnect the user if they are currently connected
-		if (Array.isArray(target)) {
-			for (let c of target) {
-				c.sendMessage({
-					sender: 'server',
-					data: { type: 'info' },
-					text: `You have been unbanned.`
-				});
-				c.connect();
-			}
-		} else {
-			target.sendMessage({
-				sender: 'server',
-				data: { type: 'info' },
-				text: `You have been unbanned.`
-			});
-			target.connect();
-		}
-
 		client.sendMessage({
 			sender: 'server',
 			data: { type: 'info' },

@@ -158,10 +158,14 @@ export default {
 		}
 		
 		if(targetOnline) {
-			console.log("setting rank");
-			for(let c of target) {
-				c.setRank(rank);
-				c.getTargetRank(); // used here to just update localstaff
+			if (Array.isArray(target)) {
+				for (let c of target) {
+					c.setRank(rank);
+					c.getTargetRank(); // used here to just update localstaff
+				}
+			} else {
+				target.setRank(rank);
+				target.getTargetRank();
 			}
 		}
 
