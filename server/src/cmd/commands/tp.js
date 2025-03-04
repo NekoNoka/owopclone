@@ -1,3 +1,5 @@
+import { RANK } from "../../util/util.js";
+
 export default {
 	data: {
 		name: 'tp',
