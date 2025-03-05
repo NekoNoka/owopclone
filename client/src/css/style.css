@@ -82,7 +82,7 @@ button.winframe:active {
 	border-image: inherit;
 }
 
-.whitetext, #xy-display, #chat, #dev-chat, #playercount-display, #topright-displays, #topleft-displays > * {
+.whitetext, #xy-display, #chat, #dev-chat, #playercount-display, #topright-displays, #topleft-displays > * , .generic-display{
 	color: #FFF;
 	font: 16px pixel-op, sans-serif;
 	text-shadow: -1px 0 #000, 0 1px #000, 1px 0 #000, 0 -1px #000;
@@ -256,7 +256,7 @@ button:focus {
 #palette {
 	position: absolute;
 }
-#xy-display {
+#xy-display, .generic-display{
 	padding-left: 2px;
 }
 #playercount-display{
@@ -270,6 +270,10 @@ button:focus {
 #topleft-displays > *, #topright-displays > * {
 	pointer-events: none;
 	transition: transform 0.75s;
+}
+#notice-display {
+	pointer-events: all;
+	cursor:pointer;
 }
 #topright-displays, #topleft-displays {
 	position: absolute;
@@ -306,7 +310,7 @@ button:focus {
 #toole-container {
 	overflow: hidden;
 }
-#playercount-display, #xy-display, #palette-create, #palette, .framed, #pbucket-display, #rank-display {
+#playercount-display, #xy-display, #palette-create, #palette, .framed, #pbucket-display, #rank-display, .generic-display{
 	border: 5px #7f10c9 solid;
 	border-image: url(../img/small_border.png) 5 repeat;
 	border-image-outset: 1px;

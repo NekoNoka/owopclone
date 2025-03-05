@@ -57,22 +57,23 @@
 				<script>document.getElementById('status').className='whitetext';</script>
 			</ul>
 		</div>
-		<div id="palette-bg" class="hideui"></div>
-		<span id="topleft-displays" class="hideui">
-			<span id="xy-display"></span>
-			<span id="pbucket-display"></span>
-		</span>
-		<span id="topright-displays">
-			<span id="rank-display"></span>
-			<span id="playercount-display"></span>
-		</span>
 		<div id="windows" class="pixelated"></div>
+		<div id="palette-bg" class="hideui"></div>
 		<div id="palette">
 			<div id="palette-create">
 				<input id="palette-input" type="color" tooltip="Add color"></input>
 			</div>
 			<div id="palette-colors"></div>
 		</div>
+		<span id="topleft-displays" class="hideui">
+			<span id="xy-display"></span>
+			<span id="pbucket-display"></span>
+			<span id="notice-display" class="generic-display" tooltip="Click to dismiss message">Notice: not all new features are implemented yet.</span>
+		</span>
+		<span id="topright-displays">
+			<span id="rank-display"></span>
+			<span id="playercount-display"></span>
+		</span>
 		<div id="bottomleft-displays">
 			<button id="help-button" tooltip="Help"><img src="<%=require('./img/help.png')%>" tooltip="Help"></button>
 			<div id="dev-chat" class="hide">

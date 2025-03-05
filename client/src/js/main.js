@@ -28,6 +28,8 @@ import { tools } from "./tools.js";
 
 export { showDevChat, showPlayerList, statusMsg };
 
+const noticeId=1;
+
 export const keysDown = {};
 
 let statusSet = false;
@@ -446,15 +448,21 @@ function logoMakeRoom(bool) {
 	elements.loadUl.style.transform = bool ? "translateY(-75%) scale(0.5)" : "";
 }
 
+function dismissNotice() {
+	misc.localStorage.dismissedId=noticeId;
+	elements.noticeDisplay.style.transform="translateY(-100%)";
+}
+
 function showWorldUI(bool) {
 	misc.guiShown = bool;
-	elements.xyDisplay.style.transform = bool ? "initial" : "";
+	// elements.xyDisplay.style.transform = bool ? "initial" : "";
 	elements.playerCountDisplay.style.transform = bool ? "initial" : "";
-	elements.pBucketDisplay.style.transform = bool ? "initial" : "";
+	// elements.pBucketDisplay.style.transform = bool ? "initial" : "";
 	elements.rankDisplay.style.transform = bool ? "initial" : "";
 	elements.palette.style.transform = bool ? "translateY(-50%)" : "";
 	elements.chat.style.transform = bool ? "initial" : "";
 	elements.chatInput.disabled = !bool;
+	for(let element of elements.topLeftDisplays.children) element.style.transform = bool ? "initial" : "";
 	elements.chatInput.style.display = "initial";
 	elements.paletteBg.style.visibility = bool ? "" : "hidden";
 	elements.helpButton.style.visibility = bool ? "" : "hidden";
@@ -1179,6 +1187,11 @@ window.addEventListener("load", () => {
 	elements.statusMsg = document.getElementById("status-msg");
 	elements.status = document.getElementById("status");
 	elements.logo = document.getElementById("logo");
+
+	elements.noticeDisplay = document.getElementById("notice-display");
+	console.log("dismissed id: ", misc.localStorage.dismissedId);
+	if(misc.localStorage.dismissedId!=noticeId) elements.noticeDisplay.addEventListener("click", dismissNotice);
+	else elements.noticeDisplay.style.display = 'none';
 
 	elements.xyDisplay = document.getElementById("xy-display");
 	elements.pBucketDisplay = document.getElementById("pbucket-display");
