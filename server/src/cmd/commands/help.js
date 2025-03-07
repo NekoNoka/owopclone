@@ -40,12 +40,15 @@ export default {
 			});
 			return;
 		}
+		let aliases = '[None]';
+		if(cmd.data.aliases) if(cmd.data.aliases.length) aliases = cmd.data.aliases.join(', ');
+		else aliases = '[None]';
 		client.sendMessage({
 			sender: 'server',
 			data: {
 				type: 'info',
 			},
-			text: `[Server]: ${cmd.data.name} - ${cmd.data.description}\nUsage: /${cmd.data.usage}\nAliases: ${cmd.data.aliases.length?cmd.data.aliases.join(', '):'[None]'}`
+			text: `[Server]: ${cmd.data.name} - ${cmd.data.description}\nUsage: /${cmd.data.usage}\nAliases: ${aliases}`
 		});
 	}
 }

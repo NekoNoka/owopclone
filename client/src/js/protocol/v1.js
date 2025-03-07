@@ -225,7 +225,7 @@ class ProtocolV1Impl extends Protocol {
 						x: pmx,
 						y: pmy,
 						rgb: [pr, pg, pb],
-						tool: ProtocolV1.tools.id[ptool]
+						tool: ProtocolV1.tools[ptool]
 					};
 					if(!this.players[pid]){
 						++this.playercount;

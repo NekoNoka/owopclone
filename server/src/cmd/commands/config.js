@@ -94,7 +94,7 @@ export default {
 					data:{
 						type: 'info',
 					},
-					text: `Set ${key} to ${parsed}.`
+					text: `Set ${key} to ${parsed || value}.`
 				});
 			}
 		}
