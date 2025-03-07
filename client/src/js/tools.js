@@ -14,6 +14,734 @@ export const tools = {};
 export let toolsWindow = null;
 let windowShown = false;
 
+const textData = {}
+
+textData.newText = {
+	data: {
+		gap: 1,
+		space: 1,
+		height: 8,
+		bottom: 6
+	},
+	" ": {
+		width: 1,
+		height: 8,
+		skip: 0,
+		text: "00000000"
+	},
+	"'": {
+		width: 1,
+		height: 2,
+		skip: 1,
+		text: "11"
+	},
+	"\"": {
+		width: 3,
+		height: 2,
+		skip: 1,
+		text: "101101"
+	},
+	"?": {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `110001010000010`
+	},
+	"!": {
+		width: 1,
+		height: 5,
+		skip: 1,
+		text: `11101`
+	},
+	",": {
+		width: 1,
+		height: 2,
+		skip: 5,
+		text: `11`
+	},
+	".": {
+		width: 1,
+		height: 1,
+		skip: 5,
+		text: `1`
+	},
+	"&": {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `010101010101011`
+	},
+	"[": {
+		width: 2,
+		height: 5,
+		skip: 1,
+		text: `1110101011`
+	},
+	"]": {
+		width: 2,
+		height: 5,
+		skip: 1,
+		text: `1101010111`
+	},
+	"{": {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `011010110010011`
+	},
+	"}": {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `110010011010110`
+	},
+	"(": {
+		width: 2,
+		height: 5,
+		skip: 1,
+		text: `0110101001`
+	},
+	")": {
+		width: 2,
+		height: 5,
+		skip: 1,
+		text: `1001010110`
+	},
+	"/": {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `001001010100100`
+	},
+	"\\": {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `100100010001001`
+	},
+	":": {
+		width: 1,
+		height: 3,
+		skip: 3,
+		text: `101`
+	},
+	";": {
+		width: 1,
+		height: 4,
+		skip: 3,
+		text: `1011`
+	},
+	"+": {
+		width: 3,
+		height: 3,
+		skip: 2,
+		text: `010111010`
+	},
+	"-": {
+		width: 3,
+		height: 1,
+		skip: 3,
+		text: `111`
+	},
+	"*": {
+		width: 3,
+		height: 3,
+		skip: 2,
+		text: `101010101`
+	},
+	"%": {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `101001010100101`
+	},
+	"_": {
+		width: 3,
+		height: 1,
+		skip: 5,
+		text: `111`
+	},
+	"=": {
+		width: 3,
+		height: 3,
+		skip: 5,
+		text: `111000111`
+	},
+	"0": {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: "111101101101111"
+	},
+	"1": {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: "010110010010111"
+	},
+	"2": {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: "111001111100111"
+	},
+	"3": {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: "111001111001111"
+	},
+	"4": {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: "101101111001001"
+	},
+	"5": {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: "111100111001111"
+	},
+	"6": {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: "111100111101111"
+	},
+	"7": {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: "111001001001001"
+	},
+	"8": {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: "111101111101111"
+	},
+	"9": {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: "111101111001111"
+	},
+	a: {
+		width: 3,
+		height: 3,
+		skip: 3,
+		text: "011101011"
+	},
+	b: {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `100100110101110`
+	},
+	c: {
+		width: 3,
+		height: 3,
+		skip: 3,
+		text: `011100011`
+	},
+	d: {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `001001011101011`
+	},
+	e: {
+		width: 3,
+		height: 3,
+		skip: 3,
+		text: `010110011`
+	},
+	f: {
+		width: 2,
+		height: 5,
+		skip: 1,
+		text: `0110111010`
+	},
+	g: {
+		width: 3,
+		height: 5,
+		skip: 3,
+		text: `011101011001110`
+	},
+	h: {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `100100110101101`
+	},
+	i: {
+		width: 1,
+		height: 5,
+		skip: 1,
+		text: `10111`
+	},
+	j: {
+		width: 2,
+		height: 7,
+		skip: 1,
+		text: `01000101010110`
+	},
+	k: {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `100100101110101`
+	},
+	l: {
+		width: 2,
+		height: 5,
+		skip: 1,
+		text: `1010101001`
+	},
+	m: {
+		width: 5,
+		height: 3,
+		skip: 3,
+		text: `111101010110101`
+	},
+	n: {
+		width: 3,
+		height: 3,
+		skip: 3,
+		text: `110101101`
+	},
+	o: {
+		width: 3,
+		height: 3,
+		skip: 3,
+		text: `010101010`
+	},
+	p: {
+		width: 3,
+		height: 5,
+		skip: 3,
+		text: `110101110100100`
+	},
+	q: {
+		width: 3,
+		height: 5,
+		skip: 3,
+		text: `011101011001001`
+	},
+	r: {
+		width: 2,
+		height: 3,
+		skip: 3,
+		text: `111010`
+	},
+	s: {
+		width: 3,
+		height: 3,
+		skip: 3,
+		text: `011010110`
+	},
+	t: {
+		width: 2,
+		height: 5,
+		skip: 1,
+		text: `1010111001`
+	},
+	u: {
+		width: 3,
+		height: 3,
+		skip: 3,
+		text: `101101011`
+	},
+	v: {
+		width: 3,
+		height: 3,
+		skip: 3,
+		text: `101101010`
+	},
+	w: {
+		width: 5,
+		height: 3,
+		skip: 3,
+		text: `101011010101010`
+	},
+	x: {
+		width: 3,
+		height: 3,
+		skip: 3,
+		text: `101010101`
+	},
+	y: {
+		width: 3,
+		height: 5,
+		skip: 3,
+		text: `101101011001010`
+	},
+	z: {
+		width: 3,
+		height: 3,
+		skip: 3,
+		text: `110010011`
+	},
+	A: {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: "010101111101101"
+	},
+	B: {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `110101110101110`
+	},
+	C: {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `011100100100011`
+	},
+	D: {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `110101101101110`
+	},
+	E: {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `111100111100111`
+	},
+	F: {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `111100111100100`
+	},
+	G: {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `011100101101011`
+	},
+	H: {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `101101111101101`
+	},
+	I: {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `111010010010111`
+	},
+	J: {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `111001001001110`
+	},
+	K: {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `101101110101101`
+	},
+	L: {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `100100100100111`
+	},
+	M: {
+		width: 5,
+		height: 5,
+		skip: 1,
+		text: `1000111011101011000110001`
+	},
+	N: {
+		width: 4,
+		height: 5,
+		skip: 1,
+		text: `10011101101110011001`
+	},
+	O: {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `010101101101010`
+	},
+	P: {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `110101110100100`
+	},
+	Q: {
+		width: 3,
+		height: 6,
+		skip: 1,
+		text: `010101101101010001`
+	},
+	R: {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `110101110101101`
+	},
+	S: {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `011100010001110`
+	},
+	T: {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `111010010010010`
+	},
+	U: {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `101101101101111`
+	},
+	V: {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `101101101101010`
+	},
+	W: {
+		width: 5,
+		height: 5,
+		skip: 1,
+		text: `1000110101101011010101010`
+	},
+	X: {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `101101010101101`
+	},
+	Y: {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `101101010010010`
+	},
+	Z: {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `111001010100111`
+	}
+}
+
+textData.cyrillic = {
+	'а': {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `010101111101101`
+	},
+	'б': {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `111100111101111`
+	},
+	'в': {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `110101110101110`
+	},
+	'г': {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `111100100100100`
+	},
+	'д': {
+		width: 5,
+		height: 5,
+		skip: 1,
+		text: `0111001010010101111110001`
+	},
+	'е': {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `111100111100111`
+	},
+	'ё': {
+		width: 3,
+		height: 7,
+		skip: -1,
+		text: `101000111100111100111`
+	},
+	'ж': {
+		width: 5,
+		height: 5,
+		skip: 1,
+		text: `1010110101011101010110101`
+	},
+	'з': {
+		width: 4,
+		height: 5,
+		skip: 1,
+		text: `01101001001010010110`
+	},
+	'и': {
+		width: 4,
+		height: 5,
+		skip: 1,
+		text: `10011001101111011001`
+	},
+	'й': {
+		width: 4,
+		height: 8,
+		skip: -2,
+		text: `01000010000010011001101111011001`
+	},
+	'к': {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `101101110101101`
+	},
+	'л': {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `010101101101101`
+	},
+	'м': {
+		width: 5,
+		height: 5,
+		skip: 1,
+		text: `1000111011101011000110001`
+	},
+	'н': {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `101101111101101`
+	},
+	'о': {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `010101101101010`
+	},
+	'п': {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `111101101101101`
+	},
+	'р': {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `110101110100100`
+	},
+	'с': {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `111100100100111`
+	},
+	'т': {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `111010010010010`
+	},
+	'у': {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `101101010010100`
+	},
+	'ф': {
+		width: 5,
+		height: 5,
+		skip: 1,
+		text: `0010001110101010111000100`
+	},
+	'х': {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `101101010101101`
+	},
+	'ц': {
+		width: 4,
+		height: 6,
+		skip: 1,
+		text: `101010101010101011100011`
+	},
+	'ч': {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `101101111001001`
+	},
+	'ш': {
+		width: 5,
+		height: 5,
+		skip: 1,
+		text: `1010110101101011010111111`
+	},
+	'щ': {
+		width: 6,
+		height: 6,
+		skip: 1,
+		text: `101010101010101010101010111110000011`
+	},
+	'ъ': {
+		width: 4,
+		height: 5,
+		skip: 1,
+		text: `11000100011101010111`
+	},
+	'ы': {
+		width: 5,
+		height: 5,
+		skip: 1,
+		text: `1000110001111011010111101`
+	},
+	'ь': {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `100100111101111`
+	},
+	'э': {
+		width: 4,
+		height: 5,
+		skip: 1,
+		text: `01101001001110010110`
+	},
+	'ю': {
+		width: 5,
+		height: 5,
+		skip: 1,
+		text: `1011110101111011010110111`
+	},
+	'я': {
+		width: 3,
+		height: 5,
+		skip: 1,
+		text: `011101011101101`
+	}
+}
+
 export function updateToolWindow(name) {
 	if (!toolsWindow) {
 		return;
@@ -64,6 +792,8 @@ export function updateToolbar(win = toolsWindow) {
 			container.appendChild(element);
 		}
 	}
+	const outputNumber = input => input <= 7 ? 40 : 40 * Math.floor(input / 7);
+	toolsWindow.container.style.maxWidth = `${outputNumber(toolsWindow.container.children.length)}px`;
 }
 
 export function showToolsWindow(bool) {
@@ -397,25 +1127,25 @@ eventSys.once(e.misc.toolsRendered, () => {
 				}
 			});
 
-			function dlarea(x, y, w, h, onblob){
+			function dlarea(x, y, w, h, onblob) {
 				let c = document.createElement('canvas');
 				c.width = w;
 				c.height = h;
 				let ctx = c.getContext('2d');
 				let d = ctx.createImageData(w, h);
-				for(let i = y; i < y + h; i++){
-				  for(let j = x; j < x + w; j++){
-					let pix = misc.world.getPixel(j, i);
-					if (!pix) continue;
-					d.data[4*((i - y)*w + (j - x))] = pix[0];
-					d.data[4*((i - y)*w + (j - x)) + 1] = pix[1];
-					d.data[4*((i - y)*w + (j - x)) + 2] = pix[2];
-					d.data[4*((i - y)*w + (j - x)) + 3] = 255;
-				  }
+				for (let i = y; i < y + h; i++) {
+					for (let j = x; j < x + w; j++) {
+						let pix = misc.world.getPixel(j, i);
+						if (!pix) continue;
+						d.data[4 * ((i - y) * w + (j - x))] = pix[0];
+						d.data[4 * ((i - y) * w + (j - x)) + 1] = pix[1];
+						d.data[4 * ((i - y) * w + (j - x)) + 2] = pix[2];
+						d.data[4 * ((i - y) * w + (j - x)) + 3] = 255;
+					}
 				}
 				ctx.putImageData(d, 0, 0);
 				c.toBlob(onblob);
-			  }
+			}
 
 			tool.extra.start = null;
 			tool.extra.end = null;
@@ -496,7 +1226,7 @@ eventSys.once(e.misc.toolsRendered, () => {
 							windowSys.addWindow(new GUIWindow("Resulting image", {
 								centerOnce: true,
 								closeable: true
-							}, function(win) {
+							}, function (win) {
 								let props = ['width', 'height'];
 								if (img.width > img.height) {
 									props.reverse();
@@ -629,12 +1359,12 @@ eventSys.once(e.misc.toolsRendered, () => {
 		let end = null;
 		let queue = [];
 		function line(x1, y1, x2, y2, plot) {
-			let dx =  Math.abs(x2 - x1), sx = x1 < x2 ? 1 : -1;
+			let dx = Math.abs(x2 - x1), sx = x1 < x2 ? 1 : -1;
 			let dy = -Math.abs(y2 - y1), sy = y1 < y2 ? 1 : -1;
 			let err = dx + dy,
 				e2;
 
-			while(true) {
+			while (true) {
 				plot(x1, y1);
 				if (x1 == x2 && y1 == y2) break;
 				e2 = 2 * err;
@@ -714,6 +1444,344 @@ eventSys.once(e.misc.toolsRendered, () => {
 			end = null;
 			tool.setEvent('tick', null);
 		});
+	}));
+
+	addTool(new Tool('Circle', cursors.circle, PLAYERFX.NONE, RANK.USER, tool => {
+		let start = null;
+		let end = null;
+		let queue = [];
+		function isFilled(x, y, width, height) {
+			return Math.sqrt(Math.pow(x / width, 2) + Math.pow(y / height, 2)) <= 1;
+		}
+		function isStroked(x, y, width, height) {
+			return isFilled(x, y, width, height) && (
+				!isFilled(x + 1, y, width, height) ||
+				!isFilled(x - 1, y, width, height) ||
+				!isFilled(x, y + 1, width, height) ||
+				!isFilled(x, y - 1, width, height)
+			);
+		}
+		function circle(x1, y1, x2, y2, plot) {
+			if (x2 < x1) [x1, x2] = [x2, x1];
+			if (y2 < y1) [y1, y2] = [y2, y1];
+
+			let width = x2 - x1 + 1;
+			let height = y2 - y1 + 1;
+
+			for (let y = 0; y < height; y++) {
+				for (let x = 0; x < width; x++) {
+					if (isStroked(
+						x - width / 2 + 0.5,
+						y - height / 2 + 0.5,
+						width / 2,
+						height / 2)
+					) {
+						plot(x + x1, y + y1);
+					}
+				}
+			}
+		}
+		let defaultFx = PLAYERFX.RECT_SELECT_ALIGNED(1);
+		tool.setFxRenderer((fx, ctx, time) => {
+			ctx.globalAlpha = 0.8;
+			ctx.strokeStyle = fx.extra.player.htmlRgb;
+			if (!start || !end || !fx.extra.isLocalPlayer) {
+				defaultFx(fx, ctx, time);
+			} else {
+				ctx.beginPath();
+				circle(start[0], start[1], end[0], end[1], (x, y) => {
+					ctx.rect((x - camera.x) * camera.zoom, (y - camera.y) * camera.zoom, camera.zoom, camera.zoom);
+				});
+				ctx.stroke();
+			}
+		});
+		function tick() {
+			for (let i = queue.length - 1; i >= 0; i--) {
+				let pixel = queue[i];
+				if (misc.world.setPixel(pixel[0], pixel[1], player.selectedColor)) {
+					queue.splice(i, 1);
+				}
+			}
+
+			if (queue.length === 0) {
+				start = null;
+				end = null;
+				tool.setEvent("tick", null);
+			}
+		}
+		tool.setEvent("mousedown", mouse => {
+			if (!(mouse.buttons & 0b100)) {
+				queue = [];
+				tool.setEvent("tick", null);
+				start = [mouse.tileX, mouse.tileY];
+				end = [mouse.tileX, mouse.tileY];
+			}
+		});
+		tool.setEvent("mousemove", mouse => {
+			if (!queue.length) {
+				end = [mouse.tileX, mouse.tileY];
+			}
+		});
+		tool.setEvent("mouseup", mouse => {
+			if (!(mouse.buttons & 0b11) && !queue.length) {
+				end = [mouse.tileX, mouse.tileY];
+				if (!start) {
+					end = null;
+					return;
+				}
+				circle(start[0], start[1], end[0], end[1], (x, y) => {
+					queue.push([x, y]);
+				});
+				tool.setEvent("tick", tick);
+			}
+		});
+		tool.setEvent("deselect", mouse => {
+			queue = [];
+			start = null;
+			end = null;
+			tool.setEvent("tick", null);
+		});
+	}));
+
+	addTool(new Tool('Rect', cursors.rect, PLAYERFX.NONE, RANK.USER, tool => {
+		let start = null;
+		let end = null;
+		let queue = [];
+
+		function rectangle(x1, y1, x2, y2, plot) {
+			if (x2 < x1) [x1, x2] = [x2, x1];
+			if (y2 < y1) [y1, y2] = [y2, y1];
+
+			for (let x = x1; x <= x2; x++) {
+				plot(x, y1);
+				plot(x, y2);
+			}
+			for (let y = y1; y <= y2; y++) {
+				plot(x1, y);
+				plot(x2, y);
+			}
+		}
+
+		let defaultFx = PLAYERFX.RECT_SELECT_ALIGNED(1);
+		tool.setFxRenderer((fx, ctx, time) => {
+			ctx.globalAlpha = 0.8;
+			ctx.strokeStyle = fx.extra.player.htmlRgb;
+			if (!start || !end || !fx.extra.isLocalPlayer) {
+				defaultFx(fx, ctx, time);
+			} else {
+				ctx.beginPath();
+				rectangle(start[0], start[1], end[0], end[1], (x, y) => {
+					ctx.rect((x - camera.x) * camera.zoom, (y - camera.y) * camera.zoom, camera.zoom, camera.zoom);
+				});
+				ctx.stroke();
+			}
+		});
+
+		function tick() {
+			for (let i = queue.length - 1; i >= 0; i--) {
+				let pixel = queue[i];
+				if (misc.world.setPixel(pixel[0], pixel[1], player.selectedColor)) {
+					queue.splice(i, 1);
+				}
+			}
+
+			if (queue.length === 0) {
+				start = null;
+				end = null;
+				tool.setEvent("tick", null);
+			}
+		}
+
+		tool.setEvent("mousedown", mouse => {
+			if (!(mouse.buttons & 0b100)) {
+				queue = [];
+				tool.setEvent("tick", null);
+				start = [mouse.tileX, mouse.tileY];
+				end = [mouse.tileX, mouse.tileY];
+			}
+		});
+
+		tool.setEvent("mousemove", mouse => {
+			if (!queue.length) {
+				end = [mouse.tileX, mouse.tileY];
+			}
+		});
+
+		tool.setEvent("mouseup", mouse => {
+			if (!(mouse.buttons & 0b11) && !queue.length) {
+				end = [mouse.tileX, mouse.tileY];
+				if (!start) {
+					end = null;
+					return;
+				}
+				rectangle(start[0], start[1], end[0], end[1], (x, y) => {
+					queue.push([x, y]);
+				});
+				tool.setEvent("tick", tick);
+			}
+		});
+
+		tool.setEvent("deselect", mouse => {
+			queue = [];
+			start = null;
+			end = null;
+			tool.setEvent("tick", null);
+		});
+	}));
+
+	addTool(new Tool('Write', cursors.write, PLAYERFX.NONE, RANK.ARTIST, tool => {
+		tool.extra.state = {
+			rainbow: false
+		};
+		tool.extra.text = "";
+		tool.extra.position = 0;
+		tool.extra.start = undefined;
+		tool.extra.end = undefined;
+		tool.extra.newText = textData.newText;
+		tool.extra.cyrillic = textData.cyrillic;
+		let queue = [];
+		function tick(){
+			for (let i = queue.length - 1; i >= 0; i--) {
+				let pixel = queue[i];
+				if (misc.world.setPixel(pixel[0], pixel[1], player.selectedColor)) {
+					queue.splice(i, 1);
+				}
+			}
+
+			if (queue.length === 0) {
+				tool.extra.start = null;
+				tool.extra.end = null;
+				tool.setEvent("tick", null);
+			}
+		}
+		function setText(t, pos, func) {
+			let localPos = [...pos];
+			let furthestPos = [...pos];
+			function setLetter(letter, pos, func) {
+				if (letter === "\n") return 1;
+				let letterData = tool.extra.newText[letter];
+				if (!letterData) letterData = tool.extra.cyrillic[letter];
+				if (!letterData) letterData = tool.extra.newText[letter.toLocaleLowerCase()];
+				if (!letterData) letterData = tool.extra.cyrillic[letter.toLocaleLowerCase()];
+				if (!letterData) return 0;
+				for (let x = 0; x < letterData.width; x++) {
+					for (let y = 0; y < letterData.height; y++) {
+						if (letterData.text[x + y * letterData.width] !== "0") func(pos[0] + x, pos[1] + y + letterData.skip);
+					}
+				}
+				return letterData;
+			}
+			for (let p5 = 0; p5 < t.length; p5++) {
+				let l = setLetter(t[p5], localPos, func);
+				if (l === 0) continue;
+				if (l === 1) {
+					localPos[0] = pos[0];
+					localPos[1] = localPos[1] + tool.extra.newText.data.height + 1;
+				} else {
+					localPos[0] += l.width + tool.extra.newText.data.gap;
+				}
+				if (localPos[0] > furthestPos[0]) furthestPos[0] = localPos[0];
+				if (localPos[1] > furthestPos[1]) furthestPos[1] = localPos[1];
+			}
+			return furthestPos;
+		}
+		tool.setFxRenderer((fx, ctx, time) => {
+			// if (someRenderer(fx, ctx, time, () => 1)) return;
+
+			// let camera = camera;
+			let oldlinew = ctx.lineWidth;
+			ctx.lineWidth = 2;
+			let s = undefined;
+			let e = undefined;
+			if (!tool.extra.start) {
+				s = [mouse.tileX, mouse.tileY];
+				ctx.strokeStyle = "#00FF00";
+			} else {
+				s = tool.extra.start;
+				ctx.strokeStyle = "#FF0000";
+			}
+			let oldFillstyle = ctx.fillStyle;
+			ctx.fillStyle = player.htmlRgb;
+			let tempEnd = setText(tool.extra.text, [...s], (x, y) => {
+				let x1 = (x - camera.x) * camera.zoom + 0.5;
+				let y1 = (y - camera.y) * camera.zoom + 0.5;
+				ctx.fillStyle = tool.extra.state.rainbow ? Color.toHex(Color.hue(x - y, 8)) : player.htmlRgb;
+				ctx.fillRect(x1, y1, camera.zoom, camera.zoom);
+			});
+			e = [tempEnd[0] + 1, tempEnd[1] + 8]
+			if (tool.extra.end) tool.extra.end = e;
+			let x = (s[0] - camera.x) * camera.zoom + 0.5;
+			let y = (s[1] - camera.y) * camera.zoom + 0.5;
+			let w = e[0] - s[0];
+			let h = e[1] - s[1];
+			ctx.beginPath();
+			ctx.rect(x, y, w * camera.zoom, h * camera.zoom);
+			ctx.stroke();
+			ctx.lineWidth = oldlinew;
+			ctx.fillStyle = oldFillstyle;
+			return 0;
+		});
+		tool.setEvent('mousedown', (mouse, _event) => {
+			let s = tool.extra.start;
+			let e = tool.extra.end;
+			const isInside = () => mouse.tileX >= s[0] && mouse.tileX < e[0] && mouse.tileY >= s[1] && mouse.tileY < e[1];
+			if (mouse.buttons === 1 && !tool.extra.end) {
+				tool.extra.start = [mouse.tileX, mouse.tileY];
+				tool.extra.end = [mouse.tileX + 1, mouse.tileY + 7];
+				tool.setEvent('keydown', (keysDown, event) => {
+					// if (!isNS) return;
+					if (event.key.length > 1) {
+						switch (event.key) {
+							case "Enter": {
+								tool.extra.text += "\n";
+							} break;
+							case "Backspace": {
+								let t = tool.extra.text.split("");
+								t.pop();
+								tool.extra.text = t.join("");
+							} break;
+						}
+						return;
+					}
+					console.log(event);
+					tool.extra.text += event.key;
+					return 1;
+				});
+			} else if (mouse.buttons === 1 && tool.extra.end) {
+				if (isInside()) {
+					let offx = mouse.tileX;
+					let offy = mouse.tileY;
+					tool.setEvent('mousemove', (mouse, _event) => {
+						let dx = mouse.tileX - offx;
+						let dy = mouse.tileY - offy;
+						tool.extra.start = [s[0] + dx, s[1] + dy];
+						tool.extra.end = [e[0] + dx, e[1] + dy];
+					});
+					tool.setEvent('mouseup', () => tool.setEvent('mouseup mousemove', null));
+				} else {
+					tool.extra.start = undefined;
+					tool.extra.end = undefined;
+				}
+			} else if (mouse.buttons === 2 && tool.extra.end && isInside()) {
+				// PM.startHistory();
+				// setText(tool.extra.text, [...tool.extra.start], (x, y) => PM.setPixel(x, y, tool.extra.state.rainbow ? Color.hue(x - y, 8) : player.selectedColor));
+				setText(tool.extra.text, [...tool.extra.start], (x, y) => {
+					queue.push([x, y]);
+				});
+				tool.setEvent('tick', tick);
+				// PM.endHistory();
+				return true;
+			}
+		});
+		tool.setEvent('deselect', () => {
+			tool.extra.position = 0;
+			tool.extra.start = undefined;
+			tool.extra.end = undefined;
+			// ! MARK FOR CHANGE
+			// tool.extra.text = "";
+			tool.setEvent('keydown mouseup mousemove', null);
+		});
+		tool.setEvent('keyup', () => 1);
 	}));
 
 	addTool(new Tool('Protect', cursors.shield, PLAYERFX.RECT_SELECT_ALIGNED(16, "#000000"), RANK.MODERATOR, tool => {
@@ -1159,7 +2227,7 @@ eventSys.once(e.misc.toolsRendered, () => {
 					if (!currentPixel && tool.extra.wreckStuff) {
 						currentPixel = [255, 255, 255];
 					}
-					
+
 					return currentPixel ? (currentPixel[2] << 16 | currentPixel[1] << 8 | currentPixel[0])
 						: null;
 				}
@@ -1173,8 +2241,8 @@ eventSys.once(e.misc.toolsRendered, () => {
 						return null;
 					}
 				}
-				let r = (1 - alpha / 255) * oldPixel[0] + (alpha / 255) * (img       & 0xFF);
-				let g = (1 - alpha / 255) * oldPixel[1] + (alpha / 255) * (img >> 8  & 0xFF);
+				let r = (1 - alpha / 255) * oldPixel[0] + (alpha / 255) * (img & 0xFF);
+				let g = (1 - alpha / 255) * oldPixel[1] + (alpha / 255) * (img >> 8 & 0xFF);
 				let b = (1 - alpha / 255) * oldPixel[2] + (alpha / 255) * (img >> 16 & 0xFF);
 				let rgb = b << 16 | g << 8 | r;
 				return (r == oldPixel[0] && g == oldPixel[1] && b == oldPixel[2]) ? rgb : 0xFF000000 | rgb;
@@ -1401,7 +2469,7 @@ eventSys.once(e.misc.toolsRendered, () => {
 						tool.extra.end = [e[0] + dx, e[1] + dy];
 					});
 					let end = function end() {
-					   tool.setEvent('mouseup deselect mousemove', null);
+						tool.setEvent('mouseup deselect mousemove', null);
 					};
 					tool.setEvent('deselect', end);
 					tool.setEvent('mouseup', function (mouse, event) {
@@ -1413,7 +2481,7 @@ eventSys.once(e.misc.toolsRendered, () => {
 					tool.extra.start = null;
 					tool.extra.end = null;
 				}
-		   } else if (mouse.buttons === 2 && tool.extra.end && isInside()) {
+			} else if (mouse.buttons === 2 && tool.extra.end && isInside()) {
 				tool.extra.start = null;
 				tool.extra.end = null;
 				let x = s[0];
@@ -1439,7 +2507,7 @@ eventSys.once(e.misc.toolsRendered, () => {
 				let paste = tools.paste;
 				paste.extra.canvas = c;
 				let oldSelect = paste.events.select;
-				paste.events.select = function() {
+				paste.events.select = function () {
 					paste.events.select = oldSelect;
 				};
 				player.tool = "paste";

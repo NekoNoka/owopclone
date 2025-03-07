@@ -60,7 +60,10 @@ export const ProtocolV1 = {
 		7: 'export',
 		8: 'line',
 		9: 'protect',
-		10: 'copy'
+		10: 'copy',
+		11: 'circle',
+		12: 'rect',
+		13: 'write'
 		// 0: 'cursor',
 		// 1: 'move',
 		// 2: 'pipette',

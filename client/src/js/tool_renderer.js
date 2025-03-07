@@ -17,6 +17,9 @@ export const cursors = {
 	paste: {imgpos: [3, 1], hotspot: [0, 0]}, // this too
 	cut: {imgpos: [3, 2], hotspot: [11, 5]},
 	wand: {imgpos: [3, 3], hotspot: [0, 0]},
+	circle: {imgpos: [4,3], hotspot: [0, 0]},
+	rect: {imgpos: [4,2], hotspot: [0, 0]},
+	write: {imgpos: [0, 3], hotspot: [0, 0]},
 	shield: {imgpos: [2, 3], hotspot: [18, 18]},
 	kick: {imgpos: [2, 1], hotspot: [3, 6]},
 	ban: {imgpos: [2, 2], hotspot: [10, 4]},
