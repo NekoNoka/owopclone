@@ -113,6 +113,7 @@ export class Client {
 	}
 
 	async createGlobalData(){
+		if(this.destroyed) return;
 		this.setStatus("Doing first time setup...", true, true);
 		try{
 			let response = await fetch('https://neomoth.dev/req/account/owop/createGlobal', {
@@ -136,6 +137,7 @@ export class Client {
 	}
 
 	async createWorldData(worldName){
+		if(this.destroyed) return;
 		this.setStatus("Creating world data...", true, true);
 		try{
 			let response = await fetch('https://neomoth.dev/req/account/owop/createWorld', {
