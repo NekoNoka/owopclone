@@ -25,7 +25,7 @@ export function createContextMenu(x, y, buttons) {
 	document.body.appendChild(contextMenu);
 	shown = true;
 	let height = contextMenu.offsetHeight;
-	console.log(height);
+	// console.log(height);
 	if (y + height > window.innerHeight - 20) {
 		contextMenu.style.top = (y - height) + "px";
 	} else {

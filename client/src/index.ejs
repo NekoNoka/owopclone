@@ -35,7 +35,7 @@
 						w.container.innerHTML='<iframe onload style=\'width:100%;height:100%;border:none;\' src=\'https://neomoth.dev/login?fromOwop=1\'></iframe>'
 						}
 					)); window.addEventListener('message', (event)=>{
-						console.log('got message!!!');
+						// console.log('got message!!!');
 						if(event.data==='loggedIn'){
 							location.reload();
 						}

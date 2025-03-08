@@ -265,7 +265,7 @@ export class World {
 	}
 
 	playersMoved(players) {
-		console.log("moved");
+		// console.log("moved");
 		let rendered = false;
 		for (const id in players) {
 			let player = this.players[id];

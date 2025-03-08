@@ -158,7 +158,7 @@ function receiveMessage(rawText) {
 	let message = document.createElement('li');
 
 	let parsedJson = JSON.parse(rawText);
-	console.log(parsedJson);
+	// console.log(parsedJson);
 	let text = parsedJson.text;
 	let realText = text;
 	let sender = parsedJson.sender;
@@ -198,7 +198,7 @@ function receiveMessage(rawText) {
 			if(!data.text) return;
 		}
 		if (data.action === 'updateStatusMessage') {
-			console.log(text);
+			// console.log(text);
 			statusSet = true;
 			if(data.immediate) statusMsg(data.showLoad, text);
 			return;

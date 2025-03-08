@@ -1743,7 +1743,7 @@ eventSys.once(e.misc.toolsRendered, () => {
 						}
 						return;
 					}
-					console.log(event);
+					// console.log(event);
 					tool.extra.text += event.key;
 					return 1;
 				});
