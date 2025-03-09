@@ -619,7 +619,7 @@ button:focus {
 #chat-messages > li.adminMessage, #chat-messages > li.serverError, #chat-messages > li > .broadcastMessage {
 	color: #ff4f4f;
 }
-#chat-messages > li.discord > .nick {
+#chat-messages > li.discordMessage > .nick {
 	color: #6cffe7;
 }
 #chat-messages > li.whisper, #chat-messages > li > .whisper {

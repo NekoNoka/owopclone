@@ -268,6 +268,11 @@ function receiveMessage(rawText) {
 					message.appendChild(broadcast);
 				}
 
+				if(data.isBot) {
+					nick.className = 'nick';
+					message.classList.add('discordMessage');
+				}
+
 				message.appendChild(nick);
 			}
 		}

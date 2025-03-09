@@ -7,10 +7,10 @@ export default {
 		usage: 'nick [nickname (or nothing to remove)]',
 		aliases: [],
 		minRank: RANK.NONE,
-		alwaysHidden: false,
-		disabled: true,
+		alwaysHidden: true,
 	},
 	async execute(client, args){
+		if(!client.isBot) return;
 		if(!args.length){
 			client.nick = null;
 			return client.sendMessage({
@@ -25,6 +25,7 @@ export default {
 		}
 		let nick = args.join(" ");
 		let maxLength = [16, 16, 16, 24, 24, 40, Infinity, Infinity, Infinity][client.rank];
+		if(client.isBot) maxLength = Infinity;
 		if(nick.length>maxLength) return client.sendMessage({
 			sender: 'server',
 			data: {

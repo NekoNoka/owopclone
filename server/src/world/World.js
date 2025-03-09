@@ -289,6 +289,7 @@ export class World {
 				type: 'chatMessage',
 			};
 		}
+		data.isBot = client.isBot;
 		this.broadcastMessage({
 			sender,
 			data,

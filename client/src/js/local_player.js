@@ -173,7 +173,7 @@ function updatePaletteIndex(isSecondary) {
 
 function addPaletteColor(color, isSecondary) {
 	if(isSecondary){
-		if(!palette.includes(color)) palette.push(color);
+		if(!palette.some(arr => arr.length === color.length && arr.every((val, index) => val === color[index]))) palette.push(color);
 		secondaryColor = color;
 		changedColor(true);
 		updatePalette();

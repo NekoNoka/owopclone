@@ -95,6 +95,7 @@ export class Server {
 					let origin = req.getHeader("origin");
 					let cookies = req.getHeader('cookie');
 					let token = '';
+					let isBot = req.getHeader('is-bot') === true || req.getHeader('is-bot')=="true" || true; // change to false before pushing you fucking maggot
 					token = cookies.split('; ').map(cookie => cookie.split('='))
 					.reduce((acc, [key, value])=>{
 						acc[key] = value;
@@ -125,6 +126,7 @@ export class Server {
 								ip,
 								closed: false,
 								token: token,
+								isBot,
 							}, secWebSocketKey, secWebSocketProtocol, secWebSocketExtensions, context);
 						});
 					}

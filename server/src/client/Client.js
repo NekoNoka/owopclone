@@ -41,6 +41,7 @@ export class Client {
 		this.world = null;
 		// console.log("ws token:", ws.token);
 		this.accountToken = ws.token;
+		this.isBot = ws.isBot;
 		this.accountInfo = null;
 		let pquota = this.server.config.defaultPquota.split(',').map(value => parseInt(value));
 		this.pquota = new Quota(pquota[0], pquota[1]);
@@ -242,6 +243,7 @@ export class Client {
 	keepAlive(tick) {
 		if (!this.world) return tick - this.connectionTick < 9000;
 		if (this.rank >= RANK.MODERATOR) return true;
+		if (this.isBot) return true;
 		return tick - this.lastUpdate < 18000;
 	}
 
@@ -948,7 +950,7 @@ export class Client {
 			return;
 		}
 		message = message.substring(0, message.length - 1);
-		if (message.length > maxMessageLengths[this.rank]) return;
+		if (!this.isBot && message.length > maxMessageLengths[this.rank]) return;
 		if (message.startsWith("/")) {
 			message = message.trim();
 			handleCommand(this, message);
