@@ -11,11 +11,12 @@ export class ServerClientManager{
 		this.destroyed = false;
 	}
 
-	destroy(){
+	destroy(reason){
 		if(this.destroyed) return;
 		this.destroyed = true;
 		for(let client of this.map.values()){
-			client.destroy();
+			if(reason) client.destroyWithReason(reason);
+			else client.destroy();
 		}
 	}
 

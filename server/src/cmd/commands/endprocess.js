@@ -15,7 +15,7 @@ export default {
 			},
 			text: `Gracefully shutting down server...`
 		});
-		await client.server.destroy();
+		await client.server.destroy("Operator restarted server");
 		process.exit(0);
 	}
 }

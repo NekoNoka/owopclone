@@ -239,9 +239,10 @@ eventSys.on(e.net.sec.rank, newRank => {
 	}
 	switch (newRank) {
 		case RANK.USER:
+			showPlayerList(localStorage.showPlayerList==="true"?true:false);
 		case RANK.NONE:
 			showDevChat(false);
-			showPlayerList(localStorage.showPlayerList==="true"?true:false);
+			showPlayerList(false);
 			revealSecrets(true);
 			break;
 

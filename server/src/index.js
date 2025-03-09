@@ -15,14 +15,14 @@ rl.on('line', async d=>{
 });
 rl.on('SIGINT', async ()=>{
 	console.log("Attempting graceful shutdown...");
-	await server.destroy();
+	await server.destroy("Operator restarted server");
 	rl.close();
 	process.exit(0);
 });
 
 process.on('SIGINT', async ()=>{
 	console.log("Attempting graceful shutdown...");
-	await server.destroy();
+	await server.destroy("Operator restarted server");
 	if(rl) rl.close();
 	process.exit(0);
 });

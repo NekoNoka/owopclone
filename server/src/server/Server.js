@@ -40,13 +40,13 @@ export class Server {
 		this.destroyed = false;
 	}
 
-	async destroy() {
+	async destroy(reason) {
 		if (this.destroyed) return;
 		this.destroyed = true;
 		this.adminMessage("DEVServer shutdown initiated.");
 		clearTimeout(this.tickTimeout);
 		if (this.listenSocket) uWS.us_listen_socket_close(this.listenSocket);
-		this.clients.destroy();
+		this.clients.destroy(reason);
 		await this.worlds.destroy();
 		await this.regions.destroy();
 		await this.ips.destroy();
@@ -164,7 +164,7 @@ export class Server {
 			close: (ws, code, message) => {
 				try {
 					ws.closed = true;
-					ws.client.destroy();
+					if(!ws.client.destroyed) ws.client.destroy();
 				}
 				catch (err) {
 					console.error(err);
