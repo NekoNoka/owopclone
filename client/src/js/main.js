@@ -4,7 +4,7 @@ import anchrome from './util/anchrome';
 
 import { EVENTS as e, RANK } from './conf';
 // import { Bucket } from '../util/Bucket';
-import { escapeHTML, getTime, getCookie, setCookie, cookiesEnabled, storageEnabled, loadScript, eventOnce } from './util/misc';
+import { escapeHTML, getTime, getCookie, setCookie, cookiesEnabled, storageEnabled, loadScript, eventOnce, KeyCode } from './util/misc';
 
 import { eventSys, PublicAPI, AnnoyingAPI as aa, wsTroll } from './global';
 import { options } from './conf';
@@ -25,10 +25,11 @@ import imgref from '../img/bignwop.png';
 
 import { stickyimg } from './stickyimg.js';
 import { tools } from "./tools.js";
+import { colorUtils } from "./util/color.js";
 
 export { showDevChat, showPlayerList, statusMsg };
 
-const noticeId=1;
+const noticeId=0;
 
 export const keysDown = {};
 
@@ -463,6 +464,7 @@ function showWorldUI(bool) {
 	elements.chat.style.transform = bool ? "initial" : "";
 	elements.chatInput.disabled = !bool;
 	for(let element of elements.topLeftDisplays.children) element.style.transform = bool ? "initial" : "";
+	for(let element of elements.topRightDisplays.children) element.style.transform = bool ? "initial" : "";
 	elements.chatInput.style.display = "initial";
 	elements.paletteBg.style.visibility = bool ? "" : "hidden";
 	elements.helpButton.style.visibility = bool ? "" : "hidden";
@@ -695,20 +697,64 @@ function init() {
 				}
 			}
 			switch (keyCode) {
-				case 80: /* P */
+				case KeyCode.q: /* P */
 					player.tool = "pipette";
 					break;
 
-				case 79: /* O */
+				case KeyCode.b: /* O */
 					player.tool = "cursor";
 					break;
 
-				case 77: /* M */
-				case 16: /* Shift */
+				case KeyCode.v: /* M */
+				case KeyCode.shift: /* Shift */
 					player.tool = "move";
 					break;
 
-				case 90: /* Ctrl + Z */
+				case KeyCode.f:
+					player.tool = "fill";
+					break;
+
+				case KeyCode.t:
+					player.tool = "line";
+					break;
+
+				case KeyCode.x:
+					player.tool = "zoom";
+					break;
+
+				case KeyCode.r:
+					player.tool = "rect";
+					break;
+
+				case KeyCode.c:
+					player.tool = "circle";
+					break;
+
+				case KeyCode.e:
+					player.tool = "export";
+					break;
+
+				case KeyCode.w:
+					player.tool = "protect";
+					break;
+
+				case KeyCode.three:
+					player.tool = "area protect";
+					break;
+
+				case KeyCode.one:
+					player.tool = "copy";
+					break;
+
+				case KeyCode.two:
+					player.tool = "paste";
+					break;
+
+				case KeyCode.a:
+					player.tool = "eraser";
+					break;
+
+				case KeyCode.z: /* Ctrl + Z */
 					if (!event.ctrlKey || !misc.world) {
 						break;
 					}
@@ -716,7 +762,7 @@ function init() {
 					event.preventDefault();
 					break;
 
-				case 70: /* F */
+				case KeyCode.backtick: /* F */
 					let parseClr = clr => {
 						let tmp = clr.split(',');
 						let nrgb = null;
@@ -1160,6 +1206,10 @@ eventSys.on(e.camera.zoom, camera => {
 	}
 });
 
+eventSys.on(e.misc.secondaryColorSet, () => {
+	elements.secondaryColor.style.backgroundColor = colorUtils.toHTML(colorUtils.u24_888(...player.secondaryColor));
+});
+
 window.addEventListener("error", e => {
 	showDevChat(true);
 	let errmsg = e && e.error ? (e.error.message || e.error.stack) : e.message || "Unknown error occurred";
@@ -1193,6 +1243,7 @@ window.addEventListener("load", () => {
 	if(misc.localStorage.dismissedId!=noticeId) elements.noticeDisplay.addEventListener("click", dismissNotice);
 	else elements.noticeDisplay.style.display = 'none';
 
+	elements.secondaryColor = document.getElementById("secondary-color");
 	elements.xyDisplay = document.getElementById("xy-display");
 	elements.pBucketDisplay = document.getElementById("pbucket-display");
 	elements.devChat = document.getElementById("dev-chat");

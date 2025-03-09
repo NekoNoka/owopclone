@@ -12,6 +12,7 @@ import { PLAYERFX } from './Fx.js';
 
 export const tools = {};
 export let toolsWindow = null;
+export let toolOptsWindow = null;
 let windowShown = false;
 
 const textData = {}
@@ -757,6 +758,115 @@ export function updateToolWindow(name) {
 	elements.viewport.style.cursor = "url(" + tool.cursorblob + ") " + tool.offset[0] + " " + tool.offset[1] + ", pointer";
 }
 
+function createSliderOption(opts, optionName, initialValue, cb, min = 0, max = 100, snapValue = false, stepValue = 1) {
+	let sliderOption = document.createElement("div");
+	sliderOption.className = "toolOption";
+	let optionLabel = document.createElement("div");
+	optionLabel.className = "optionName";
+	optionLabel.innerText = optionName;
+	sliderOption.appendChild(optionLabel);
+	let slider = document.createElement("div");
+	let sliderBar = document.createElement("div");
+	slider.className = "slider";
+	sliderBar.className = "sliderBar";
+	sliderOption.appendChild(sliderBar);
+	sliderBar.appendChild(slider);
+	opts.appendChild(sliderOption);
+
+	console.log(initialValue);
+	initialValue = Math.min(Math.max(initialValue, min), max);
+	console.log(initialValue);
+
+	function setInitialPos() {
+		let initialPos;
+		if (snapValue) {
+			console.log(sliderBar.offsetWidth);
+			const stepSize = sliderBar.offsetWidth / ((max - min) / stepValue);
+			console.log(stepSize);
+			const stepCount = Math.round((initialValue - min) / stepValue);
+			console.log(stepCount);
+			initialPos = stepCount * stepSize;
+			console.log(initialPos);
+		}
+		else initialPos = (initialValue - min) / (max - min) * sliderBar.offsetWidth;
+
+		slider.style.left = `${initialPos}px`;
+	}
+
+	requestAnimationFrame(setInitialPos);
+
+	let dragging = false;
+	let moffx = 0;
+
+	function updateSliderPos(event) {
+		console.log(sliderBar.offsetWidth);
+		if (!dragging) return;
+		const offsetX = event.clientX - sliderOption.getBoundingClientRect().left - moffx;
+		let newpos = offsetX;
+
+		if (newpos < 0) newpos = 0;
+		else if (newpos > sliderBar.offsetWidth - 12) newpos = sliderBar.offsetWidth - 12;
+		let cpos = newpos;
+
+		if (snapValue) {
+			const stepSize = sliderBar.offsetWidth / ((max - min) / stepValue);
+			const stepCount = Math.round(cpos / stepSize);
+			// const stepCount = Math.floor(cpos/(sliderBar.offsetWidth/((max-min)/stepValue)));
+			// cpos = stepCount*(sliderBar.offsetWidth/((max-min)/stepValue));
+			cpos = stepCount * stepSize;
+		}
+
+		slider.style.left = `${cpos}px`;
+
+		let normalizedValue = (cpos / sliderBar.offsetWidth) * (max - min) + min;
+		if (snapValue && Number.isInteger(stepValue)) normalizedValue = Math.round(normalizedValue / stepValue) * stepValue;
+		cb(normalizedValue);
+	}
+
+	function stopDragging() {
+		dragging = false;
+		document.removeEventListener("mousemove", updateSliderPos);
+		document.removeEventListener("mouseup", stopDragging);
+	}
+
+	function startDragging(event) {
+		dragging = true;
+		moffx = event.clientX - slider.getBoundingClientRect().left;
+		document.addEventListener("mousemove", updateSliderPos);
+		document.addEventListener('mouseup', stopDragging);
+	}
+
+	slider.addEventListener("mousedown", startDragging);
+
+	return {
+		label: optionLabel,
+		slider,
+		bar: sliderBar
+	};
+}
+
+function showToolOpts(hide) {
+	let opts = toolOptsWindow.container;
+	const destroy = () => {
+		windowSys.delWindow(toolOptsWindow);
+		while (opts.firstChild) opts.removeChild(opts.firstChild);
+	}
+	if (hide) return destroy();
+	destroy();
+	// switch (player.tool.id) {
+	// 	case "cursor":
+	// 		let currentBrushSize = tools['cursor'].extra.brushSize;
+	// 		let brushSizeSlider = createSliderOption(opts, `Brush size: ${currentBrushSize}px`, currentBrushSize, (brushSize) => {
+	// 			tools['cursor'].extra.brushSize = brushSize;
+	// 			brushSizeSlider.label.innerText = `Brush size: ${brushSize}px`;
+	// 		}, 1, 16, true, 1);
+	// 		windowSys.addWindow(toolOptsWindow);
+	// 		toolOptsWindow.move(toolsWindow.container.parentElement.getBoundingClientRect().x + toolsWindow.container.parentElement.offsetWidth + 5, toolsWindow.container.parentElement.getBoundingClientRect().y);
+	// 		break;
+	// 	default: destroy();
+	// }
+}
+
 export function updateToolbar(win = toolsWindow) {
 	if (!win) {
 		return;
@@ -765,6 +875,7 @@ export function updateToolbar(win = toolsWindow) {
 	const container = win.container;
 	const toolButtonClick = name => event => {
 		player.tool = name;
+		showToolOpts(false);
 		sounds.play(sounds.click);
 	};
 
@@ -900,20 +1011,69 @@ eventSys.once(e.misc.toolsRendered, () => {
 	// Cursor tool
 	addTool(new Tool('Cursor', cursors.cursor, PLAYERFX.RECT_SELECT_ALIGNED(1), RANK.USER,
 		tool => {
+			tool.extra.brushSize = 1;
 			let lastX,
 				lastY;
 			tool.setEvent('mousedown mousemove', (mouse, event) => {
 				let usedButtons = 0b11; /* Left and right mouse buttons are always used... */
 				/* White color if right clicking */
-				let color = mouse.buttons === 2 ? [255, 255, 255] : player.selectedColor;
+				let color = mouse.buttons === 2 ? player.secondaryColor : player.selectedColor;
+				let brushSize = tool.extra.brushSize || 1;
+
+				const drawBrush = (x, y, r, cb) => {
+					for (let lx = -r; lx < r; lx++) {
+						for (let ly = -r; ly < r; ly++) {
+							if ((lx * lx) + (ly * ly) <= r * r) {
+								cb(x + lx, y + ly);
+							}
+						}
+					}
+
+					let t1 = r / 16, t2 = 0;
+					let cx = r;
+					let cy = 0;
+					while (cx >= cy) {
+						cb(x + cx, y + cy);
+						cb(x - cx, y + cy);
+						cb(x + cx, y - cy);
+						cb(x - cx, y - cy);
+
+						cb(x + cy, y + cx);
+						cb(x - cy, y + cx);
+						cb(x + cy, y - cx);
+						cb(x - cy, y - cx);
+
+						cy++;
+						t1 += cy;
+						t2 = t1 - cx;
+						if (t2 >= 0) {
+							t1 = t2;
+							cx--;
+						}
+					}
+				}
+
 				switch (mouse.buttons) {
 					case 1:
+						if (event.ctrlKey) {
+							let color = misc.world.getPixel(mouse.tileX, mouse.tileY);
+							player.selectedColor = color;
+							break;
+						}
 					case 2:
+						if (event.ctrlKey) {
+							let color = misc.world.getPixel(mouse.tileX, mouse.tileY);
+							player.secondaryColor = color;
+							break;
+						}
 						if (!lastX || !lastY) {
 							lastX = mouse.tileX;
 							lastY = mouse.tileY;
 						}
 						line(lastX, lastY, mouse.tileX, mouse.tileY, 1, (x, y) => {
+							// drawBrush(x, y, brushSize, (px, py) => {
+
+							// });
 							let pixel = misc.world.getPixel(x, y);
 							if (pixel !== null && !(color[0] === pixel[0] && color[1] === pixel[1] && color[2] === pixel[2])) {
 								misc.world.setPixel(x, y, color);
@@ -1640,7 +1800,7 @@ eventSys.once(e.misc.toolsRendered, () => {
 		tool.extra.newText = textData.newText;
 		tool.extra.cyrillic = textData.cyrillic;
 		let queue = [];
-		function tick(){
+		function tick() {
 			for (let i = queue.length - 1; i >= 0; i--) {
 				let pixel = queue[i];
 				if (misc.world.setPixel(pixel[0], pixel[1], player.selectedColor)) {
@@ -2523,6 +2683,9 @@ eventSys.once(e.init, () => {
 		wdow.container.id = "toole-container";
 		wdow.container.style.cssText = "max-width: 40px";
 	}).move(5, 32);
+	toolOptsWindow = new GUIWindow('Tool Options', {}, w => {
+		w.container.id = 'tool-options-container';
+	});
 });
 
 eventSys.once(e.misc.toolsInitialized, () => {
@@ -2534,6 +2697,7 @@ eventSys.once(e.misc.toolsInitialized, () => {
 
 eventSys.on(e.net.disconnected, () => {
 	showToolsWindow(false);
+	showToolOpts(true);
 });
 
 eventSys.on(e.misc.worldInitialized, () => {

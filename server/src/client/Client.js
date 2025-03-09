@@ -90,6 +90,7 @@ export class Client {
 	async checkIsLoggedIn() {
 		// console.log(this.accountToken);
 		if(this.ip.ip==="0000:0000:0000:0000:0000:ffff:7f00:0001"){
+			console.log("islocalhostdev")
 			if(this.ip.clients.size<2) this.accountToken = process.env.DEV_TEST_TOKEN;
 			else this.accountToken = process.env.DEV_TEST_TOKEN2;
 			await this.fetchUserInfo();

@@ -11,7 +11,7 @@ export class Bucket {
 	canSpend(count) {
 		if(this.infinite) return true;
 		this.allowance +=(Date.now()-this.lastCheck)/1000*(this.rate/this.time);
-		console.log(this.allowance);
+		// console.log(this.allowance);
 		this.lastCheck = Date.now();
 		if(this.allowance>this.rate) this.allowance=this.rate;
 		if(this.allowance<count) return false;

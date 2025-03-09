@@ -30,6 +30,7 @@ const palette = [
 	[0xAF, 0xBF, 0xD2], [0xFF, 0xFF, 0xFF], [0x2C, 0xE8, 0xF4], [0x04, 0x84, 0xD1]
 ];
 let paletteIndex = 0;
+let secondaryColor = [0xFF, 0xFF, 0xFF];
 
 export const undoHistory = [];
 
@@ -66,6 +67,11 @@ export const player = {
 		paletteIndex = absMod(i, palette.length);
 		updatePalette();
 	},
+	// get secondaryIndex() { return secondaryIndex; },
+	// set secondaryIndex(i) {
+	// 	secondaryIndex = absMod(i, palette.length);
+	// 	updatePalette();
+	// },
 	get htmlRgb() {
 		let selClr = player.selectedColor;
 		if (cachedHtmlRgb[0] === selClr) {
@@ -80,6 +86,11 @@ export const player = {
 	get selectedColor() { return palette[paletteIndex]; },
 	set selectedColor(c) {
 		addPaletteColor(c);
+	},
+	get secondaryColor() {return secondaryColor;},
+	set secondaryColor(c) {
+		addPaletteColor(c, true);
+		secondaryColor = c;
 	},
 	get palette() { return palette; },
 	get rank() { return rank },
@@ -99,9 +110,9 @@ export function shouldUpdate() { /* sets colorChanged to false when called */
 	return somethingChanged ? !(somethingChanged = false) : somethingChanged;
 }
 
-function changedColor() {
+function changedColor(isSecondary) {
 	updateClientFx();
-	updatePaletteIndex();
+	updatePaletteIndex(isSecondary);
 	somethingChanged = true;
 }
 
@@ -111,6 +122,11 @@ function updatePalette() {
 	let colorClick = (index) => () => {
 		paletteIndex = index;
 		changedColor();
+	};
+	let colorSecondary = (index) => () => {
+		// secondaryIndex = index;
+		secondaryColor = palette[index];
+		changedColor(true);
 	};
 	let colorDelete = (index) => () => {
 		if(palette.length > 1) {
@@ -134,13 +150,15 @@ function updatePalette() {
 					this.sel();
 					break;
 				case 2:
-					this.del();
+					if(e.ctrlKey) this.del();
+					else this.sec();
 					break;
 			}
 			return false;
 		}.bind({
 			sel: colorClick(i),
-			del: colorDelete(i)
+			del: colorDelete(i),
+			sec: colorSecondary(i)
 		});
 		element.oncontextmenu = () => false;
 		paletteColors.appendChild(element);
@@ -148,11 +166,19 @@ function updatePalette() {
 	changedColor();
 }
 
-function updatePaletteIndex() {
-	elements.paletteColors.style.transform = "translateY(" + (-paletteIndex * 40) + "px)";
+function updatePaletteIndex(isSecondary) {
+	if(!isSecondary) elements.paletteColors.style.transform = "translateY(" + (-paletteIndex * 40) + "px)";
+	else eventSys.emit(e.misc.secondaryColorSet);
 }
 
-function addPaletteColor(color) {
+function addPaletteColor(color, isSecondary) {
+	if(isSecondary){
+		if(!palette.includes(color)) palette.push(color);
+		secondaryColor = color;
+		changedColor(true);
+		updatePalette();
+		return;
+	}
 	for (let i = 0; i < palette.length; i++) {
 		if (palette[i][0] === color[0] && palette[i][1] === color[1] && palette[i][2] === color[2]) {
 			paletteIndex = i;
@@ -215,7 +241,7 @@ eventSys.on(e.net.sec.rank, newRank => {
 		case RANK.USER:
 		case RANK.NONE:
 			showDevChat(false);
-			showPlayerList(false);
+			showPlayerList(localStorage.showPlayerList==="true"?true:false);
 			revealSecrets(true);
 			break;
 
@@ -224,7 +250,7 @@ eventSys.on(e.net.sec.rank, newRank => {
 		case RANK.DEVELOPER:
 		case RANK.OWNER:
 			showDevChat(true);
-			showPlayerList(true);
+			showPlayerList(localStorage.showPlayerList==="true"?true:false);
 			revealSecrets(true);
 			//PublicAPI.tools = toolsApi; /* this is what lazyness does to you */
 			break;

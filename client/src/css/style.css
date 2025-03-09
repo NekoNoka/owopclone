@@ -57,6 +57,7 @@ hr {
 	box-shadow: 0px 0px 5px #000;
 	background-color: #6e0fae;
 	color:#fff;
+	pointer-events: none;
 }
 
 /* .tooltip {
@@ -271,6 +272,12 @@ button:focus {
 	pointer-events: none;
 	transition: transform 0.75s;
 }
+#secondary-color {
+	background-color:#fff;
+	width:10px;
+	height:10px;
+	display:inline-block;
+}
 #notice-display {
 	pointer-events: all;
 	cursor:pointer;
@@ -309,6 +316,59 @@ button:focus {
 
 #toole-container {
 	overflow: hidden;
+}
+#tool-options-container {
+	overflow: hidden;
+	color: #fff;
+}
+/* #tool-options-container > .toolOption {
+	min-height:100%;
+} */
+#tool-options-container .optionName {
+	/* display:inline-block; */
+	margin-right:5px;
+}
+#tool-options-container .slider {
+	background-color: #7f10c9;
+	/* min-height: inherit; */
+	height: 20px;
+	display:inline-block;
+	-webkit-transition: filter.125s cubic-bezier(0,0,0,1);
+	-moz-transition: filter.125s cubic-bezier(0,0,0,1);
+	transition: filter.125s cubic-bezier(0,0,0,1);
+	-webkit-filter: brightness(1);
+	filter: brightness(1);
+	width:10px;
+	-webkit-box-shadow: 1px 1px #00000048;
+	-moz-box-shadow: 1px 1px #00000048;
+	box-shadow: 1px 1px #00000048;
+	position: absolute;
+	left:0px;
+	top: 40px;
+	cursor: pointer;
+}
+#tool-options-container .slider:active {
+	-webkit-filter: brightness(90%);
+	filter: brightness(90%);
+	-webkit-box-shadow: 1px 1px none;
+	-moz-box-shadow: 1px 1px none;
+	box-shadow: 1px 1px none;
+	-webkit-transform: translateX(1px) translateY(1px);
+	-moz-transform: translateX(1px) translateY(1px);
+	transform: translateX(1px) translateY(1px);
+}
+#tool-options-container .slider:hover {
+	-webkit-filter: brightness(110%);
+	filter: brightness(110%);
+}
+#tool-options-container .sliderBar {
+	display:inline-block;
+	height:5px;
+	margin-left:auto;
+	margin-right:auto;
+	width:200px;
+	background-color:#1b0024;
+	/* transform: translateY(-2px); */
 }
 #playercount-display, #xy-display, #palette-create, #palette, .framed, #pbucket-display, #rank-display, .generic-display{
 	border: 5px #7f10c9 solid;

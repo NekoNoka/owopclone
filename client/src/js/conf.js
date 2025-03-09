@@ -34,6 +34,7 @@ export const EVENTS = {
 		windowClosed: ++evtId,
 		captchaToken: ++evtId,
 		loadingCaptcha: ++evtId,
+		secondaryColorSet: ++evtId,
 	},
 	renderer: {
 		addChunk: ++evtId,
