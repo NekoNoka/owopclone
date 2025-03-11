@@ -258,6 +258,7 @@ export class PixelManager {
 	}
 	setPixel(x, y, c, placeOnce = false) {
 		if (!this.enabled) return misc.world.setPixel(x, y, c);
+		this.ignoreProtectedChunks = player.rank >= RANK.MODERATOR;
 		if (!Number.isInteger(x) || !Number.isInteger(y)) return false;
 		if (!Array.isArray(c) || c.length < 3 || c.length > 4) return false;
 		if (c.length === 4) c.pop();
