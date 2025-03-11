@@ -1939,7 +1939,7 @@ eventSys.once(e.misc.toolsRendered, () => {
 		function tick() {
 			for (let i = queue.length - 1; i >= 0; i--) {
 				let pixel = queue[i];
-				if (misc.world.setPixel(pixel[0], pixel[1], player.selectedColor)) {
+				if (PM.setPixel(pixel[0], pixel[1], player.selectedColor)) {
 					queue.splice(i, 1);
 				}
 			}
@@ -2059,13 +2059,13 @@ eventSys.once(e.misc.toolsRendered, () => {
 					tool.extra.end = undefined;
 				}
 			} else if (mouse.buttons === 2 && tool.extra.end && isInside()) {
-				// PM.startHistory();
+				PM.startHistory();
 				// setText(tool.extra.text, [...tool.extra.start], (x, y) => PM.setPixel(x, y, tool.extra.state.rainbow ? Color.hue(x - y, 8) : player.selectedColor));
 				setText(tool.extra.text, [...tool.extra.start], (x, y) => {
 					queue.push([x, y]);
 				});
 				tool.setEvent('tick', tick);
-				// PM.endHistory();
+				PM.endHistory();
 				return true;
 			}
 		});
