@@ -16,5 +16,14 @@ export const colorUtils = {
 	toHTML: color => {
 		color = (color >> 16 & 0xFF | color & 0xFF00 | color << 16 & 0xFF0000).toString(16);
 		return '#' + ('000000' + color).substring(color.length);
+	},
+	toBGRInt(c) {
+		return (c[2] << 16 & 16711680) | (c[1] << 8 & 65280) | (c[0] & 255);
+	},
+	toInt(c) {
+		return (c[0] << 16 & 16711680) | (c[1] << 8 & 65280) | (c[2] & 255);
+	},
+	fromInt(n) {
+		return [(n & 16711680) >> 16, (n & 65280) >> 8, n & 255];
 	}
 }

@@ -6,7 +6,7 @@ import { elements, mouse, misc, showDevChat, showPlayerList, revealSecrets } fro
 import { colorUtils as color } from './util/color.js';
 import { renderer } from './canvas_renderer.js';
 import { cursors } from './tool_renderer.js';
-import { tools, toolsApi, updateToolbar, updateToolWindow } from './tools.js';
+import { tools, toolsApi, updateToolbar, updateToolWindow, showToolOpts } from './tools.js';
 import { Fx, PLAYERFX } from './Fx.js';
 import { net } from './networking.js';
 import { Bucket } from './util/Bucket.js';
@@ -209,6 +209,7 @@ function selectTool(name) {
 		toolSelected.call('deselect');
 	}
 	toolSelected = tool;
+	showToolOpts(false);
 	mouse.cancelMouseDown();
 	tool.call('select');
 	updateToolWindow(name);

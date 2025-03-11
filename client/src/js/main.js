@@ -26,10 +26,14 @@ import imgref from '../img/bignwop.png';
 import { stickyimg } from './stickyimg.js';
 import { tools } from "./tools.js";
 import { colorUtils } from "./util/color.js";
+import { PixelManager } from "./util/pixelTools.js";
 
 export { showDevChat, showPlayerList, statusMsg };
 
 const noticeId=0;
+
+export const PM = new PixelManager;
+PM.setup();
 
 export const keysDown = {};
 
@@ -129,7 +133,7 @@ function getNewWorldApi() {
 	defProp('getPixel');
 	defProp('setPixel');
 	defProp('undo');
-	// defProp('redo');
+	defProp('redo');
 	defProp('unloadFarChunks');
 	return obj;
 }
@@ -763,7 +767,8 @@ function init() {
 					if (!event.ctrlKey || !misc.world) {
 						break;
 					}
-					misc.world.undo(event.shiftKey);
+					if(event.shiftKey) PM.redo(event.altKey);
+					else PM.undo(event.altKey);
 					event.preventDefault();
 					break;
 

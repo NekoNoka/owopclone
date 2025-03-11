@@ -7,7 +7,7 @@ import { net } from './networking.js';
 import { player } from './local_player.js';
 import { camera, moveCameraTo, moveCameraBy, renderer, drawText } from './canvas_renderer.js';
 import { windowSys, GUIWindow, UtilDialog } from './windowsys.js';
-import { misc, elements, mouse, sounds, keysDown } from './main.js';
+import { misc, elements, mouse, sounds, keysDown, PM } from './main.js';
 import { PLAYERFX } from './Fx.js';
 
 export const tools = {};
@@ -845,7 +845,7 @@ function createSliderOption(opts, optionName, initialValue, cb, min = 0, max = 1
 	};
 }
 
-function showToolOpts(hide) {
+export function showToolOpts(hide) {
 	let opts = toolOptsWindow.container;
 	const destroy = () => {
 		windowSys.delWindow(toolOptsWindow);
@@ -854,15 +854,16 @@ function showToolOpts(hide) {
 	if (hide) return destroy();
 	destroy();
 	switch (player.tool.id) {
-		// case "cursor":
-		// 	let currentBrushSize = tools['cursor'].extra.brushSize;
-		// 	let brushSizeSlider = createSliderOption(opts, `Brush size: ${currentBrushSize}px`, currentBrushSize, (brushSize) => {
-		// 		tools['cursor'].extra.brushSize = brushSize;
-		// 		brushSizeSlider.label.innerText = `Brush size: ${brushSize}px`;
-		// 	}, 1, 16, true, 1);
-		// 	windowSys.addWindow(toolOptsWindow);
-		// 	toolOptsWindow.move(toolsWindow.container.parentElement.getBoundingClientRect().x + toolsWindow.container.parentElement.offsetWidth + 5, toolsWindow.container.parentElement.getBoundingClientRect().y);
-		// 	break;
+		case "cursor":
+			let currentBrushSize = tools['cursor'].extra.brushSize;
+			let brushSizeSlider = createSliderOption(opts, `Brush size: ${currentBrushSize}px`, currentBrushSize, (brushSize) => {
+				tools['cursor'].extra.brushSize = brushSize;
+				tools['cursor'].extra.brush = new Brush(0, 0, tools['cursor'].extra.brushSize-1, tools['cursor'].extra.brushSize-1, 0, 0);
+				brushSizeSlider.label.innerText = `Brush size: ${brushSize}px`;
+			}, 1, player.rank>=RANK.ARTIST?17:3, true, 1);
+			windowSys.addWindow(toolOptsWindow);
+			toolOptsWindow.move(toolsWindow.container.parentElement.getBoundingClientRect().x + toolsWindow.container.parentElement.offsetWidth + 5, toolsWindow.container.parentElement.getBoundingClientRect().y);
+			break;
 		default: destroy();
 	}
 }
@@ -1008,63 +1009,152 @@ export const toolsApi = PublicAPI.tools = {
 };
 
 class Brush {
-	constructor(size, type) {
-		this.size = size;
-		this.type = type;
+	constructor(x0, y0, x1, y1, hpx, vpx){
+		this.width = x1-x0+1;
+		this.height = y1-y0+1;
+		console.log(this.width, this.height);
+		this.centerX = Math.floor(this.width/2);
+		this.centerY = Math.floor(this.height/2);
+
+		this.bitmap = Array.from({length: this.height}, () => Array(this.width).fill(0));
+
+		this.algoEllipseFill(x0, y0, x1, y1, hpx, vpx, (x1, y, x2) => this.drawHLine(x1, y, x2));
 	}
 
-	drawEllipse(x0, y0, x1, y1, color, cb) {
-		this.algoEllipseFill(x0, y0, x1, y1, 0, 0, { color }, this.hlineForWorld, cb);
-	}
+	// regenerate(sx, sy){
+	// 	this.bitmap = null;
+	// 	this.width = sx+1;
+	// 	this.height = sy+1;
+	// 	this.centerX = Math.floor(this.width/2);
+	// 	this.centerY = Math.floor(this.height/2);
+	// 	this.bitmap = Array.from({length: this.height}, () => Array(this.width).fill(0));
+	// 	this.algoEllipseFill(0, 0, this.width, this.height, 0, 0, (x1, y, x2) => this.drawHLine(x1, y, x2));
+	// }
 
-	hlineForWorld(x1, y, x2, data, cb) {
-		for (let x = x1; x <= x2; x++) {
-			// misc.world.setPixel(x, y, data.color);
-			cb(x, y);
-		}
-	}
-
-	algoEllipseFill(x0, y0, x1, y1, hPixels, vPixels, data, proc, cb) {
-		this.adjustEllipseArgs(x0, y0, x1, y1, hPixels, vPixels);
-
+	algoEllipseFill(x0, y0, x1, y1, hpx, vpx, cb) {
+		console.log(this);
+		let res = this.adjustEllipseArgs(x0, y0, x1, y1, hpx, vpx);
+		x0 = res[0];
+		y0 = res[1];
+		x1 = res[2];
+		y1 = res[3];
+		hpx = res[4];
+		vpx = res[5];
+		let h = res[6];
+	
 		let a = Math.abs(x1 - x0), b = Math.abs(y1 - y0), b1 = b & 1;
 		let dx = 4 * (1.0 - a) * b * b, dy = 4 * (b1 + 1) * a * a;
 		let err = dx + dy + b1 * a * a, e2;
-
+	
 		y0 += (b + 1) / 2;
-		y1 = y0 - b1;
+		y1 = y0 - b1; // starting pixel
 		a = 8 * a * a;
 		b1 = 8 * b * b;
-
+	
+		let inity0 = y0;
+		let inity1 = y1;
+		let initx0 = x0;
+		let initx1 = x1 + hpx;
+	
 		do {
-			proc.call(this, x0, y0 + vPixels, x1 + hPixels, data, cb);
-			proc.call(this, x0, y1, x1 + hPixels, data, cb);
+			cb(x0, y0 + vpx, x1 + hpx);
+			cb(x0, y1, x1 + hpx);
 			e2 = 2 * err;
-			if (e2 <= dy) { y0++; y1--; err += dy += a; }
-			if (e2 >= dx || 2 * err > dy) { x0++; x1--; err += dx += b1; }
+			if (e2 <= dy) {
+				y0++;
+				y1--;
+				err += dy += a;
+			} // y step
+			if (e2 >= dx || 2 * err > dy) {
+				x0++;
+				x1--;
+				err += dx += b1;
+			} // x step
 		} while (x0 <= x1);
+	
+		while (y0 + vpx - y1 + 1 < h) {           // too early stop of flat ellipses a=1
+			cb(x0 - 1, ++y0 + vpx, x0 - 1); // -> finish tip of ellipse
+			cb(x1 + 1 + hpx, y0 + vpx, x1 + 1 + hpx);
+			cb(x0 - 1, --y1, x0 - 1);
+			cb(x1 + 1 + hpx, y1, x1 + 1 + hpx);
+		}
+	
+		if (vpx > 0) {
+			for (let i = inity1 + 1; i < inity0 + vpx; i++)
+			cb(initx0, i, initx1);
+		}
 	}
 
-	adjustEllipseArgs(x0, y0, x1, y1, hPixels, vPixels) {
-		hPixels = Math.max(hPixels, 0);
-		vPixels = Math.max(vPixels, 0);
+	adjustEllipseArgs(x0, y0, x1, y1, hpx, vpx) {
+		console.log("before: ", x0, y0, x1, y1, hpx, vpx);
+		hpx = Math.max(hpx, 0);
+		vpx = Math.max(vpx, 0);
+	
+		if (x0 > x1) {
+			let t;
+			t = x0;
+			x0 = x1;
+			x1 = t;
+		}
+		if (y0 > y1) {
+			let t;
+			t = y0;
+			y0 = y1;
+			y1 = t;
+		}
+		let w = x1 - x0 + 1;
+		let h = y1 - y0 + 1;
+	
+		let hDiameter = w - hpx;
+		let vDiameter = h - vpx;
+	
+		if (w == 8 || w == 12 || w == 22) hpx++;
+		if (h == 8 || h == 12 || h == 22) vpx++;
+	
+		hpx = hDiameter > 5 ? hpx : 0;
+		vpx = vDiameter > 5 ? vpx : 0;
+	
+		if ((hDiameter % 2 == 0) && (hDiameter > 5)) hpx--;
+		if ((vDiameter % 2 == 0) && (vDiameter > 5)) vpx--;
+	
+		x1 -= hpx;
+		y1 -= vpx;
+		console.log("after: ", x0, y0, x1, y1, hpx, vpx);
+		console.log("H: ", h);
+		return [x0, y0, x1, y1, hpx, vpx, h];
+	}
 
-		if (x0 > x1) [x0, x1] = [x1, x0];
-		if (y0 > y1) [y0, y1] = [y1, y0];
-		let w = x1 - x0 + 1, h = y1 - y0 + 1;
-		let hDiameter = w - hPixels, vDiameter = h - vPixels;
+	drawHLine(x1, y, x2) {
+		y = Math.floor(y);
+		console.log(this)
+		let t;
+		if (x1 > x2) {
+			t = x1;
+			x1 = x2;
+			x2 = t;
+		}
+		// console.log(x1, x2);
+		console.log(y);
+		for (let x = x1; x <= x2; x++) {
+			this.bitmap[y][x] = 1;
+		}
+		console.log("yep");
+	}
 
-		if ([8, 12, 22].includes(w)) hPixels++;
-		if ([8, 12, 22].includes(h)) vPixels++;
-
-		hPixels = (hDiameter > 5 ? hPixels : 0);
-		vPixels = (vDiameter > 5 ? vPixels : 0);
-
-		if ((hDiameter % 2 === 0) && (hDiameter > 5)) hPixels--;
-		if ((vDiameter % 2 === 0) && (vDiameter > 5)) vPixels--;
-
-		x1 -= hPixels;
-		y1 -= vPixels;
+	draw(x, y, color) {
+		for (let i = 0; i < this.height; i++) {
+			for (let j = 0; j < this.width; j++) {
+				if(this.bitmap[i][j]) {
+					const px = x + j - this.centerX;
+					const py = y + i - this.centerY;
+					let pixel = misc.world.getPixel(px, py);
+					if (pixel !== null && !(color[0] === pixel[0] && color[1] === pixel[1] && color[2] === pixel[2])) {
+						// misc.world.setPixel(px, py, color);
+						PM.setPixel(px, py, color);
+					}
+				}
+			}
+		}
 	}
 }
 
@@ -1073,12 +1163,18 @@ eventSys.once(e.misc.toolsRendered, () => {
 	addTool(new Tool('Cursor', cursors.cursor, PLAYERFX.RECT_SELECT_ALIGNED(1), RANK.USER,
 		tool => {
 			tool.extra.brushSize = 1;
+			tool.extra.brush = new Brush(0, 0, tool.extra.brushSize-1, tool.extra.brushSize-1, 0, 0);
 			let lastX,
-				lastY;
-			// let brush = new Brush(tool.extra.brushSize, 'circle');
+			lastY;
+			let last1PX;
+            let last1PY;
+            let last2PX;
+            let last2PY;
+            let start;
 			tool.setEvent('mousedown mousemove', (mouse, event) => {
 				let usedButtons = 0b11; /* Left and right mouse buttons are always used... */
 				/* White color if right clicking */
+				
 				let color = mouse.buttons === 2 ? player.secondaryColor : player.selectedColor;
 				let brushSize = tool.extra.brushSize - 1 || 0;
 
@@ -1098,7 +1194,13 @@ eventSys.once(e.misc.toolsRendered, () => {
 						if (!lastX || !lastY) {
 							lastX = mouse.tileX;
 							lastY = mouse.tileY;
+							last1PX = mouse.tileX;
+                            last1PY = mouse.tileY;
+                            last2PX = mouse.tileX;
+                            last2PY = mouse.tileY;
+                            start = true;
 						}
+						PM.startHistory();
 						line(lastX, lastY, mouse.tileX, mouse.tileY, 1, (x, y) => {
 							// brush.drawEllipse(x - brushSize /2, y - brushSize /2, x + brushSize /2, y + brushSize /2, color, (px, py)=>{
 							// 	let pixel = misc.world.getPixel(px, py);
@@ -1106,10 +1208,7 @@ eventSys.once(e.misc.toolsRendered, () => {
 							// 		misc.world.setPixel(px, py, color);
 							// 	}
 							// });
-							let pixel = misc.world.getPixel(x, y);
-							if (pixel !== null && !(color[0] === pixel[0] && color[1] === pixel[1] && color[2] === pixel[2])) {
-								misc.world.setPixel(x, y, color);
-							}
+							tool.extra.brush.draw(x, y, color);
 						});
 						lastX = mouse.tileX;
 						lastY = mouse.tileY;
@@ -1126,9 +1225,14 @@ eventSys.once(e.misc.toolsRendered, () => {
 				}
 				return usedButtons;
 			});
-			tool.setEvent('mouseup', mouse => {
+			tool.setEvent('mouseup deselect', mouse => {
+				PM.endHistory();
 				lastX = null;
 				lastY = null;
+				last1PX = undefined;
+				last1PY = undefined;
+				last2PX = undefined;
+				last2PY = undefined;
 			});
 		}
 	));
