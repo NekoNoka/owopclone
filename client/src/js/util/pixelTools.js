@@ -90,9 +90,9 @@ export class PixelManager {
 		this.redoStack = [];
 		this.actionStack = {};
 		this.record = false;
-		this.queue = {};
-		this.chunkQueue = {};
-		this.moveQueue = {};
+		this.queue = new Map();
+		this.chunkQueue = new Map();
+		this.moveQueue = new Map();
 		this.border = {};
 		this.checkMove = true;
 		this.renderBorder = false;
@@ -257,96 +257,125 @@ export class PixelManager {
 		this.updateBorder(p.x, p.y);
 	}
 	setPixel(x, y, c, placeOnce = false) {
-		console.log(x, y, c);
 		if (!this.enabled) return misc.world.setPixel(x, y, c);
+		
 		this.ignoreProtectedChunks = player.rank >= RANK.MODERATOR;
-		if (!Number.isInteger(x) || !Number.isInteger(y)) return false;
-		if (!Array.isArray(c) || c.length < 3 || c.length > 4) return false;
-		if (c.length === 4) c.pop();
-		if (c.find(e => !Number.isInteger(e) || e < 0 || e > 255) !== undefined) return false;
-		let p = new Pixel(x, y, c, placeOnce);
-		if (!this.ignoreProtectedChunks && misc.world.protectedChunks[`${p.cx},${p.cy}`]) return false;
-		if (this.record) {
-			let stack = this.actionStack[`${x},${y}`];
-			if (!(stack instanceof Action)) {
-				let beforePixel = new Pixel(x, y, this.getPixel(x, y, 1));
-				if (beforePixel.c !== p.c) this.actionStack[`${x},${y}`] = new Action(beforePixel, p);
-			} else {
-				stack.after_color = c;
-			}
+		
+		if (!(Number.isInteger(x) && Number.isInteger(y))) return false;
+		if (!Array.isArray(c) || c.length < 3) return false;
+	
+		// Normalize color and validate values
+		c = c.slice(0, 3); 
+		for (let i = 0; i < 3; i++) {
+			if (!(Number.isInteger(c[i]) && c[i] >= 0 && c[i] <= 255)) return false;
 		}
-		this.queue[`${p.x},${p.y}`] = p;
-		if (!this.chunkQueue[`${p.cx},${p.cy}`]) this.chunkQueue[`${p.cx},${p.cy}`] = new Chunk(p);
-		this.chunkQueue[`${p.cx},${p.cy}`].setPixel(p);
-		this.moveQueue[`${p.cx},${p.cy}`] = true;
-		this.updateBorder(p.x, p.y);
+	
+		const chunkKey = (x >> 4) + "," + (y >> 4);
+	
+		if (!this.ignoreProtectedChunks && misc.world.protectedChunks[chunkKey]) return false;
+	
+		// Directly apply the pixel change if recording is disabled
+		if (!this.record) return misc.world.setPixel(x, y, c);
+	
+		// Handle action recording efficiently
+		const posKey = x + "," + y;
+		let stack = this.actionStack[posKey];
+		
+		if (!(stack instanceof Action)) {
+			const beforePixel = this.getPixel(x, y, 1);
+			if (beforePixel !== c) this.actionStack[posKey] = new Action(new Pixel(x, y, beforePixel), new Pixel(x, y, c));
+		} else {
+			stack.after_color = c;
+		}
+	
+		// Update queues
+		let p = this.queue[posKey];
+		if (!p) {
+			p = new Pixel(x, y, c, placeOnce);
+			this.queue[posKey] = p;
+		} else {
+			p.c = c;
+		}
+	
+		if (!this.chunkQueue[chunkKey]) this.chunkQueue[chunkKey] = new Chunk(p);
+		this.chunkQueue[chunkKey].setPixel(p);
+		
+		this.moveQueue[chunkKey] = true;
+		this.updateBorder(x, y);
+		
 		this.checkMove = true;
 		return true;
 	}
+	
 	getPixel(x, y, a = true) {
-		if (!Number.isInteger(x) || !Number.isInteger(y)) return console.error("There is no inputs in \"getPixel\" on PixelManager instance.");
-		if (a && this.queue && this.queue[`${x},${y}`] && this.queue[`${x},${y}`].c && this.queue[`${x},${y}`].c) {
-			return this.queue[`${x},${y}`].c;
-		}
-		try {
-			misc.world.getPixel;
-		} catch (e) {
+		if (!(Number.isInteger(x) && Number.isInteger(y))) {
+			console.error('Invalid inputs for "getPixel" on PixelManager instance.');
 			return undefined;
 		}
-		return misc.world.getPixel(x, y);
+	
+		const posKey = x + "," + y;
+		if (a && this.queue[posKey]) return this.queue[posKey].c;
+	
+		return (typeof misc.world.getPixel === "function") ? misc.world.getPixel(x, y) : undefined;
 	}
+	
 	placePixel() {
+		const now = Date.now();
+		
 		if (player.rank >= RANK.MODERATOR && this.enableMod) {
-			let cx = Math.floor(mouse.tileX / 16);
-			let cy = Math.floor(mouse.tileY / 16);
+			const cx = mouse.tileX >> 4;
+			const cy = mouse.tileY >> 4;
+	
 			for (let i = 0; i < this.extra.chunkPlaceData.length; i++) {
-				let e = this.extra.chunkPlaceData[i][1];
-				let xchunk = cx + e.x;
-				let ychunk = cy + e.y;
-				let currentChunk = this.chunkQueue[`${xchunk},${ychunk}`];
-				if (!currentChunk || currentChunk.placed || (new Date().getTime() - currentChunk.t) <= 1) continue;
-				let k = !net.protocol.setChunk(xchunk, ychunk, currentChunk.data);
-				if (k) break;
-				for (let p of currentChunk.pixels) {
-					if (!p) continue;
-					p.placed = true;
+				const e = this.extra.chunkPlaceData[i][1];
+				const xchunk = cx + e.x;
+				const ychunk = cy + e.y;
+				const chunkKey = xchunk + "," + ychunk;
+				const currentChunk = this.chunkQueue[chunkKey];
+	
+				if (!currentChunk || currentChunk.placed || now - currentChunk.t <= 1) continue;
+	
+				if (!net.protocol.setChunk(xchunk, ychunk, currentChunk.data)) break;
+	
+				for (let j = 0; j < currentChunk.pixels.length; j++) {
+					if (currentChunk.pixels[j]) {
+						currentChunk.pixels[j].placed = true;
+					}
 				}
+	
 				currentChunk.placed = true;
 			}
 		} else {
+			const tX = mouse.tileX;
+			const tY = mouse.tileY;
+			const xcc = (tX >> 4) << 4;
+			const ycc = (tY >> 4) << 4;
+	
 			for (let i = 0; i < this.extra.placeData.length; i++) {
-				let e = this.extra.placeData[i][1];
-				let tX = mouse.tileX;
-				let tY = mouse.tileY;
-				let p = this.queue[`${tX + e.x},${tY + e.y}`];
+				const e = this.extra.placeData[i][1];
+				const posKey = (tX + e.x) + "," + (tY + e.y);
+				const p = this.queue[posKey];
 				if (!p) continue;
-				if (!this.ignoreProtectedChunks && misc.world.protectedChunks[`${p.cx},${p.cy}`]) continue;
-				let xcc = Math.floor(tX / 16) * 16;
-				let ycc = Math.floor(tY / 16) * 16;
-				if (p.x < (xcc - 31) || p.y < (ycc - 31) || p.x > (xcc + 46) || p.y > (ycc + 46)) continue;
-				let c = this.getPixel(p.x, p.y, 0);
+	
+				const chunkKey = p.cx + "," + p.cy;
+				if (!this.ignoreProtectedChunks && misc.world.protectedChunks[chunkKey]) continue;
+	
+				if (p.x < xcc - 31 || p.y < ycc - 31 || p.x > xcc + 46 || p.y > ycc + 46) continue;
+	
+				const c = this.getPixel(p.x, p.y, 0);
 				if (!c) continue;
+	
 				if (p.c.int !== color.toInt(c)) {
 					if (!p.placed) {
 						if (!(p.placed = misc.world.setPixel(p.x, p.y, p.c))) break;
-					} else {
-						if (!p.time) p.time = new Date().getTime();
-						if (new Date().getTime() - p.time > 0.25e3) {
-							// if (p.g) {
-							// 	p.g = false;
-							// 	p.placed = false;
-							// 	p.time = 0;
-							// } else {
-							// 	let c = color.fromInt(Math.floor(Math.random() * 16777215));
-							// 	misc.world.setPixel(p.x, p.y, c);
-							// 	p.g = true;
-							// 	p.time = new Date().getTime();
-							// }
-							misc.world.setPixel(p.x, p.y, p.c);
-							p.time = new Date().getTime();
-						}
+					} else if (!p.time || now - p.time > 250) {
+						misc.world.setPixel(p.x, p.y, p.c);
+						p.time = now;
 					}
-				} else if ((p.o && this.deletePixel(p), p.placed = true)) continue;
+				} else if (p.o) {
+					this.deletePixel(p);
+					p.placed = true;
+				}
 			}
 		}
 		this.moveToNext();

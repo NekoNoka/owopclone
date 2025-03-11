@@ -114,7 +114,7 @@ export var playerList = {};
 export var playerListTable = document.createElement("table");
 export var playerListWindow = new GUIWindow('Players', { closeable: true }, wdow => {
 	var tableHeader = document.createElement("tr");
-	tableHeader.innerHTML = "<th>Id</th><th>X</th><th>Y</th>";
+	tableHeader.innerHTML = "<th>Id</th><th>Nick</th><th>X</th><th>Y</th>";
 	playerListTable.appendChild(tableHeader);
 	wdow.container.appendChild(playerListTable);
 	wdow.container.id = "player-list";
@@ -176,8 +176,25 @@ function receiveMessage(rawText) {
 		if (data.type === 'info') message.className = 'serverInfo';
 		if (data.type === 'error') message.className = 'serverError';
 		if (data.type === 'motd') allowHTML = true;
+		if (data.action === 'updatePlayerNick'){
+			let newNick = data.newNick;
+			let target = data.targetId;
+			function waitForPlayer(){
+				// console.log(playerList[target.toString()]);
+				if(!misc.world||misc.world==null) return;
+				if(!misc.world.players[target.toString()]) return;
+				misc.world.players[target.toString()].knownNick = newNick;
+				// playerList[target].childNodes[1].innerHTML = newNick;
+				clearInterval(waitForPlayer);
+			}
+			setInterval(waitForPlayer, 10);
+			// find player in misc.world.players with id == target, players is an object not an array
+			
+			// if(playerList[target]) playerList[target].childNodes[1].innerHTML = newNick;
+		}
 		if (data.action === 'updateNick') {
 			let newNick = data.newNick;
+			player.knownNick = newNick;
 			if (newNick) misc.localStorage.nick = newNick;
 			else delete misc.localStorage.nick;
 		}

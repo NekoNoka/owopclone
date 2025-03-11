@@ -276,6 +276,7 @@ export class World {
 			if (player) {
 				player.update(u.x, u.y, u.rgb, u.tool);
 			} else {
+				console.log("AAAAAAAAAAAAa")
 				player = this.players[id] = new Player(u.x, u.y, u.rgb, u.tool, id);
 			}
 			if (!rendered && (isVisible(player.endX / 16, player.endY / 16, 4, 4)

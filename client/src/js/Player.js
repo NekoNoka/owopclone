@@ -11,6 +11,7 @@ export class Player {
 		this._x = new Lerp(x, x, 65);
 		this._y = new Lerp(y, y, 65);
 
+		this.knownNick = "None";
 		this.tool = tools[tool] || tools['cursor'];
 		this.fx = new Fx(tool ? tool.fxType : PLAYERFX.NONE, { player: this });
         this.fx.setVisible(misc.world.validMousePos(
@@ -25,7 +26,7 @@ export class Player {
         this.clr = color.toHTML(this.clr);
 
 		let playerListEntry = document.createElement("tr");
-		playerListEntry.innerHTML = "<td>" + this.id + "</td><td>" + Math.floor(x / 16) + "</td><td>" + Math.floor(y / 16) + "</td>";
+		playerListEntry.innerHTML = "<td>" + this.id + "</td><td>"+ this.knownNick + "</td><td>" + Math.floor(x / 16) + "</td><td>" + Math.floor(y / 16) + "</td>";
 		playerList[this.id] = playerListEntry;
 		playerListTable.appendChild(playerListEntry);
 	}
@@ -66,8 +67,9 @@ export class Player {
         this.rgb = rgb;
         this.htmlRgb = color.toHTML(color.u24_888(rgb[0], rgb[1], rgb[2]));
 
-		playerList[this.id].childNodes[1].innerHTML = Math.floor(x / 16);
-		playerList[this.id].childNodes[2].innerHTML = Math.floor(y / 16);
+		playerList[this.id].childNodes[1].innerHTML = this.knownNick;
+		playerList[this.id].childNodes[2].innerHTML = Math.floor(x / 16);
+		playerList[this.id].childNodes[3].innerHTML = Math.floor(y / 16);
     }
 
     disconnect() {

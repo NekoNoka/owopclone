@@ -773,20 +773,20 @@ function createSliderOption(opts, optionName, initialValue, cb, min = 0, max = 1
 	sliderBar.appendChild(slider);
 	opts.appendChild(sliderOption);
 
-	console.log(initialValue);
+	// console.log(initialValue);
 	initialValue = Math.min(Math.max(initialValue, min), max);
-	console.log(initialValue);
+	// console.log(initialValue);
 
 	function setInitialPos() {
 		let initialPos;
 		if (snapValue) {
-			console.log(sliderBar.offsetWidth);
+			// console.log(sliderBar.offsetWidth);
 			const stepSize = sliderBar.offsetWidth / ((max - min) / stepValue);
-			console.log(stepSize);
+			// console.log(stepSize);
 			const stepCount = Math.round((initialValue - min) / stepValue);
-			console.log(stepCount);
+			// console.log(stepCount);
 			initialPos = stepCount * stepSize;
-			console.log(initialPos);
+			// console.log(initialPos);
 		}
 		else initialPos = (initialValue - min) / (max - min) * sliderBar.offsetWidth;
 
@@ -799,7 +799,7 @@ function createSliderOption(opts, optionName, initialValue, cb, min = 0, max = 1
 	let moffx = 0;
 
 	function updateSliderPos(event) {
-		console.log(sliderBar.offsetWidth);
+		// console.log(sliderBar.offsetWidth);
 		if (!dragging) return;
 		const offsetX = event.clientX - sliderOption.getBoundingClientRect().left - moffx;
 		let newpos = offsetX;
@@ -1012,7 +1012,7 @@ class Brush {
 	constructor(x0, y0, x1, y1, hpx, vpx){
 		this.width = x1-x0+1;
 		this.height = y1-y0+1;
-		console.log(this.width, this.height);
+		// console.log(this.width, this.height);
 		this.centerX = Math.floor(this.width/2);
 		this.centerY = Math.floor(this.height/2);
 
@@ -1032,7 +1032,7 @@ class Brush {
 	// }
 
 	algoEllipseFill(x0, y0, x1, y1, hpx, vpx, cb) {
-		console.log(this);
+		// console.log(this);
 		let res = this.adjustEllipseArgs(x0, y0, x1, y1, hpx, vpx);
 		x0 = res[0];
 		y0 = res[1];
@@ -1086,7 +1086,7 @@ class Brush {
 	}
 
 	adjustEllipseArgs(x0, y0, x1, y1, hpx, vpx) {
-		console.log("before: ", x0, y0, x1, y1, hpx, vpx);
+		// console.log("before: ", x0, y0, x1, y1, hpx, vpx);
 		hpx = Math.max(hpx, 0);
 		vpx = Math.max(vpx, 0);
 	
@@ -1119,14 +1119,14 @@ class Brush {
 	
 		x1 -= hpx;
 		y1 -= vpx;
-		console.log("after: ", x0, y0, x1, y1, hpx, vpx);
-		console.log("H: ", h);
+		// console.log("after: ", x0, y0, x1, y1, hpx, vpx);
+		// console.log("H: ", h);
 		return [x0, y0, x1, y1, hpx, vpx, h];
 	}
 
 	drawHLine(x1, y, x2) {
 		y = Math.floor(y);
-		console.log(this)
+		// console.log(this)
 		let t;
 		if (x1 > x2) {
 			t = x1;
@@ -1134,11 +1134,11 @@ class Brush {
 			x2 = t;
 		}
 		// console.log(x1, x2);
-		console.log(y);
+		// console.log(y);
 		for (let x = x1; x <= x2; x++) {
 			this.bitmap[y][x] = 1;
 		}
-		console.log("yep");
+		// console.log("yep");
 	}
 
 	draw(x, y, color) {

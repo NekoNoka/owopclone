@@ -246,6 +246,15 @@ export class World {
 			},
 			text: this.motd.value
 		});
+		this.broadcastMessage({
+			sender: 'server',
+			data: {
+				type: 'info',
+				action: 'updatePlayerNick',
+				newNick: client.nick,
+				targetId: client.uid
+			}
+		});
 		client.lastUpdate = this.server.currentTick;
 		this.updateAllPlayers = true;
 		if (this.restricted.value) return;
