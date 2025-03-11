@@ -274,10 +274,9 @@ export class World {
 			let player = this.players[id];
 			let u = players[id];
 			if (player) {
-				player.update(u.x, u.y, u.rgb, u.tool);
+				player.update(u.x, u.y, u.rgb, u.tool, u.nick);
 			} else {
-				console.log("AAAAAAAAAAAAa")
-				player = this.players[id] = new Player(u.x, u.y, u.rgb, u.tool, id);
+				player = this.players[id] = new Player(u.x, u.y, u.rgb, u.tool, id, u.nick);
 			}
 			if (!rendered && (isVisible(player.endX / 16, player.endY / 16, 4, 4)
 					|| isVisible(player.x / 16, player.y / 16, 4, 4))) {

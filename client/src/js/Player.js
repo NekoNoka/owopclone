@@ -1,17 +1,17 @@
 'use strict';
 import { Lerp } from './util/Lerp';
 import { colorUtils as color } from './util/color';
-import { misc, playerList, playerListTable } from './main';
+import { misc, playerList, playerListTable, playerListWindow } from './main';
 import { Fx, PLAYERFX } from './Fx';
 import { tools } from './tools';
 
 export class Player {
-	constructor(x, y, rgb, tool, id) {
+	constructor(x, y, rgb, tool, id, nick) {
 		this.id = id.toString();
 		this._x = new Lerp(x, x, 65);
 		this._y = new Lerp(y, y, 65);
 
-		this.knownNick = "None";
+		this.knownNick = nick;
 		this.tool = tools[tool] || tools['cursor'];
 		this.fx = new Fx(tool ? tool.fxType : PLAYERFX.NONE, { player: this });
         this.fx.setVisible(misc.world.validMousePos(
@@ -29,6 +29,7 @@ export class Player {
 		playerListEntry.innerHTML = "<td>" + this.id + "</td><td>"+ this.knownNick + "</td><td>" + Math.floor(x / 16) + "</td><td>" + Math.floor(y / 16) + "</td>";
 		playerList[this.id] = playerListEntry;
 		playerListTable.appendChild(playerListEntry);
+		playerListWindow.container.updateDisplay();
 	}
 	
 	get tileX() {
@@ -70,12 +71,14 @@ export class Player {
 		playerList[this.id].childNodes[1].innerHTML = this.knownNick;
 		playerList[this.id].childNodes[2].innerHTML = Math.floor(x / 16);
 		playerList[this.id].childNodes[3].innerHTML = Math.floor(y / 16);
+		playerListWindow.container.updateDisplay();
     }
 
     disconnect() {
         this.fx.delete();
 
 		playerListTable.removeChild(playerList[this.id]);
+		playerListWindow.container.updateDisplay();
 		delete playerList[this.id];
     }
 }

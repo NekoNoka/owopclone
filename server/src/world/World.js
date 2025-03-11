@@ -344,7 +344,11 @@ export class World {
 		let playerUpdateCount = Math.min(this.playerUpdates.size, 255);
 		let pixelUpdateCount = this.pixelUpdates.length;
 		let disconnectCount = Math.min(this.playerDisconnects.size, 255);
-		let buffer = Buffer.allocUnsafeSlow(playerUpdateCount * 16 + pixelUpdateCount * 15 + disconnectCount * 4 + 5);
+		let nickBufferSize = 0;
+		for(let client of this.playerUpdates){
+			nickBufferSize+=Buffer.from(client.nick).length+4;
+		}
+		let buffer = Buffer.allocUnsafeSlow(nickBufferSize+playerUpdateCount * 16 + pixelUpdateCount * 15 + disconnectCount * 4 + 5);
 		buffer[0] = 0x01;
 		buffer[1] = playerUpdateCount;
 		let pos = 2;
@@ -360,6 +364,9 @@ export class World {
 			buffer[pos++] = client.g;
 			buffer[pos++] = client.b;
 			buffer[pos++] = client.tool;
+			let length = buffer.write(client.nick, pos + 4);
+			buffer.writeInt32LE(length, pos);
+			pos+=4+length;
 			this.playerUpdates.delete(client);
 			if (++count === 255) break;
 		}

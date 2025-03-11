@@ -110,6 +110,7 @@ sounds.place.src = placeSoundUrl;
 sounds.click = new Audio();
 sounds.click.src = clickSoundUrl;
 
+let plWidth = 0;
 export var playerList = {};
 export var playerListTable = document.createElement("table");
 export var playerListWindow = new GUIWindow('Players', { closeable: true }, wdow => {
@@ -119,6 +120,17 @@ export var playerListWindow = new GUIWindow('Players', { closeable: true }, wdow
 	wdow.container.appendChild(playerListTable);
 	wdow.container.id = "player-list";
 }).move(window.innerWidth - 240, 32);
+playerListWindow.container.updateDisplay = function(){
+	console.log("update");
+	let diff = playerListWindow.container.parentElement.offsetWidth - plWidth
+	console.log(playerListWindow.container.parentElement.offsetWidth);
+	console.log(plWidth);
+	console.log(diff);
+	if(diff!==0){
+		playerListWindow.move(playerListWindow.x - diff, playerListWindow.y);
+		plWidth = playerListWindow.container.parentElement.offsetWidth;
+	}	
+}
 
 function getNewWorldApi() {
 	let obj = {
@@ -176,22 +188,22 @@ function receiveMessage(rawText) {
 		if (data.type === 'info') message.className = 'serverInfo';
 		if (data.type === 'error') message.className = 'serverError';
 		if (data.type === 'motd') allowHTML = true;
-		if (data.action === 'updatePlayerNick'){
-			let newNick = data.newNick;
-			let target = data.targetId;
-			function waitForPlayer(){
-				// console.log(playerList[target.toString()]);
-				if(!misc.world||misc.world==null) return;
-				if(!misc.world.players[target.toString()]) return;
-				misc.world.players[target.toString()].knownNick = newNick;
-				// playerList[target].childNodes[1].innerHTML = newNick;
-				clearInterval(waitForPlayer);
-			}
-			setInterval(waitForPlayer, 10);
-			// find player in misc.world.players with id == target, players is an object not an array
+		// if (data.action === 'updatePlayerNick'){
+		// 	let newNick = data.newNick;
+		// 	let target = data.targetId;
+		// 	function waitForPlayer(){
+		// 		// console.log(playerList[target.toString()]);
+		// 		if(!misc.world||misc.world==null) return;
+		// 		if(!misc.world.players[target.toString()]) return;
+		// 		misc.world.players[target.toString()].knownNick = newNick;
+		// 		// playerList[target].childNodes[1].innerHTML = newNick;
+		// 		clearInterval(waitForPlayer);
+		// 	}
+		// 	setInterval(waitForPlayer, 10);
+		// 	// find player in misc.world.players with id == target, players is an object not an array
 			
-			// if(playerList[target]) playerList[target].childNodes[1].innerHTML = newNick;
-		}
+		// 	// if(playerList[target]) playerList[target].childNodes[1].innerHTML = newNick;
+		// }
 		if (data.action === 'updateNick') {
 			let newNick = data.newNick;
 			player.knownNick = newNick;
@@ -434,6 +446,7 @@ export function revealSecrets(bool) {
 function showPlayerList(bool) {
 	if (bool) {
 		windowSys.addWindow(playerListWindow);
+		plWidth = playerListWindow.container.parentElement.offsetWidth;
 	} else {
 		windowSys.delWindow(playerListWindow);
 	}

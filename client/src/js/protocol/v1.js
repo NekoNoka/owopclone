@@ -214,21 +214,34 @@ class ProtocolV1Impl extends Protocol {
 				//cursors
 				let updated = false;
 				let updates = {};
+				let pos = 2;
 				for (var i = dv.getUint8(1); i--;) {
 					updated = true;
-					var pid = dv.getUint32(2 + i * 16, true);
+					var pid = dv.getUint32(pos, true);
+					pos+=4;
+					let pmx = dv.getInt32(pos, true);
+					pos += 4;
+					let pmy = dv.getInt32(pos, true);
+					pos += 4;
+					let pr = dv.getUint8(pos);
+					pos += 1;
+					let pg = dv.getUint8(pos);
+					pos += 1;
+					let pb = dv.getUint8(pos);
+					pos += 1;
+					let ptool = dv.getUint8(pos);
+					pos += 1;
+					let nickLength = dv.getUint32(pos, true);
+					pos+=4;
+					let pnick = new TextDecoder().decode(new Uint8Array(dv.buffer, pos, nickLength));
+					pos+=nickLength;
 					if(pid===this.id) continue;
-					let pmx = dv.getInt32(2 + i * 16 + 4, true);
-	  				let pmy = dv.getInt32(2 + i * 16 + 8, true);
-	  				let pr = dv.getUint8(2 + i * 16 + 12);
-	  				let pg = dv.getUint8(2 + i * 16 + 13);
-	  				let pb = dv.getUint8(2 + i * 16 + 14);
-					let ptool = dv.getUint8(2 + i * 16 + 15);
 					updates[pid] = {
 						x: pmx,
 						y: pmy,
 						rgb: [pr, pg, pb],
-						tool: ProtocolV1.tools[ptool]
+						tool: ProtocolV1.tools[ptool],
+						nick: pnick
 					};
 					if(!this.players[pid]){
 						++this.playercount;
@@ -239,7 +252,7 @@ class ProtocolV1Impl extends Protocol {
 				if(updated){
 					eventSys.emit(e.net.world.playersMoved, updates);
 				}
-				let off = 2 + dv.getUint8(1) * 16;
+				let off = pos;
 				//tile update
 				updated = false;
 				updates = [];
