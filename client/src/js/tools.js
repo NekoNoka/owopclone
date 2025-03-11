@@ -1599,7 +1599,7 @@ eventSys.once(e.misc.toolsRendered, () => {
 				let y = current[1];
 				let thisClr = misc.world.getPixel(x, y);
 				if (eq(thisClr, fillingColor) && !eq(thisClr, selClr)) {
-					if (!misc.world.setPixel(x, y, selClr)) {
+					if (!PM.setPixel(x, y, selClr)) {
 						queue.push(current);
 						break;
 					}
@@ -1636,6 +1636,7 @@ eventSys.once(e.misc.toolsRendered, () => {
 			if (!(mouse.buttons & 0b100)) {
 				fillingColor = misc.world.getPixel(mouse.tileX, mouse.tileY);
 				if (fillingColor) {
+					PM.startHistory();
 					queue.push([mouse.tileX, mouse.tileY]);
 					tool.setEvent('tick', tick);
 				}
@@ -1643,6 +1644,7 @@ eventSys.once(e.misc.toolsRendered, () => {
 		});
 		tool.setEvent('mouseup deselect', mouse => {
 			if (!mouse || !(mouse.buttons & 0b1)) {
+				PM.endHistory();
 				fillingColor = null;
 				queue = [];
 				tool.setEvent('tick', null);
@@ -1688,7 +1690,7 @@ eventSys.once(e.misc.toolsRendered, () => {
 				let current = queue.pop();
 				let c = misc.world.getPixel(current[0], current[1]);
 				let pc = player.selectedColor;
-				if ((c[0] != pc[0] || c[1] != pc[1] || c[2] != pc[2]) && !misc.world.setPixel(current[0], current[1], player.selectedColor)) {
+				if ((c[0] != pc[0] || c[1] != pc[1] || c[2] != pc[2]) && !PM.setPixel(current[0], current[1], player.selectedColor)) {
 					queue.push(current);
 					break;
 				}
@@ -1721,9 +1723,11 @@ eventSys.once(e.misc.toolsRendered, () => {
 					return;
 				}
 				if (player.rank >= RANK.ADMIN) {
+					PM.startHistory();
 					line(start[0], start[1], end[0], end[1], (x, y) => {
-						misc.world.setPixel(x, y, player.selectedColor);
+						PM.setPixel(x, y, player.selectedColor);
 					});
+					PM.endHistory();
 					start = null;
 					end = null;
 				} else {
@@ -1794,7 +1798,7 @@ eventSys.once(e.misc.toolsRendered, () => {
 		function tick() {
 			for (let i = queue.length - 1; i >= 0; i--) {
 				let pixel = queue[i];
-				if (misc.world.setPixel(pixel[0], pixel[1], player.selectedColor)) {
+				if (PM.setPixel(pixel[0], pixel[1], player.selectedColor)) {
 					queue.splice(i, 1);
 				}
 			}
@@ -1803,6 +1807,7 @@ eventSys.once(e.misc.toolsRendered, () => {
 				start = null;
 				end = null;
 				tool.setEvent("tick", null);
+				PM.endHistory();
 			}
 		}
 		tool.setEvent("mousedown", mouse => {
@@ -1828,6 +1833,7 @@ eventSys.once(e.misc.toolsRendered, () => {
 				circle(start[0], start[1], end[0], end[1], (x, y) => {
 					queue.push([x, y]);
 				});
+				PM.startHistory();
 				tool.setEvent("tick", tick);
 			}
 		});
@@ -1874,9 +1880,10 @@ eventSys.once(e.misc.toolsRendered, () => {
 		});
 
 		function tick() {
+
 			for (let i = queue.length - 1; i >= 0; i--) {
 				let pixel = queue[i];
-				if (misc.world.setPixel(pixel[0], pixel[1], player.selectedColor)) {
+				if (PM.setPixel(pixel[0], pixel[1], player.selectedColor)) {
 					queue.splice(i, 1);
 				}
 			}
@@ -1885,6 +1892,7 @@ eventSys.once(e.misc.toolsRendered, () => {
 				start = null;
 				end = null;
 				tool.setEvent("tick", null);
+				PM.endHistory();
 			}
 		}
 
@@ -1913,6 +1921,7 @@ eventSys.once(e.misc.toolsRendered, () => {
 				rectangle(start[0], start[1], end[0], end[1], (x, y) => {
 					queue.push([x, y]);
 				});
+				PM.startHistory();
 				tool.setEvent("tick", tick);
 			}
 		});

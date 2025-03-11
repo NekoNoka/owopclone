@@ -257,6 +257,7 @@ export class PixelManager {
 		this.updateBorder(p.x, p.y);
 	}
 	setPixel(x, y, c, placeOnce = false) {
+		console.log(x, y, c);
 		if (!this.enabled) return misc.world.setPixel(x, y, c);
 		this.ignoreProtectedChunks = player.rank >= RANK.MODERATOR;
 		if (!Number.isInteger(x) || !Number.isInteger(y)) return false;

@@ -4,7 +4,7 @@ import { eventSys } from './global';
 import { colorUtils } from './util/color';
 import { net } from './networking';
 import { camera, isVisible, renderer } from './canvas_renderer';
-import { mouse, sounds } from './main';
+import { mouse, PM, sounds } from './main';
 import { player } from './local_player';
 import { Player } from './Player';
 import { Fx } from './Fx';
@@ -256,7 +256,10 @@ export class World {
 			let chunk = this.chunks[key];
 			if (chunk) {
 				chunksUpdated[key] = chunk;
+				// console.log(t);
 				chunk.update(t.x, t.y, t.rgb);
+				if(t.id!==player.id) PM.unsetPixel(t.x, t.y, t.rgb);
+				PM.setPixel(t.x, t.y, t.rgb);
 			}
 		}
 		for (let c in chunksUpdated) {
