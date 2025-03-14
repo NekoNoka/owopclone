@@ -121,11 +121,11 @@ export var playerListWindow = new GUIWindow('Players', { closeable: true }, wdow
 	wdow.container.id = "player-list";
 }).move(window.innerWidth - 240, 32);
 playerListWindow.container.updateDisplay = function(){
-	console.log("update");
+	// console.log("update");
 	let diff = playerListWindow.container.parentElement.offsetWidth - plWidth
-	console.log(playerListWindow.container.parentElement.offsetWidth);
-	console.log(plWidth);
-	console.log(diff);
+	// console.log(playerListWindow.container.parentElement.offsetWidth);
+	// console.log(plWidth);
+	// console.log(diff);
 	if(diff!==0){
 		playerListWindow.move(playerListWindow.x - diff, playerListWindow.y);
 		plWidth = playerListWindow.container.parentElement.offsetWidth;
