@@ -365,7 +365,6 @@ export class PixelManager {
 				if (p.c.int !== color.toInt(c)) {
 					if (!p.placed) {
 						p.placed = misc.world.setPixel(p.x, p.y, p.c);
-						if (!p.placed) break;
 					} else if (!p.time || Date.now() - p.time > 250) {
 						misc.world.setPixel(p.x, p.y, p.c);
 						p.time = Date.now();
