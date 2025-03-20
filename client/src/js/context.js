@@ -5,9 +5,9 @@ let contextMenu = document.createElement("div");
 contextMenu.className = "context-menu";
 
 function removeMenu(event) {
-		document.body.removeChild(contextMenu);
-		document.removeEventListener("click", removeMenu);
-		shown = false;
+	document.body.removeChild(contextMenu);
+	document.removeEventListener("click", removeMenu);
+	shown = false;
 }
 
 export function createContextMenu(x, y, buttons) {
@@ -16,7 +16,7 @@ export function createContextMenu(x, y, buttons) {
 	}
 
 	contextMenu.innerHTML = "";
-	for (let i=0; i<buttons.length; i++) {
+	for (let i = 0; i < buttons.length; i++) {
 		let button = document.createElement("button");
 		button.textContent = buttons[i][0];
 		button.addEventListener("click", buttons[i][1]);

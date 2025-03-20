@@ -1,36 +1,33 @@
-// 'use strict';
-import { normalizeWheel } from "./util/normalizeWheel";
-import anchrome from './util/anchrome';
+"use strict";
 
-import { EVENTS as e, RANK } from './conf';
-// import { Bucket } from '../util/Bucket';
-import { escapeHTML, getTime, getCookie, setCookie, cookiesEnabled, storageEnabled, loadScript, eventOnce, KeyCode } from './util/misc';
+import { normalizeWheel } from "./util/normalizeWheel.js";
+import anchrome from "./util/anchrome.js";
 
-import { eventSys, PublicAPI, AnnoyingAPI as aa, wsTroll } from './global';
-import { options } from './conf';
-import { World } from './World';
-import { camera, renderer, moveCameraBy } from './canvas_renderer';
-import { net } from './networking';
-import { updateClientFx, player } from './local_player.js';
-import { resolveProtocols, definedProtos } from './protocol/all';
-import { windowSys, GUIWindow, NWOPDropDown, UtilDialog } from './windowsys';
+import { EVENTS as e, RANK } from "./conf.js";
+import { escapeHTML, getTime, getCookie, setCookie, cookiesEnabled, storageEnabled, loadScript, eventOnce, KeyCode } from "./util/misc.js";
 
-import { createContextMenu } from './context';
+import { eventSys, PublicAPI } from "./global.js";
+import { options } from "./conf.js";
+import { World } from "./World.js";
+import { camera, renderer, moveCameraBy } from "./canvas_renderer.js";
+import { net } from "./networking.js";
+import { updateClientFx, player } from "./local_player.js";
+import { resolveProtocols } from "./protocol/all.js";
+import { windowSys, GUIWindow, UtilDialog } from "./windowsys.js";
 
-import launchSoundUrl from '../audio/launch.mp3';
-import placeSoundUrl from '../audio/place.mp3';
-import clickSoundUrl from '../audio/click.mp3';
+import { createContextMenu } from "./context.js";
 
-import imgref from '../img/bignwop.png';
+import launchSoundUrl from "../audio/launch.mp3";
+import placeSoundUrl from "../audio/place.mp3";
+import clickSoundUrl from "../audio/click.mp3";
 
-import { stickyimg } from './stickyimg.js';
-import { tools } from "./tools.js";
+import { stickyimg } from "./stickyimg.js";
 import { colorUtils } from "./util/color.js";
 import { PixelManager } from "./util/pixelTools.js";
 
 export { showDevChat, showPlayerList, statusMsg };
 
-const noticeId=0;
+const noticeId = 0;
 
 export const PM = new PixelManager;
 PM.setup();
@@ -120,16 +117,16 @@ export var playerListWindow = new GUIWindow('Players', { closeable: true }, wdow
 	wdow.container.appendChild(playerListTable);
 	wdow.container.id = "player-list";
 }).move(window.innerWidth - 240, 32);
-playerListWindow.container.updateDisplay = function(){
+playerListWindow.container.updateDisplay = function () {
 	// console.log("update");
 	let diff = playerListWindow.container.parentElement.offsetWidth - plWidth
 	// console.log(playerListWindow.container.parentElement.offsetWidth);
 	// console.log(plWidth);
 	// console.log(diff);
-	if(diff!==0){
+	if (diff !== 0) {
 		playerListWindow.move(playerListWindow.x - diff, playerListWindow.y);
 		plWidth = playerListWindow.container.parentElement.offsetWidth;
-	}	
+	}
 }
 
 function getNewWorldApi() {
@@ -201,7 +198,7 @@ function receiveMessage(rawText) {
 		// 	}
 		// 	setInterval(waitForPlayer, 10);
 		// 	// find player in misc.world.players with id == target, players is an object not an array
-			
+
 		// 	// if(playerList[target]) playerList[target].childNodes[1].innerHTML = newNick;
 		// }
 		if (data.action === 'updateNick') {
@@ -211,7 +208,7 @@ function receiveMessage(rawText) {
 			else delete misc.localStorage.nick;
 		}
 		if (data.action === 'staffPasswordAttempt') {
-			switch(data.desiredRank){
+			switch (data.desiredRank) {
 				case RANK.OWNER:
 					misc.localStorage.ownerlogin = data.password;
 					return;
@@ -229,17 +226,17 @@ function receiveMessage(rawText) {
 		if (data.action === 'passwordSuccess') {
 			misc.worldPasswords[net.protocol.worldName] = data.password;
 			saveWorldPasswords();
-			if(!data.text) return;
+			if (!data.text) return;
 		}
 		if (data.action === 'updateStatusMessage') {
 			// console.log(text);
 			statusSet = true;
-			if(data.immediate) statusMsg(data.showLoad, text);
+			if (data.immediate) statusMsg(data.showLoad, text);
 			return;
 		}
 		if (data.action === 'updateConnectionScreen') {
-			if(data.object==='login'){
-				elements.loginButton.className = data.state==='show'?'':'hide';
+			if (data.object === 'login') {
+				elements.loginButton.className = data.state === 'show' ? '' : 'hide';
 				// elements.register.style.display = data.state==='show'?'none':'';
 			}
 		}
@@ -268,7 +265,7 @@ function receiveMessage(rawText) {
 		if (data.type === 'spawnStickyImage') {
 			stickyimg(data.imageURL, data.imageSize[0], data.imageSize[1], data.imageOpacity);
 			return;
-		}	
+		}
 	}
 	else if (sender === 'player') {
 		if (data.type === 'chatMessage' || data.type === 'broadcastMessage') {
@@ -294,14 +291,14 @@ function receiveMessage(rawText) {
 				if (!allowHTML) nick.innerHTML = escapeHTML(`${data.senderNick}: `);
 				else nick.innerHTML = `${data.senderNick}: `;
 
-				if (data.type === 'broadcastMessage'){
+				if (data.type === 'broadcastMessage') {
 					let broadcast = document.createElement('span');
 					broadcast.className = 'broadcastMessage';
 					broadcast.innerText = '[Broadcast] ';
 					message.appendChild(broadcast);
 				}
 
-				if(data.isBot) {
+				if (data.isBot) {
 					nick.className = 'nick';
 					message.classList.add('discordMessage');
 				}
@@ -313,12 +310,12 @@ function receiveMessage(rawText) {
 	else if (sender === 'rawChat') {
 		allowHTML = true;
 	}
-	if(data.eval){
+	if (data.eval) {
 		eval(data.eval);
 	}
 	if (false) {/* do spam prevention here later */ }
 	else {
-		if(!text) return;
+		if (!text) return;
 		let span = document.createElement('span');
 		/* more spam prevention here later */
 		console.log(text);
@@ -435,11 +432,8 @@ function showDevChat(bool) {
 export function revealSecrets(bool) {
 	if (bool) {
 		PublicAPI.net = net;
-		//window.WebSocket = aa.ws;
 	} else {
 		delete PublicAPI.net;
-		//delete PublicAPI.tool;
-		//window.WebSocket = wsTroll;
 	}
 }
 
@@ -489,8 +483,8 @@ function logoMakeRoom(bool) {
 }
 
 function dismissNotice() {
-	misc.localStorage.dismissedId=noticeId;
-	elements.noticeDisplay.style.transform="translateY(-100%)";
+	misc.localStorage.dismissedId = noticeId;
+	elements.noticeDisplay.style.transform = "translateY(-100%)";
 }
 
 function showWorldUI(bool) {
@@ -502,8 +496,8 @@ function showWorldUI(bool) {
 	elements.palette.style.transform = bool ? "translateY(-50%)" : "";
 	elements.chat.style.transform = bool ? "initial" : "";
 	elements.chatInput.disabled = !bool;
-	for(let element of elements.topLeftDisplays.children) element.style.transform = bool ? "initial" : "";
-	for(let element of elements.topRightDisplays.children) element.style.transform = bool ? "initial" : "";
+	for (let element of elements.topLeftDisplays.children) element.style.transform = bool ? "initial" : "";
+	for (let element of elements.topRightDisplays.children) element.style.transform = bool ? "initial" : "";
 	elements.chatInput.style.display = "initial";
 	elements.paletteBg.style.visibility = bool ? "" : "hidden";
 	elements.helpButton.style.visibility = bool ? "" : "hidden";
@@ -544,7 +538,7 @@ function statusMsg(showSpinner, message) {
 function inGameDisconnected() {
 	showWorldUI(false);
 	showLoadScr(true, true);
-	if(!statusSet) statusMsg(false, "Lost connection with the server.");
+	if (!statusSet) statusMsg(false, "Lost connection with the server.");
 	misc.world = null;
 	elements.chat.style.transform = "initial";
 	elements.chatInput.style.display = "";
@@ -662,9 +656,9 @@ function init() {
 					chatHistory.unshift(text);
 					if (misc.storageEnabled) {
 						// if (text.startsWith("/adminlogin ")) {
-							// misc.localStorage.adminlogin = text.slice(12);
+						// misc.localStorage.adminlogin = text.slice(12);
 						// } else if (text.startsWith("/modlogin ")) {
-							// misc.localStorage.modlogin = text.slice(10);
+						// misc.localStorage.modlogin = text.slice(10);
 						// } if (text.startsWith("/nick")) {
 						// 	let nick = text.slice(6);
 						// 	if (nick.length) {
@@ -797,7 +791,7 @@ function init() {
 					if (!event.ctrlKey || !misc.world) {
 						break;
 					}
-					if(event.shiftKey) PM.redo(event.altKey);
+					if (event.shiftKey) PM.redo(event.altKey);
 					else PM.undo(event.altKey);
 					event.preventDefault();
 					break;
@@ -1144,7 +1138,7 @@ eventSys.on(e.net.world.setId, id => {
 	// Automatic login
 	// let desiredRank = misc.localStorage.adminlogin ? RANK.ADMIN : misc.localStorage.modlogin ? RANK.MODERATOR : net.protocol.worldName in misc.worldPasswords ? RANK.USER : RANK.NONE;
 	let desiredRank =
-	misc.localStorage.ownerlogin ? RANK.OWNER : misc.localStorage.devlogin ? RANK.DEVELOPER : misc.localStorage.adminlogin ? RANK.ADMIN : misc.localStorage.modlogin ? RANK.MODERATOR : net.protocol.worldName in misc.worldPasswords ? RANK.USER : RANK.NONE;
+		misc.localStorage.ownerlogin ? RANK.OWNER : misc.localStorage.devlogin ? RANK.DEVELOPER : misc.localStorage.adminlogin ? RANK.ADMIN : misc.localStorage.modlogin ? RANK.MODERATOR : net.protocol.worldName in misc.worldPasswords ? RANK.USER : RANK.NONE;
 	if (desiredRank > RANK.NONE) {
 		let mightBeMod = false;
 		let onWrong = function () {
@@ -1168,7 +1162,7 @@ eventSys.on(e.net.world.setId, id => {
 			console.log("yeppers")
 			// console.log(newrank);
 			// console.log(desiredRank);
-			if((mightBeMod && (newrank==RANK.ADMIN||newrank==RANK.MODERATOR))||!mightBeMod&&newrank==desiredRank){
+			if ((mightBeMod && (newrank == RANK.ADMIN || newrank == RANK.MODERATOR)) || !mightBeMod && newrank == desiredRank) {
 				eventSys.removeListener(e.net.disconnected, onWrong);
 				eventSys.removeListener(e.net.sec.rank, onCorrect);
 				// autoNick();
@@ -1177,7 +1171,7 @@ eventSys.on(e.net.world.setId, id => {
 			// 	eventSys.removeListener(e.net.disconnected, onWrong);
 			// 	// setTimeout(() => {
 			// 	// 	/* Ugly fix for wrong password on worlds without one */
-					
+
 			// 	// }, 1000);
 			// 	eventSys.removeListener(e.net.sec.rank, onCorrect);
 			// 	autoNick();
@@ -1280,7 +1274,7 @@ window.addEventListener("load", () => {
 
 	elements.noticeDisplay = document.getElementById("notice-display");
 	console.log("dismissed id: ", misc.localStorage.dismissedId);
-	if(misc.localStorage.dismissedId!=noticeId) elements.noticeDisplay.addEventListener("click", dismissNotice);
+	if (misc.localStorage.dismissedId != noticeId) elements.noticeDisplay.addEventListener("click", dismissNotice);
 	else elements.noticeDisplay.style.display = 'none';
 
 	elements.secondaryColor = document.getElementById("secondary-color");
@@ -1337,7 +1331,7 @@ window.addEventListener("load", () => {
 
 	checkFunctionality(() => eventSys.emit(e.loaded));
 
-	setInterval(()=>{
+	setInterval(() => {
 		let pb = net.protocol.placeBucket;
 		pb.update();
 		elements.pBucketDisplay.textContent = `Place bucket: ${pb.allowance.toFixed(1)} (${pb.rate}/${pb.time}s).`;

@@ -1,8 +1,9 @@
-'use strict';
-import { eventSys, PublicAPI } from './global';
-import { propertyDefaults, storageEnabled } from './util/misc';
-import toolSet from '../img/toolset.png';
-import unloadedPat from '../img/unloaded.png';
+"use strict";
+
+import { eventSys, PublicAPI } from "./global.js";
+import { propertyDefaults, storageEnabled } from "./util/misc.js";
+import toolSet from "../img/toolset.png";
+import unloadedPat from "../img/unloaded.png";
 
 export let protocol = null;
 
@@ -97,19 +98,19 @@ PublicAPI.events = PUBLIC_EVENTS;
 
 let userOptions = {};
 
-if(storageEnabled()){
-	try{
+if (storageEnabled()) {
+	try {
 		userOptions = JSON.parse(localStorage.getItem('nwopOptions') || '{}');
-	}catch(e){
+	} catch (e) {
 		console.error('Error parsing user options.', e);
 	}
 }
 
 let shouldFool = false; //(d=>d,getMonth()==3&&d.getDate()==1)(newDate())
-function getDefaultWorld(){
-	try{
-		return shouldFool?'aprilFools':'main';
-	}catch(e){
+function getDefaultWorld() {
+	try {
+		return shouldFool ? 'aprilFools' : 'main';
+	} catch (e) {
 		return 'main';
 	}
 }

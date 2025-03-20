@@ -1,11 +1,11 @@
 "use strict";
-import { colorUtils as color } from './util/color.js';
-import { EVENTS as e, protocol, RANK, options } from './conf.js';
-import { getTime } from './util/misc.js';
-import { eventSys, PublicAPI } from './global.js';
-import { camera, renderer, ghosts, Ghost } from './canvas_renderer.js';
-import { player } from './local_player.js';
-import { misc } from './main.js';
+
+import { colorUtils as color } from "./util/color.js";
+import { EVENTS as e, protocol, RANK, options } from "./conf.js";
+import { getTime } from "./util/misc.js";
+import { eventSys, PublicAPI } from "./global.js";
+import { camera, renderer } from "./canvas_renderer.js";
+import { player } from "./local_player.js";
 
 export const PLAYERFX = {
 	NONE: null,
@@ -54,7 +54,7 @@ export const activeFx = [];
 /*PublicAPI.activeFx = activeFx;*/
 
 export class Fx {
-    constructor(renderFunc, extra) {
+	constructor(renderFunc, extra) {
 		this.visible = true;
 		this.renderFunc = renderFunc;
 		this.extra = extra || {};
@@ -88,7 +88,7 @@ export class Fx {
 
 	delete() {
 		let i = activeFx.indexOf(this);
-		if(i !== -1) {
+		if (i !== -1) {
 			activeFx.splice(i, 1);
 		}
 	}
@@ -108,7 +108,7 @@ eventSys.on(e.net.world.tilesUpdated, tiles => {
 		let t = tiles[i];
 
 		if (camera.isVisible(t.x, t.y, 1, 1)) {
-			new Fx(WORLDFX.RECT_FADE_ALIGNED(1, t.x, t.y), { htmlRgb: color.toHTML(t.rgb ^ 0xFFFFFF) , tag: '' + t.id});
+			new Fx(WORLDFX.RECT_FADE_ALIGNED(1, t.x, t.y), { htmlRgb: color.toHTML(t.rgb ^ 0xFFFFFF), tag: '' + t.id });
 			made = true;
 		}
 	}

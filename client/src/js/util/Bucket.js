@@ -1,7 +1,7 @@
-'use strict';
+"use strict";
 
 export class Bucket {
-	constructor(rate, time){
+	constructor(rate, time) {
 		this.lastCheck = Date.now();
 		this.allowance = rate;
 		this.rate = rate;
@@ -9,18 +9,18 @@ export class Bucket {
 		this.infinite = false;
 	}
 	canSpend(count) {
-		if(this.infinite) return true;
-		this.allowance +=(Date.now()-this.lastCheck)/1000*(this.rate/this.time);
+		if (this.infinite) return true;
+		this.allowance += (Date.now() - this.lastCheck) / 1000 * (this.rate / this.time);
 		// console.log(this.allowance);
 		this.lastCheck = Date.now();
-		if(this.allowance>this.rate) this.allowance=this.rate;
-		if(this.allowance<count) return false;
-		this.allowance-=count;
+		if (this.allowance > this.rate) this.allowance = this.rate;
+		if (this.allowance < count) return false;
+		this.allowance -= count;
 		return true;
 	}
-	update(){
-		if(this.infinite) return this.allowance = Infinity;
-		this.allowance +=(Date.now()-this.lastCheck)/1000*(this.rate/this.time);
-		if(this.allowance>this.rate) this.allowance=this.rate;
+	update() {
+		if (this.infinite) return this.allowance = Infinity;
+		this.allowance += (Date.now() - this.lastCheck) / 1000 * (this.rate / this.time);
+		if (this.allowance > this.rate) this.allowance = this.rate;
 	}
 }

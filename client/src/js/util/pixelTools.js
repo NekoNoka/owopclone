@@ -1,10 +1,12 @@
+"use strict";
+
 import { EVENTS as e, RANK } from "../conf.js";
 import { eventSys } from "../global.js";
 import { misc, mouse, PM } from "../main.js";
 import { player } from "../local_player.js";
 import { net } from "../networking.js";
 import { centerCameraTo } from "../canvas_renderer.js";
-import { colorUtils as color } from "../util/color.js";
+import { colorUtils as color } from "./color.js";
 
 class Point {
 	constructor(x, y) {
@@ -258,23 +260,23 @@ export class PixelManager {
 	}
 	setPixel(x, y, c, placeOnce = false) {
 		if (!this.enabled) return misc.world.setPixel(x, y, c);
-	
+
 		this.ignoreProtectedChunks = player.rank >= RANK.MODERATOR;
-	
+
 		if (!Number.isInteger(x) || !Number.isInteger(y)) return false;
 		if (!Array.isArray(c) || c.length < 3 || c.length > 4) return false;
-	
+
 		// Ensure color values are valid
 		c = c.slice(0, 3); // Remove alpha if present
 		for (let i = 0; i < c.length; i++) {
 			if (!Number.isInteger(c[i]) || c[i] < 0 || c[i] > 255) return false;
 		}
-	
+
 		const p = new Pixel(x, y, c, placeOnce);
 		const chunkKey = p.cx + "," + p.cy;
-	
+
 		if (!this.ignoreProtectedChunks && misc.world.protectedChunks[chunkKey]) return false;
-	
+
 		if (this.record) {
 			const stack = this.actionStack[x + "," + y];
 			if (!(stack instanceof Action)) {
@@ -286,61 +288,61 @@ export class PixelManager {
 				stack.after_color = c;
 			}
 		}
-	
+
 		// **Immediate update in the world**
 		misc.world.setPixel(x, y, c);
-	
+
 		// **Queue Processing to Maintain Undo/Redo and Chunk Logic**
 		this.queue[p.x + "," + p.y] = p;
 		if (!this.chunkQueue[chunkKey]) this.chunkQueue[chunkKey] = new Chunk(p);
 		this.chunkQueue[chunkKey].setPixel(p);
-	
+
 		this.moveQueue[chunkKey] = true;
 		this.updateBorder(p.x, p.y);
-	
+
 		this.checkMove = true;
 		return true;
 	}
-	
+
 	getPixel(x, y, a = true) {
 		if (!Number.isInteger(x) || !Number.isInteger(y)) {
 			console.error('Invalid inputs for "getPixel" on PixelManager instance.');
 			return undefined;
 		}
-	
+
 		if (a && this.queue && this.queue[x + "," + y] && this.queue[x + "," + y].c) {
 			return this.queue[x + "," + y].c;
 		}
-	
+
 		if (typeof misc.world.getPixel === "function") {
 			return misc.world.getPixel(x, y);
 		}
-		
+
 		return undefined;
 	}
-	
+
 	placePixel() {
 		if (player.rank >= RANK.MODERATOR && this.enableMod) {
 			const cx = Math.floor(mouse.tileX / 16);
 			const cy = Math.floor(mouse.tileY / 16);
-	
+
 			for (let i = 0; i < this.extra.chunkPlaceData.length; i++) {
 				const e = this.extra.chunkPlaceData[i][1];
 				const xchunk = cx + e.x;
 				const ychunk = cy + e.y;
 				const chunkKey = xchunk + "," + ychunk;
 				const currentChunk = this.chunkQueue[chunkKey];
-	
+
 				if (!currentChunk || currentChunk.placed || Date.now() - currentChunk.t <= 1) continue;
-	
+
 				if (!net.protocol.setChunk(xchunk, ychunk, currentChunk.data)) break;
-	
+
 				for (let j = 0; j < currentChunk.pixels.length; j++) {
 					if (currentChunk.pixels[j]) {
 						currentChunk.pixels[j].placed = true;
 					}
 				}
-	
+
 				currentChunk.placed = true;
 			}
 		} else {
@@ -348,20 +350,20 @@ export class PixelManager {
 			const tY = mouse.tileY;
 			const xcc = Math.floor(tX / 16) * 16;
 			const ycc = Math.floor(tY / 16) * 16;
-	
+
 			for (let i = 0; i < this.extra.placeData.length; i++) {
 				const e = this.extra.placeData[i][1];
 				const p = this.queue[(tX + e.x) + "," + (tY + e.y)];
 				if (!p) continue;
-	
+
 				const chunkKey = p.cx + "," + p.cy;
 				if (!this.ignoreProtectedChunks && misc.world.protectedChunks[chunkKey]) continue;
-	
+
 				if (p.x < (xcc - 31) || p.y < (ycc - 31) || p.x > (xcc + 46) || p.y > (ycc + 46)) continue;
-	
+
 				const c = this.getPixel(p.x, p.y, 0);
 				if (!c) continue;
-	
+
 				if (p.c.int !== color.toInt(c)) {
 					if (!p.placed) {
 						p.placed = misc.world.setPixel(p.x, p.y, p.c);

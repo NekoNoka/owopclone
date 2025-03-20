@@ -26,6 +26,7 @@ const config = {
 	},
 	module: {
 		rules: [{
+			test: /\.js$/,
 			include: path.resolve(srcDir, 'js'),
 			use: [{
 				loader: 'babel-loader',

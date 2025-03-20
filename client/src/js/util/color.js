@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 export const colorUtils = {
 	to888: (R, G, B) => [(R * 527 + 23) >> 6, (G * 259 + 33) >> 6, (B * 527 + 23) >> 6],

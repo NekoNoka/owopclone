@@ -1,16 +1,15 @@
-'use strict';
-import { Protocol } from './Protocol';
-import { EVENTS as e, RANK, options } from '../conf';
-import { eventSys } from '../global';
-import { Chunk } from '../World';
-import { Bucket } from '../util/Bucket';
-import { decompress } from '../util/misc';
-import { loadAndRequestCaptcha } from '../captcha';
-import { colorUtils as color } from '../util/color';
-import { player, shouldUpdate, networkRankVerification } from '../local_player.js';
-import { camera } from '../canvas_renderer';
-import { mouse, elements } from '../main';
-import { retryingConnect } from '../main';
+"use strict";
+
+import { Protocol } from "./Protocol.js";
+import { EVENTS as e, RANK, options } from "../conf.js";
+import { eventSys } from "../global.js";
+import { Chunk } from "../World.js";
+import { Bucket } from "../util/Bucket.js";
+import { decompress } from "../util/misc.js";
+import { loadAndRequestCaptcha } from "../captcha.js";
+import { player, shouldUpdate, networkRankVerification } from "../local_player.js";
+import { mouse, elements } from "../main.js";
+import { retryingConnect } from "../main.js";
 
 export const captchaState = {
 	CA_WAITING: 0,
@@ -29,14 +28,14 @@ export const ProtocolV1 = {
 	worldBorder: 0xFFFFF,
 	chatBucket: [4, 6],
 	placeBucket: {
-		[RANK.NONE]: [0,1],
-		[RANK.USER]: [32,4],
+		[RANK.NONE]: [0, 1],
+		[RANK.USER]: [32, 4],
 		// [RANK.DONOR]: [32,3],
-		[RANK.ARTIST]: [64,3],
-		[RANK.MODERATOR]: [64,2],
-		[RANK.ADMIN]: [128,0],
-		[RANK.DEVELOPER]: [128,0],
-		[RANK.OWNER]: [128,0],
+		[RANK.ARTIST]: [64, 3],
+		[RANK.MODERATOR]: [64, 2],
+		[RANK.ADMIN]: [128, 0],
+		[RANK.DEVELOPER]: [128, 0],
+		[RANK.OWNER]: [128, 0],
 	},
 	maxMessageLength: {
 		[RANK.NONE]: 128,
@@ -102,28 +101,28 @@ export const ProtocolV1 = {
 	}
 };
 
-for(const id in ProtocolV1.tools){
-	if(+id>=0){
+for (const id in ProtocolV1.tools) {
+	if (+id >= 0) {
 		ProtocolV1.tools.id[ProtocolV1.tools[id]] = +id;
 	}
 }
 
-function stoi(string, max){
+function stoi(string, max) {
 	let ints = [];
 	let fstring = "";
 	string = string.toLowerCase();
-	for(let i=0;i<string.length&&i<max;i++){
+	for (let i = 0; i < string.length && i < max; i++) {
 		let charCode = string.charCodeAt(i);
-		if((charCode < 123 && charCode > 96)||(charCode < 58 && charCode > 47)|| charCode == 95 || charCode == 46){
-			fstring+=String.fromCharCode(charCode);
+		if ((charCode < 123 && charCode > 96) || (charCode < 58 && charCode > 47) || charCode == 95 || charCode == 46) {
+			fstring += String.fromCharCode(charCode);
 			ints.push(charCode);
 		}
 	}
-	return [ints,fstring];
+	return [ints, fstring];
 }
 
 class ProtocolV1Impl extends Protocol {
-	constructor(ws, worldName, captcha){
+	constructor(ws, worldName, captcha) {
 		super(ws);
 		super.hookEvents(this);
 		this.lastSentX = 0;
@@ -151,7 +150,7 @@ class ProtocolV1Impl extends Protocol {
 			this.placeBucket.lastCheck = Date.now();
 			this.placeBucket.allowance = 0;
 
-			this.interval = setInterval(()=>this.sendUpdates(), 1000/ ProtocolV1.netUpdateSpeed);
+			this.interval = setInterval(() => this.sendUpdates(), 1000 / ProtocolV1.netUpdateSpeed);
 		};
 
 		const rankChanged = rank => {
@@ -168,11 +167,11 @@ class ProtocolV1Impl extends Protocol {
 		eventSys.on(e.net.sec.rank, rankChanged);
 	}
 
-	errorHandler(err){
+	errorHandler(err) {
 		super.errorHandler(err);
 	}
 
-	closeHandler(){
+	closeHandler() {
 		super.closeHandler();
 		clearInterval(this.interval);
 		eventSys.emit(e.net.sec.rank, RANK.NONE);
@@ -180,11 +179,11 @@ class ProtocolV1Impl extends Protocol {
 		this.leaveFunc();
 	}
 
-	messageHandler(message){
+	messageHandler(message) {
 		// console.log(message);
 		message = message.data;
 		if (typeof message === 'string') {
-			if(message.indexOf("DEV")==0) eventSys.emit(e.net.devChat, message.slice(3));
+			if (message.indexOf("DEV") == 0) eventSys.emit(e.net.devChat, message.slice(3));
 			else {
 				eventSys.emit(e.net.chat, message);
 			}
@@ -193,7 +192,7 @@ class ProtocolV1Impl extends Protocol {
 
 		let dv = new DataView(message);
 		let oc = ProtocolV1.opCode.server;
-		switch(dv.getUint8(0)){
+		switch (dv.getUint8(0)) {
 			case oc.setId:
 				let id = dv.getUint32(1, true);
 				this.id = id;
@@ -218,7 +217,7 @@ class ProtocolV1Impl extends Protocol {
 				for (var i = dv.getUint8(1); i--;) {
 					updated = true;
 					var pid = dv.getUint32(pos, true);
-					pos+=4;
+					pos += 4;
 					let pmx = dv.getInt32(pos, true);
 					pos += 4;
 					let pmy = dv.getInt32(pos, true);
@@ -232,10 +231,10 @@ class ProtocolV1Impl extends Protocol {
 					let ptool = dv.getUint8(pos);
 					pos += 1;
 					let nickLength = dv.getUint32(pos, true);
-					pos+=4;
+					pos += 4;
 					let pnick = new TextDecoder().decode(new Uint8Array(dv.buffer, pos, nickLength));
-					pos+=nickLength;
-					if(pid===this.id) continue;
+					pos += nickLength;
+					if (pid === this.id) continue;
 					updates[pid] = {
 						x: pmx,
 						y: pmy,
@@ -243,13 +242,13 @@ class ProtocolV1Impl extends Protocol {
 						tool: ProtocolV1.tools[ptool],
 						nick: pnick
 					};
-					if(!this.players[pid]){
+					if (!this.players[pid]) {
 						++this.playercount;
 						eventSys.emit(e.net.playerCount, this.playercount);
 						this.players[pid] = true;
 					}
 				}
-				if(updated){
+				if (updated) {
 					eventSys.emit(e.net.world.playersMoved, updates);
 				}
 				let off = pos;
@@ -259,11 +258,11 @@ class ProtocolV1Impl extends Protocol {
 				for (let i = dv.getUint16(off, true), j = 0; j < i; j++) {
 					updated = true;
 					let bid = dv.getUint32(2 + off + j * 15, true);
-	  				let bpx = dv.getInt32(2 + off + j * 15 + 4, true);
-	  				let bpy = dv.getInt32(2 + off + j * 15 + 8, true);
-	  				let br = dv.getUint8(2 + off + j * 15 + 12);
-	  				let bg = dv.getUint8(2 + off + j * 15 + 13);
-	  				let bb = dv.getUint8(2 + off + j * 15 + 14);
+					let bpx = dv.getInt32(2 + off + j * 15 + 4, true);
+					let bpy = dv.getInt32(2 + off + j * 15 + 8, true);
+					let br = dv.getUint8(2 + off + j * 15 + 12);
+					let bg = dv.getUint8(2 + off + j * 15 + 13);
+					let bb = dv.getUint8(2 + off + j * 15 + 14);
 					let bbgr = bb << 16 | bg << 8 | br;
 					updates.push({
 						x: bpx,
@@ -282,12 +281,12 @@ class ProtocolV1Impl extends Protocol {
 				if (updated) {
 					eventSys.emit(e.net.world.tilesUpdated, updates);
 				}
-	  			off += dv.getUint16(off, true) * 15 + 2;
+				off += dv.getUint16(off, true) * 15 + 2;
 				//discoonect
 				let decreased = false;
 				updated = false;
 				updates = [];
-	  			for (let k = dv.getUint8(off); k--;) {
+				for (let k = dv.getUint8(off); k--;) {
 					updated = true;
 					let dpid = dv.getUint32(1 + off + k * 4, true);
 					updates.push(dpid);
@@ -296,7 +295,7 @@ class ProtocolV1Impl extends Protocol {
 						--this.playercount;
 						delete this.players[dpid];
 					}
-	  			}
+				}
 				if (updated) {
 					eventSys.emit(e.net.world.playersLeft, updates);
 					if (decreased) {
@@ -309,7 +308,7 @@ class ProtocolV1Impl extends Protocol {
 				let chunkY = dv.getInt32(5, true);
 				let locked = dv.getUint8(9);
 				let u8data = new Uint8Array(message, 10, message.byteLength - 10);
-				
+
 				u8data = decompress(u8data);
 				let key = `${chunkX},${chunkY}`;
 				let u32data = new Uint32Array(ProtocolV1.chunkSize * ProtocolV1.chunkSize);
@@ -347,15 +346,15 @@ class ProtocolV1Impl extends Protocol {
 					case captchaState.CA_WAITING:
 						// the ws sometimes closes while doing the captcha, showing
 						// the reconnect screen afterwards, making the user redo it
-						if(this.captcha) {
+						if (this.captcha) {
 							let message = ProtocolV1.misc.tokenVerification + this.captcha;
 							this.ws.send(message);
 						} else {
 							loadAndRequestCaptcha();
 							eventSys.once(e.misc.captchaToken, token => {
 								let message = ProtocolV1.misc.tokenVerification + token;
-								if(this.ws.readyState != WebSocket.OPEN) {
-									setTimeout(function() {
+								if (this.ws.readyState != WebSocket.OPEN) {
+									setTimeout(function () {
 										retryingConnect(() => options.serverAddress[0], this.worldName, token);
 									}, 125);
 								} else {
@@ -366,8 +365,8 @@ class ProtocolV1Impl extends Protocol {
 						break;
 
 					case captchaState.CA_OK:
-					   this.worldName = this.joinWorld(this.worldName);
-					   break;
+						this.worldName = this.joinWorld(this.worldName);
+						break;
 				}
 				break;
 			case oc.setPQuota:
@@ -399,12 +398,12 @@ class ProtocolV1Impl extends Protocol {
 		}
 	}
 
-	joinWorld(name){
+	joinWorld(name) {
 		let nstr = stoi(name, ProtocolV1.maxWorldNameLength);
 		eventSys.emit(e.net.world.joining, nstr[1]);
-		let array = new ArrayBuffer(nstr[0].length +2);
+		let array = new ArrayBuffer(nstr[0].length + 2);
 		let dv = new DataView(array);
-		for(let i=nstr[0].length;i--;){
+		for (let i = nstr[0].length; i--;) {
 			dv.setUint8(i, nstr[0][i]);
 		}
 		dv.setUint16(nstr[0].length, ProtocolV1.misc.worldVerification, true);
@@ -438,8 +437,8 @@ class ProtocolV1Impl extends Protocol {
 		if (this.isConnected() && (dist < 4 || player.rank >= RANK.ADMIN) && this.placeBucket.canSpend(1)) {
 			let array = new ArrayBuffer(11);
 			let dv = new DataView(array);
-			dv.setInt32(0,  x, true);
-			dv.setInt32(4,  y, true);
+			dv.setInt32(0, x, true);
+			dv.setInt32(4, y, true);
 			dv.setUint8(8, rgb[0]);
 			dv.setUint8(9, rgb[1]);
 			dv.setUint8(10, rgb[2]);

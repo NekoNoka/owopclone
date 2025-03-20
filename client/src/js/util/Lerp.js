@@ -1,5 +1,6 @@
-'use strict';
-import { getTime } from './misc';
+"use strict";
+
+import { getTime } from "./misc.js";
 
 const time = getTime;
 
