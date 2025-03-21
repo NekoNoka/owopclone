@@ -4,6 +4,7 @@ import { colorUtils as color } from "./util/color.js";
 import { eventSys, PublicAPI } from "./global.js";
 import { EVENTS as e, protocol, options } from "./conf.js";
 import { elements, misc } from "./main.js";
+import _ from "./local_player.js"; // this fixes the circular dependency issues
 import { activeFx } from "./Fx.js";
 import { getTime } from "./util/misc.js";
 import { tools } from "./tools.js";
