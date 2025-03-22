@@ -1,14 +1,13 @@
 "use strict";
 
-import { PublicAPI, eventSys } from "./global.js";
-import { EVENTS as e, protocol, options, RANK } from "./conf.js";
-import { absMod, setTooltip, line } from "./util/misc.js";
-import { cursors } from "./tool_renderer.js";
+import { EVENTS as e, protocol, options, RANK, elements, PublicAPI, cursors, sounds } from "./conf.js";
+import { absMod, setTooltip, line, eventSys } from "./util.js";
 import { net } from "./networking.js";
 import { player } from "./local_player.js";
 import { camera, moveCameraBy, renderer, drawText } from "./canvas_renderer.js";
 import { windowSys, GUIWindow } from "./windowsys.js";
-import { misc, elements, mouse, sounds, keysDown, PM } from "./main.js";
+import { misc, keysDown, mouse } from "./main.js";
+import { PM } from "./pixelTools.js";
 import { PLAYERFX } from "./Fx.js";
 import newText from "../json/newText.json";
 import cyrillic from "../json/cyrillic.json";

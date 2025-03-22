@@ -1,7 +1,7 @@
 "use strict";
 
-import { EVENTS as e } from "./conf.js";
-import { eventSys, AnnoyingAPI as aa } from "./global.js";
+import { EVENTS as e, AnnoyingAPI as aa } from "./conf.js";
+import { eventSys } from "./util.js";
 
 export const net = {
 	currentServer: null,

@@ -1,62 +1,45 @@
 "use strict";
 
-import { PublicAPI } from "../global.js";
+import { EventEmitter } from "events";
 
-PublicAPI.util = {
-	getTime,
-	cookiesEnabled,
-	storageEnabled,
-	absMod,
-	escapeHTML,
-	mkHTML,
-	setTooltip,
-	waitFrames,
-	line,
-	loadScript,
-}
+export const eventSys = new EventEmitter();
 
-export const KeyCode = {
-	// Alphabet
-	a: 65, b: 66, c: 67, d: 68, e: 69, f: 70, g: 71, h: 72, i: 73,
-	j: 74, k: 75, l: 76, m: 77, n: 78, o: 79, p: 80, q: 81, r: 82,
-	s: 83, t: 84, u: 85, v: 86, w: 87, x: 88, y: 89, z: 90,
-
-	// Numbers (Top row)
-	zero: 48, one: 49, two: 50, three: 51, four: 52,
-	five: 53, six: 54, seven: 55, eight: 56, nine: 57,
-
-	// Special characters and symbols
-	backtick: 192, tilde: 192, dash: 189, underscore: 189,
-	equals: 187, plus: 187, leftBracket: 219, leftCurly: 219,
-	rightBracket: 221, rightCurly: 221, backslash: 220, pipe: 220,
-	semicolon: 186, colon: 186, quote: 222, doubleQuote: 222,
-	comma: 188, lessThan: 188, period: 190, greaterThan: 190,
-	slash: 191, question: 191, exclamation: 49, at: 50,
-	hash: 51, dollar: 52, percent: 53, caret: 54,
-	ampersand: 55, asterisk: 56, leftParen: 57, rightParen: 48,
-
-	// Function keys
-	f1: 112, f2: 113, f3: 114, f4: 115, f5: 116, f6: 117,
-	f7: 118, f8: 119, f9: 120, f10: 121, f11: 122, f12: 123,
-
-	// Control keys
-	enter: 13, space: 32, escape: 27, backspace: 8, tab: 9,
-	shift: 16, ctrl: 17, alt: 18, capsLock: 20, pause: 19,
-
-	// Navigation keys
-	insert: 45, home: 36, delete: 46, end: 35,
-	pageUp: 33, pageDown: 34,
-
-	// Arrow keys
-	arrowUp: 38, arrowDown: 40, arrowLeft: 37, arrowRight: 39,
-
-	// Numpad keys
-	numpad0: 96, numpad1: 97, numpad2: 98, numpad3: 99,
-	numpad4: 100, numpad5: 101, numpad6: 102, numpad7: 103,
-	numpad8: 104, numpad9: 105,
-	numpadMultiply: 106, numpadAdd: 107, numpadSubtract: 109,
-	numpadDecimal: 110, numpadDivide: 111, numpadEnter: 13
+export const colorUtils = {
+	to888: (R, G, B) => [(R * 527 + 23) >> 6, (G * 259 + 33) >> 6, (B * 527 + 23) >> 6],
+	to565: (R, G, B) => [(R * 249 + 1014) >> 11, (G * 253 + 505) >> 10, (B * 249 + 1014) >> 11],
+	u16_565: (R, G, B) => B << 11 | G << 5 | R,
+	u24_888: (R, G, B) => B << 16 | G << 8 | R,
+	u32_888: (R, G, B) => colorUtils.u24_888(R, G, B) | 0xFF000000,
+	u16_565_to_888: color => {
+		const R = ((color & 0b11111) * 527 + 23) >> 6;
+		const G = ((color >> 5 & 0b11111) * 527 + 23) >> 6;
+		const B = ((color >> 11 & 0b11111) * 527 + 23) >> 6;
+		return B << 16 | G << 8 | R;
+	},
+	arrFrom565: color => [color & 0b11111, color >> 5 & 0b111111, color >> 11 & 0b11111],
+	toHTML: color => {
+		color = (color >> 16 & 0xFF | color & 0xFF00 | color << 16 & 0xFF0000).toString(16);
+		return '#' + ('000000' + color).substring(color.length);
+	},
+	toBGRInt(c) {
+		return (c[2] << 16 & 16711680) | (c[1] << 8 & 65280) | (c[0] & 255);
+	},
+	toInt(c) {
+		return (c[0] << 16 & 16711680) | (c[1] << 8 & 65280) | (c[2] & 255);
+	},
+	fromInt(n) {
+		return [(n & 16711680) >> 16, (n & 65280) >> 8, n & 255];
+	}
 };
+
+let shouldFool = false; //(d=>d,getMonth()==3&&d.getDate()==1)(newDate())
+export function getDefaultWorld() {
+	try {
+		return shouldFool ? 'aprilFools' : 'main';
+	} catch (e) {
+		return 'main';
+	}
+}
 
 let time = Date.now();
 export function getTime(update) {
@@ -165,6 +148,8 @@ export function setTooltip(element, message) {
 	element.addEventListener('mouseleave', tooltipLeave);
 }
 
+document.addEventListener("DOMContentLoaded", initializeTooltips);
+
 function initDOMTooltips() {
 	let elements = document.querySelectorAll('[tooltip]');
 	for (let element of elements) {
@@ -203,7 +188,7 @@ function tooltipHover(e) {
 }
 
 function tooltipLeave() {
-	tooltip.style.opacity = '0%';
+	document.getElementById('tooltip').style.opacity = '0%';
 }
 
 export function waitFrames(n, cb) {
@@ -257,4 +242,83 @@ export function line(x1, y1, x2, y2, size, plot) {
 	}
 }
 
-document.addEventListener("DOMContentLoaded", initializeTooltips);
+export function createContextMenu(x, y, buttons) {
+	let shown = false;
+	let contextMenu = document.createElement("div");
+	contextMenu.className = "context-menu";
+	
+	function removeMenu(event) {
+		document.body.removeChild(contextMenu);
+		document.removeEventListener("click", removeMenu);
+		shown = false;
+	}
+
+	if (shown) {
+		removeMenu();
+	}
+
+	contextMenu.innerHTML = "";
+	for (let i = 0; i < buttons.length; i++) {
+		let button = document.createElement("button");
+		button.textContent = buttons[i][0];
+		button.addEventListener("click", buttons[i][1]);
+		contextMenu.appendChild(button);
+	}
+	document.body.appendChild(contextMenu);
+	shown = true;
+	let height = contextMenu.offsetHeight;
+	// console.log(height);
+	if (y + height > window.innerHeight - 20) {
+		contextMenu.style.top = (y - height) + "px";
+	} else {
+		contextMenu.style.top = y + "px";
+	}
+	contextMenu.style.left = x + "px";
+
+	document.addEventListener("click", removeMenu);
+}
+
+export class Lerp {
+	constructor(start, end, ms) {
+		this.start = start;
+		this.end = end;
+		this.ms = ms;
+		this.time = getTime();
+	}
+
+	get val() {
+		let amt = Math.min((getTime() - this.time) / this.ms, 1);
+		return (1 - amt) * this.start + amt * this.end;
+	}
+
+	set val(v) {
+		this.start = this.val;
+		this.end = v;
+		this.time = getTime(true);
+	}
+}
+
+export class Bucket {
+	constructor(rate, time) {
+		this.lastCheck = Date.now();
+		this.allowance = rate;
+		this.rate = rate;
+		this.time = time;
+		this.infinite = false;
+	}
+	canSpend(count) {
+		if (this.infinite) return true;
+		this.allowance += (Date.now() - this.lastCheck) / 1000 * (this.rate / this.time);
+		// console.log(this.allowance);
+		this.lastCheck = Date.now();
+		if (this.allowance > this.rate) this.allowance = this.rate;
+		if (this.allowance < count) return false;
+		this.allowance -= count;
+		return true;
+	}
+	update() {
+		if (this.infinite) return this.allowance = Infinity;
+		this.allowance += (Date.now() - this.lastCheck) / 1000 * (this.rate / this.time);
+		if (this.allowance > this.rate) this.allowance = this.rate;
+	}
+}

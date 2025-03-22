@@ -1,8 +1,7 @@
 "use strict";
 
 import { EVENTS as e } from "./conf.js";
-import { eventSys } from "./global.js";
-import { mkHTML, loadScript } from "./util/misc.js";
+import { mkHTML, loadScript, eventSys } from "./util.js";
 import { windowSys, GUIWindow } from "./windowsys.js";
 
 const SITEKEY = "6LcgvScUAAAAAARUXtwrM8MP0A0N70z4DHNJh-KI";

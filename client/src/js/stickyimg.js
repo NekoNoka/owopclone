@@ -1,9 +1,9 @@
 "use strict";
 
 import { camera } from "./canvas_renderer.js";
-import { elements } from "./main.js";
-import { eventSys } from "./global.js";
-import { EVENTS as e } from "./conf.js";
+import { EVENTS as e, elements } from "./conf.js";
+import { eventSys } from "./util.js";
+
 export function stickyimg(path, w, h, o) {
 	// if (OWOP.spawnbanner) {
 	//     return;

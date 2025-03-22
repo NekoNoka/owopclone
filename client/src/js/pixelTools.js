@@ -1,12 +1,11 @@
 "use strict";
 
-import { EVENTS as e, RANK } from "../conf.js";
-import { eventSys } from "../global.js";
-import { misc, mouse, PM } from "../main.js";
-import { player } from "../local_player.js";
-import { net } from "../networking.js";
-import { centerCameraTo } from "../canvas_renderer.js";
-import { colorUtils as color } from "./color.js";
+import { colorUtils as color, eventSys } from "./util.js";
+import { EVENTS as e, RANK } from "./conf.js";
+import { misc, mouse } from "./main.js";
+import { player } from "./local_player.js";
+import { net } from "./networking.js";
+import { centerCameraTo } from "./canvas_renderer.js";
 
 class Point {
 	constructor(x, y) {
@@ -20,18 +19,18 @@ class Point {
 	}
 }
 
-class BPoint extends Point {
-	constructor(x, y) {
-		super(x, y);
-		this.bottom = false;
-		this.right = false;
-	}
-	static check(bp1, bp2, direction) {
-		let p1 = PM.queue[`${bp1.x},${bp1.y}`];
-		let p2 = PM.queue[`${bp2.x},${bp2.y}`];
-		return bp1[direction] = (!!p1 && !p2) || (!p1 && !!p2);
-	}
-}
+// class BPoint extends Point {
+// 	constructor(x, y) {
+// 		super(x, y);
+// 		this.bottom = false;
+// 		this.right = false;
+// 	}
+// 	static check(bp1, bp2, direction) {
+// 		let p1 = PM.queue[`${bp1.x},${bp1.y}`];
+// 		let p2 = PM.queue[`${bp2.x},${bp2.y}`];
+// 		return bp1[direction] = (!!p1 && !p2) || (!p1 && !!p2);
+// 	}
+// }
 
 class Pixel extends Point {
 	constructor(x, y, c, o = false) {
@@ -122,8 +121,7 @@ export class PixelManager {
 		}
 		this.extra.placeData.sort((a, b) => a[0] - b[0]);
 		this.extra.chunkPlaceData.sort((a, b) => a[0] - b[0]);
-	}
-	setup() {
+
 		eventSys.on(e.tick, () => {
 			this.enabled ? this.placePixel() : void 0;
 		});
@@ -170,21 +168,21 @@ export class PixelManager {
 	}
 	updateBorder(x, y) {
 		let p = this.border[`${x},${y}`];
-		if (!p) p = this.border[`${x},${y}`] = new BPoint(x, y);
+		// if (!p) p = this.border[`${x},${y}`] = new BPoint(x, y);
 
 		let t = this.border[`${x},${y - 1}`];
 		let l = this.border[`${x - 1},${y}`];
 		let b = this.border[`${x},${y + 1}`];
 		let r = this.border[`${x + 1},${y}`];
 
-		if (!t) t = new BPoint(x, y - 1);
-		if (!l) l = new BPoint(x - 1, y);
-		if (!b) b = new BPoint(x, y + 1);
-		if (!r) r = new BPoint(x + 1, y);
-		if (BPoint.check(t, p, "bottom") && (t.bottom || t.right)) this.border[`${x},${y - 1}`] = t;
-		if (BPoint.check(l, p, "right") && (l.bottom || l.right)) this.border[`${x - 1},${y}`] = l;
-		if (BPoint.check(p, b, "bottom") && (b.bottom || b.right)) this.border[`${x},${y + 1}`] = b;
-		if (BPoint.check(p, r, "right") && (r.bottom || r.right)) this.border[`${x + 1},${y}`] = r;
+		// if (!t) t = new BPoint(x, y - 1);
+		// if (!l) l = new BPoint(x - 1, y);
+		// if (!b) b = new BPoint(x, y + 1);
+		// if (!r) r = new BPoint(x + 1, y);
+		// if (BPoint.check(t, p, "bottom") && (t.bottom || t.right)) this.border[`${x},${y - 1}`] = t;
+		// if (BPoint.check(l, p, "right") && (l.bottom || l.right)) this.border[`${x - 1},${y}`] = l;
+		// if (BPoint.check(p, b, "bottom") && (b.bottom || b.right)) this.border[`${x},${y + 1}`] = b;
+		// if (BPoint.check(p, r, "right") && (r.bottom || r.right)) this.border[`${x + 1},${y}`] = r;
 	}
 	undo() {
 		if (!this.enabled) return;
@@ -303,7 +301,6 @@ export class PixelManager {
 		this.checkMove = true;
 		return true;
 	}
-
 	getPixel(x, y, a = true) {
 		if (!Number.isInteger(x) || !Number.isInteger(y)) {
 			console.error('Invalid inputs for "getPixel" on PixelManager instance.');
@@ -320,7 +317,7 @@ export class PixelManager {
 
 		return undefined;
 	}
-
+	// this is an internal function to place pixels every tick.
 	placePixel() {
 		if (player.rank >= RANK.MODERATOR && this.enableMod) {
 			const cx = Math.floor(mouse.tileX / 16);
@@ -380,3 +377,5 @@ export class PixelManager {
 		this.moveToNext();
 	}
 }
+
+export const PM = new PixelManager;

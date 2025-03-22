@@ -1,33 +1,6 @@
 "use strict";
 
-import { EVENTS as e, options } from "./conf.js";
-import { eventSys, PublicAPI } from "./global.js";
-
-export const cursors = {
-	set: new Image(),
-	cursor: { imgpos: [0, 0], hotspot: [0, 0] },
-	move: { imgpos: [1, 0], hotspot: [18, 18] },
-	pipette: { imgpos: [0, 1], hotspot: [0, 28] },
-	erase: { imgpos: [0, 2], hotspot: [4, 26] },
-	zoom: { imgpos: [1, 2], hotspot: [19, 10] },
-	fill: { imgpos: [1, 1], hotspot: [3, 29] },
-	brush: { imgpos: [0, 3], hotspot: [0, 26] },
-	select: { imgpos: [2, 0], hotspot: [0, 0] }, // needs better hotspot
-	selectprotect: { imgpos: [4, 0], hotspot: [0, 0] },
-	copy: { imgpos: [3, 0], hotspot: [0, 0] }, // and this
-	paste: { imgpos: [3, 1], hotspot: [0, 0] }, // this too
-	cut: { imgpos: [3, 2], hotspot: [11, 5] },
-	wand: { imgpos: [3, 3], hotspot: [0, 0] },
-	circle: { imgpos: [4, 3], hotspot: [0, 0] },
-	rect: { imgpos: [4, 2], hotspot: [0, 0] },
-	write: { imgpos: [0, 3], hotspot: [0, 0] },
-	shield: { imgpos: [2, 3], hotspot: [18, 18] },
-	kick: { imgpos: [2, 1], hotspot: [3, 6] },
-	ban: { imgpos: [2, 2], hotspot: [10, 4] },
-	write: { imgpos: [1, 3], hotspot: [10, 4] } // fix hotspot
-};
-
-PublicAPI.cursors = cursors;
+import { EVENTS as e, options, cursors } from "./conf.js";
 
 function reduce(canvas) { /* Removes unused space from the image */
 	let nw = canvas.width;
@@ -117,7 +90,7 @@ function popOut(canvas, img) {
 	ctx.putImageData(idat, 0, 0);
 }
 
-function load(oncomplete) {
+export function load_tool_icons(oncomplete) {
 	cursors.set.crossOrigin = "anonymous";
 	cursors.set.onload = function () {
 		let set = cursors.set;
@@ -159,7 +132,3 @@ function load(oncomplete) {
 
 	cursors.set.src = options.toolSetUrl;
 }
-
-eventSys.once(e.loaded, () => {
-	load(() => eventSys.emit(e.misc.toolsRendered));
-});

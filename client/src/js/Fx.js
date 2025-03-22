@@ -1,11 +1,8 @@
 "use strict";
 
-import { colorUtils as color } from "./util/color.js";
-import { EVENTS as e, protocol, RANK, options } from "./conf.js";
-import { getTime } from "./util/misc.js";
-import { eventSys, PublicAPI } from "./global.js";
+import { colorUtils as color, getTime, eventSys } from "./util.js";
+import { EVENTS as e, protocol, activeFx, PublicAPI } from "./conf.js";
 import { camera, renderer } from "./canvas_renderer.js";
-import { player } from "./local_player.js";
 
 export const PLAYERFX = {
 	NONE: null,
@@ -35,21 +32,22 @@ export const WORLDFX = {
 		ctx.globalAlpha = alpha;
 		ctx.strokeStyle = fx.extra.htmlRgb || "#000000";
 		ctx.strokeRect(fxx, fxy, s, s);
-		if (options.enableIdView && player.rank >= RANK.MODERATOR && camera.zoom >= 8 && fx.extra.tag) {
-			fxx += s;
-			let str = fx.extra.tag;
-			let ts = ctx.measureText(str).width;
-			ctx.fillStyle = "#FFFFFF";
-			ctx.strokeStyle = "#000000";
-			ctx.strokeText(str, fxx, fxy);
-			ctx.fillText(str, fxx, fxy);
-		}
+
+		// pixel player id on moderator view
+		// if (options.enableIdView && player.rank >= RANK.MODERATOR && camera.zoom >= 8 && fx.extra.tag) {
+		// 	fxx += s;
+		// 	let str = fx.extra.tag;
+		// 	let ts = ctx.measureText(str).width;
+		// 	ctx.fillStyle = "#FFFFFF";
+		// 	ctx.strokeStyle = "#000000";
+		// 	ctx.strokeText(str, fxx, fxy);
+		// 	ctx.fillText(str, fxx, fxy);
+		// }
 
 		return 0; /* 0 = Animation not finished */
 	}
 };
 
-export const activeFx = [];
 
 /*PublicAPI.activeFx = activeFx;*/
 
@@ -101,7 +99,6 @@ PublicAPI.fx = {
 };
 
 eventSys.on(e.net.world.tilesUpdated, tiles => {
-	let time = getTime(true);
 	let made = false;
 
 	for (let i = 0; i < tiles.length; i++) {

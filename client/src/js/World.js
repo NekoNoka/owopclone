@@ -1,11 +1,10 @@
 "use strict";
 
-import { protocol, EVENTS as e, options, RANK } from "./conf.js";
-import { eventSys } from "./global.js";
-import { colorUtils } from "./util/color.js";
+import { protocol, EVENTS as e, options, RANK, sounds } from "./conf.js";
+import { colorUtils, eventSys } from "./util.js";
 import { net } from "./networking.js";
 import { camera, isVisible, renderer } from "./canvas_renderer.js";
-import { PM, sounds } from "./main.js";
+import { PM } from "./pixelTools.js";
 import { player } from "./local_player.js";
 import { Player } from "./Player.js";
 import { Fx } from "./Fx.js";
@@ -62,6 +61,7 @@ export class Chunk {
 		eventSys.emit(e.net.chunk.unload, this);
 	}
 }
+
 Chunk.dir = {
 	UP: 0b1000,
 	RIGHT: 0b0100,
@@ -309,12 +309,11 @@ export class World {
 		let chunk = this.chunks[`${Math.floor(x / chunkSize)},${Math.floor(y / chunkSize)}`];
 		if (chunk && (!chunk.locked || player.rank >= RANK.MODERATOR)) {
 			let oldPixel = this.getPixel(x, y, chunk);
-			if (!oldPixel || (oldPixel[0] === color[0] && oldPixel[1] === color[1] && oldPixel[2] === color[2])
-				|| !net.protocol.updatePixel(x, y, color, () => {
+			if (!oldPixel || (oldPixel[0] === color[0] && oldPixel[1] === color[1] && oldPixel[2] === color[2])) {
+				return net.protocol.updatePixel(x, y, color, () => {
 					chunk.update(x, y, colorUtils.u24_888(oldPixel[0], oldPixel[1], oldPixel[2]));
 					eventSys.emit(e.renderer.updateChunk, chunk);
-				})) {
-				return false;
+				});
 			}
 			if (!noUndo) {
 				oldPixel.push(x, y, time);

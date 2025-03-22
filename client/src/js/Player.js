@@ -1,7 +1,6 @@
 "use strict";
 
-import { Lerp } from "./util/Lerp.js";
-import { colorUtils as color } from "./util/color.js";
+import { colorUtils as color, Lerp } from "./util.js";
 import { misc, playerList, playerListTable, playerListWindow } from "./main.js";
 import { Fx, PLAYERFX } from "./Fx.js";
 import { tools } from "./tools.js";

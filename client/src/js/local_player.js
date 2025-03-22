@@ -1,10 +1,8 @@
 "use strict";
 
-import { eventSys, PublicAPI } from "./global.js";
-import { EVENTS as e, RANK } from "./conf.js";
-import { absMod, setTooltip } from "./util/misc.js";
-import { elements, mouse, showDevChat, showPlayerList, revealSecrets } from "./main.js";
-import { colorUtils as color } from "./util/color.js";
+import { EVENTS as e, RANK, elements, PublicAPI } from "./conf.js";
+import { colorUtils as color, eventSys, absMod, setTooltip } from "./util.js";
+import { showDevChat, showPlayerList, revealSecrets, mouse } from "./main.js";
 import { renderer } from "./canvas_renderer.js";
 import { tools, updateToolbar, updateToolWindow, showToolOpts } from "./tools.js";
 import { Fx, PLAYERFX } from "./Fx.js";

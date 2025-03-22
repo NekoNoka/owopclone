@@ -1,9 +1,7 @@
 "use strict";
 
-import { elements } from "./main.js";
-import { EVENTS as e, options } from "./conf.js";
-import { PublicAPI, eventSys } from "./global.js";
-import { mkHTML, waitFrames } from "./util/misc.js";
+import { EVENTS as e, options, elements, PublicAPI } from "./conf.js";
+import { mkHTML, waitFrames, eventSys } from "./util.js";
 
 export const windowSys = {
 	windows: {},

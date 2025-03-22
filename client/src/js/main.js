@@ -1,36 +1,24 @@
 "use strict";
 
-import { normalizeWheel } from "./util/normalizeWheel.js";
-import anchrome from "./util/anchrome.js";
-
-import { EVENTS as e, RANK } from "./conf.js";
-import { escapeHTML, getTime, getCookie, setCookie, cookiesEnabled, storageEnabled, loadScript, eventOnce, KeyCode } from "./util/misc.js";
-
-import { eventSys, PublicAPI } from "./global.js";
-import { options } from "./conf.js";
-import { World } from "./World.js";
-import { camera, renderer, moveCameraBy } from "./canvas_renderer.js";
-import { net } from "./networking.js";
-import { updateClientFx, player } from "./local_player.js";
-import { resolveProtocols } from "./protocol/all.js";
+import { createContextMenu, escapeHTML, getTime, getCookie, setCookie, cookiesEnabled, storageEnabled, loadScript, eventOnce, colorUtils, eventSys } from "./util.js";
+import { EVENTS as e, RANK, options, PublicAPI, elements, KeyCode, sounds } from "./conf.js";
 import { windowSys, GUIWindow, UtilDialog } from "./windowsys.js";
-
-import { createContextMenu } from "./context.js";
-
-import launchSoundUrl from "../audio/launch.mp3";
-import placeSoundUrl from "../audio/place.mp3";
-import clickSoundUrl from "../audio/click.mp3";
+import { PM } from "./pixelTools.js";
+import { renderer, moveCameraBy } from "./canvas_renderer.js";
+import { camera } from "./canvas_renderer.js";
+import { normalizeWheel } from "./normalizeWheel.js";
+import anchrome from "./anchrome.js";
+import { net } from "./networking.js";
+import { resolveProtocols } from "./protocol/all.js";
+import { World } from "./World.js";
+import { load_tool_icons } from "./tool_renderer.js";
+import { updateClientFx, player } from "./local_player.js";
 
 import { stickyimg } from "./stickyimg.js";
-import { colorUtils } from "./util/color.js";
-import { PixelManager } from "./util/pixelTools.js";
 
 export { showDevChat, showPlayerList, statusMsg };
 
 const noticeId = 0;
-
-export const PM = new PixelManager;
-PM.setup();
 
 export const keysDown = {};
 
@@ -52,14 +40,6 @@ export const mouse = {
 	insideViewport: false,
 	touches: [],
 	cancelMouseDown: function () { this.buttons = 0; },
-};
-
-export const elements = {
-	viewport: null,
-	xyDisplay: null,
-	chatInput: null,
-	chat: null,
-	devChat: null,
 };
 
 export const misc = {
@@ -90,22 +70,6 @@ export const misc = {
 	usingFirefox: navigator.userAgent.indexOf('Firefox') !== -1,
 	donTimer: 0,
 };
-
-export const sounds = {
-	play: function (sound) {
-		sound.currentTime = 0;
-		if (options.enableSounds) {
-			sound.play();
-		}
-	}
-};
-
-sounds.launch = new Audio();
-sounds.launch.src = launchSoundUrl;
-sounds.place = new Audio();
-sounds.place.src = placeSoundUrl;
-sounds.click = new Audio();
-sounds.click.src = clickSoundUrl;
 
 let plWidth = 0;
 export var playerList = {};
@@ -1070,6 +1034,10 @@ eventSys.once(e.misc.loadingCaptcha, () => statusMsg(true, "Trying to load captc
 eventSys.once(e.misc.logoMakeRoom, () => {
 	statusMsg(false, null);
 	logoMakeRoom();
+});
+
+eventSys.once(e.loaded, () => {
+	load_tool_icons(() => eventSys.emit(e.misc.toolsRendered));
 });
 
 eventSys.once(e.loaded, function () {

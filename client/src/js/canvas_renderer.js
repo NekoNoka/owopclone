@@ -1,13 +1,8 @@
 "use strict";
 
-import { colorUtils as color } from "./util/color.js";
-import { eventSys, PublicAPI } from "./global.js";
-import { EVENTS as e, protocol, options } from "./conf.js";
-import { elements, misc } from "./main.js";
-import _ from "./local_player.js"; // this fixes the circular dependency issues
-import { activeFx } from "./Fx.js";
-import { getTime } from "./util/misc.js";
-import { tools } from "./tools.js";
+import { EVENTS as e, protocol, options, elements, PublicAPI, activeFx } from "./conf.js";
+import { colorUtils as color, eventSys, getTime } from "./util.js";
+import { misc } from "./main.js";
 
 export { centerCameraTo, moveCameraBy, moveCameraTo, isVisible };
 
@@ -393,9 +388,10 @@ function renderPlayer(targetPlayer, fontsize) {
 	let ctx = rendererValues.animContext;
 	let cnvs = ctx.canvas;
 	let tool = targetPlayer.tool;
+	// this only ever becomes a problem if you modify your client to reduce the amount of cursors and the server asks you to render a tool you removed
 	if (!tool) {
 		/* Render the default tool if the selected one isn't defined */
-		tool = tools['cursor'];
+		// tool = tools['cursor'];
 	}
 	let toolwidth = tool.cursor.width / 16 * zoom;
 	let toolheight = tool.cursor.height / 16 * zoom;

@@ -1,15 +1,12 @@
 "use strict";
 
 import { Protocol } from "./Protocol.js";
-import { EVENTS as e, RANK, options } from "../conf.js";
-import { eventSys } from "../global.js";
+import { EVENTS as e, RANK, options, elements } from "../conf.js";
 import { Chunk } from "../World.js";
-import { Bucket } from "../util/Bucket.js";
-import { decompress } from "../util/misc.js";
+import { Bucket, eventSys, decompress } from "../util.js";
 import { loadAndRequestCaptcha } from "../captcha.js";
 import { player, shouldUpdate, networkRankVerification } from "../local_player.js";
-import { mouse, elements } from "../main.js";
-import { retryingConnect } from "../main.js";
+import { retryingConnect, mouse } from "../main.js";
 
 export const captchaState = {
 	CA_WAITING: 0,
@@ -434,19 +431,30 @@ class ProtocolV1Impl extends Protocol {
 		let distx = Math.floor(x / ProtocolV1.chunkSize) - Math.floor(this.lastSentX / (ProtocolV1.chunkSize * 16)); distx *= distx;
 		let disty = Math.floor(y / ProtocolV1.chunkSize) - Math.floor(this.lastSentY / (ProtocolV1.chunkSize * 16)); disty *= disty;
 		let dist = Math.sqrt(distx + disty);
-		if (this.isConnected() && (dist < 4 || player.rank >= RANK.ADMIN) && this.placeBucket.canSpend(1)) {
-			let array = new ArrayBuffer(11);
-			let dv = new DataView(array);
-			dv.setInt32(0, x, true);
-			dv.setInt32(4, y, true);
-			dv.setUint8(8, rgb[0]);
-			dv.setUint8(9, rgb[1]);
-			dv.setUint8(10, rgb[2]);
-			this.ws.send(array);
-			this.pendingEdits[`${x},${y}`] = setTimeout(undocb, 2000);
-			return true;
+
+		const statusCodes = {
+			"connection": 1,
+			"distance": 2,
+			"bucket": 3,
+			"rank": 4
 		}
-		return false;
+
+		if (!this.isConnected()) return statusCodes["connection"];
+		if (player.rank < RANK.ADMIN) {
+			if (dist >= 4) return statusCodes["distance"];
+			if (!this.placeBucket.canSpend(1)) return statusCodes["bucket"];
+		}
+
+		let array = new ArrayBuffer(11);
+		let dv = new DataView(array);
+		dv.setInt32(0, x, true);
+		dv.setInt32(4, y, true);
+		dv.setUint8(8, rgb[0]);
+		dv.setUint8(9, rgb[1]);
+		dv.setUint8(10, rgb[2]);
+		this.ws.send(array);
+		this.pendingEdits[`${x},${y}`] = setTimeout(undocb, 2000);
+		return 0;
 	}
 
 	sendUpdates() {
