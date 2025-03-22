@@ -1,7 +1,7 @@
 "use strict";
 
-import { createContextMenu, escapeHTML, getTime, getCookie, setCookie, cookiesEnabled, storageEnabled, loadScript, eventOnce, colorUtils, eventSys } from "./util.js";
-import { EVENTS as e, RANK, options, PublicAPI, elements, KeyCode, sounds } from "./conf.js";
+import { createContextMenu, escapeHTML, getTime, setCookie, loadScript, eventOnce, colorUtils, eventSys } from "./util.js";
+import { EVENTS as e, RANK, options, PublicAPI, elements, KeyCode, sounds, misc } from "./conf.js";
 import { windowSys, GUIWindow, UtilDialog } from "./windowsys.js";
 import { PM } from "./pixelTools.js";
 import { renderer, moveCameraBy } from "./canvas_renderer.js";
@@ -40,35 +40,6 @@ export const mouse = {
 	insideViewport: false,
 	touches: [],
 	cancelMouseDown: function () { this.buttons = 0; },
-};
-
-export const misc = {
-	localStorage: storageEnabled() && window.localStorage,
-	_world: null,
-	lastXYDisplay: [-1, -1],
-	devRecvReader: msg => { },
-	chatPostFormatRecvModifier: msg => msg,
-	chatRecvModifier: msg => msg,
-	chatSendModifier: msg => msg,
-	exceptionTimeout: null,
-	worldPasswords: {},
-	tick: 0,
-	urlWorldName: null,
-	connecting: false,
-	tickInterval: null,
-	lastMessage: null,
-	lastCleanup: 0,
-	set world(value) {
-		PublicAPI.world = getNewWorldApi();
-		return this._world = value;
-	},
-	get world() { return this._world; },
-	guiShown: false,
-	cookiesEnabled: cookiesEnabled(),
-	storageEnabled: storageEnabled(),
-	showEUCookieNag: !options.noUi && cookiesEnabled() && getCookie('nagAccepted') !== 'true',
-	usingFirefox: navigator.userAgent.indexOf('Firefox') !== -1,
-	donTimer: 0,
 };
 
 let plWidth = 0;

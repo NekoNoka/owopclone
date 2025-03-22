@@ -1,6 +1,6 @@
 "use strict";
 
-import { eventSys, propertyDefaults, getTime, cookiesEnabled, storageEnabled, absMod, escapeHTML, mkHTML, setTooltip, waitFrames, line, loadScript, getDefaultWorld } from "./util.js";
+import { eventSys, propertyDefaults, getTime, cookiesEnabled, storageEnabled, absMod, escapeHTML, mkHTML, setTooltip, waitFrames, line, loadScript, getDefaultWorld, getCookie } from "./util.js";
 import toolSet from "../img/toolset.png";
 import unloadedPat from "../img/unloaded.png";
 import launchSoundUrl from "../audio/launch.mp3";
@@ -246,6 +246,35 @@ export const options = propertyDefaults(userOptions, {
 	showProtectionOutlines: true,
 	showPlayers: true,
 });
+
+export const misc = {
+	localStorage: storageEnabled() && window.localStorage,
+	_world: null,
+	lastXYDisplay: [-1, -1],
+	devRecvReader: msg => { },
+	chatPostFormatRecvModifier: msg => msg,
+	chatRecvModifier: msg => msg,
+	chatSendModifier: msg => msg,
+	exceptionTimeout: null,
+	worldPasswords: {},
+	tick: 0,
+	urlWorldName: null,
+	connecting: false,
+	tickInterval: null,
+	lastMessage: null,
+	lastCleanup: 0,
+	set world(value) {
+		PublicAPI.world = getNewWorldApi();
+		return this._world = value;
+	},
+	get world() { return this._world; },
+	guiShown: false,
+	cookiesEnabled: cookiesEnabled(),
+	storageEnabled: storageEnabled(),
+	showEUCookieNag: !options.noUi && cookiesEnabled() && getCookie('nagAccepted') !== 'true',
+	usingFirefox: navigator.userAgent.indexOf('Firefox') !== -1,
+	donTimer: 0
+};
 
 PublicAPI.options = options;
 

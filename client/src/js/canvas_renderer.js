@@ -1,8 +1,7 @@
 "use strict";
 
-import { EVENTS as e, protocol, options, elements, PublicAPI, activeFx } from "./conf.js";
+import { EVENTS as e, protocol, options, elements, PublicAPI, activeFx, misc } from "./conf.js";
 import { colorUtils as color, eventSys, getTime } from "./util.js";
-import { misc } from "./main.js";
 
 export { centerCameraTo, moveCameraBy, moveCameraTo, isVisible };
 
