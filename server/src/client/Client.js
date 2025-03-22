@@ -92,7 +92,7 @@ export class Client {
 		if(this.ip.ip==="0000:0000:0000:0000:0000:ffff:7f00:0001"){
 			console.log("islocalhostdev");
 			// await this.fetchUserInfo();
-			this.accountInfo = {"data":{"user":{"account":{"id":0,"username":"developer"},"info":{"displayName":"developer"},"owopData":{"global":{"rank":6,"isBanned":0,"banExpiration":0,"banReason":null},"worlds":[{"entryId":0,"id":0,"worldName":"main","rank":6,"isBanned":0,"banExpiration":0,"banReason":null}]}}}};
+			this.accountInfo = {"data":{"user":{"account":{"id":1,"username":"developer"},"info":{"displayName":"developer"},"owopData":{"global":{"rank":5,"isBanned":0,"banExpiration":0,"banReason":null},"worlds":[{"entryId":0,"id":0,"worldName":"main","rank":5,"isBanned":0,"banExpiration":0,"banReason":null}]}}}};
 			return true;
 		}
 		if(!this.accountToken) {
