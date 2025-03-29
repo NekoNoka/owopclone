@@ -1,8 +1,8 @@
 "use strict";
 
-import { EVENTS as e, RANK, elements, PublicAPI } from "./conf.js";
+import { EVENTS as e, RANK, elements, PublicAPI, mouse } from "./conf.js";
 import { colorUtils as color, eventSys, absMod, setTooltip } from "./util.js";
-import { showDevChat, showPlayerList, revealSecrets, mouse } from "./main.js";
+import { showPlayerList } from "./playerlist.js";
 import { renderer } from "./canvas_renderer.js";
 import { tools, updateToolbar, updateToolWindow, showToolOpts } from "./tools.js";
 import { Fx, PLAYERFX } from "./Fx.js";
@@ -58,7 +58,7 @@ let somethingChanged = false;
 
 let cachedHtmlRgb = [null, ""];
 
-export const player = {
+export const player = PublicAPI.player = {
 	get paletteIndex() { return paletteIndex; },
 	set paletteIndex(i) {
 		paletteIndex = absMod(i, palette.length);
@@ -101,8 +101,6 @@ export const player = {
 	get id() { return net.protocol.id; }
 };
 
-PublicAPI.player = player;
-
 export function shouldUpdate() { /* sets colorChanged to false when called */
 	return somethingChanged ? !(somethingChanged = false) : somethingChanged;
 }
@@ -126,14 +124,11 @@ function updatePalette() {
 		changedColor(true);
 	};
 	let colorDelete = (index) => () => {
-		if (palette.length > 1) {
-			palette.splice(index, 1);
-			if (paletteIndex > index || paletteIndex === palette.length) {
-				--paletteIndex;
-			}
-			updatePalette();
-			changedColor();
-		}
+		if (palette.length <= 1) return;
+		palette.splice(index, 1);
+		if (paletteIndex > index || paletteIndex === palette.length) paletteIndex--;
+		updatePalette();
+		changedColor();
 	};
 
 	for (let i = 0; i < palette.length; i++) {
@@ -188,23 +183,10 @@ function addPaletteColor(color, isSecondary) {
 	updatePalette();
 }
 
-export function getDefaultTool() {
-	for (let toolName in tools) {
-		if (tools[toolName].rankRequired <= player.rank) {
-			return toolName;
-		}
-	}
-	return null;
-}
-
 function selectTool(name) {
 	let tool = tools[name];
-	if (!tool || tool === toolSelected || tool.rankRequired > player.rank) {
-		return false;
-	}
-	if (toolSelected) {
-		toolSelected.call('deselect');
-	}
+	if (!tool || tool === toolSelected || tool.rankRequired > player.rank) return false;
+	if (toolSelected) toolSelected.call('deselect');
 	toolSelected = tool;
 	showToolOpts(false);
 	mouse.cancelMouseDown();
@@ -221,14 +203,8 @@ function updateClientFx() {
 	renderer.render(renderer.rendertype.FX);
 }
 
-eventSys.once(e.misc.toolsInitialized, () => {
-	player.tool = getDefaultTool();
-});
-
 eventSys.on(e.net.sec.rank, newRank => {
-	if (networkRankVerification[0] < newRank) {
-		return;
-	}
+	if (networkRankVerification[0] < newRank) return;
 	rank = newRank;
 	console.log('Got rank:', newRank);
 	/* This is why we can't have nice things */
@@ -239,18 +215,14 @@ eventSys.on(e.net.sec.rank, newRank => {
 		case RANK.USER:
 			showPlayerList(localStorage.showPlayerList === "true" ? true : false);
 		case RANK.NONE:
-			showDevChat(false);
 			showPlayerList(false);
-			revealSecrets(true);
 			break;
 
 		case RANK.MODERATOR:
 		case RANK.ADMIN:
 		case RANK.DEVELOPER:
 		case RANK.OWNER:
-			showDevChat(true);
 			showPlayerList(localStorage.showPlayerList === "true" ? true : false);
-			revealSecrets(true);
 			//PublicAPI.tools = toolsApi; /* this is what lazyness does to you */
 			break;
 	}

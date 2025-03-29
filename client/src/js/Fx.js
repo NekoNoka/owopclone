@@ -1,8 +1,8 @@
 "use strict";
 
 import { colorUtils as color, getTime, eventSys } from "./util.js";
-import { EVENTS as e, protocol, activeFx, PublicAPI } from "./conf.js";
-import { camera, renderer } from "./canvas_renderer.js";
+import { EVENTS as e, protocol, activeFx, PublicAPI, camera } from "./conf.js";
+import { renderer, isVisible } from "./canvas_renderer.js";
 
 export const PLAYERFX = {
 	NONE: null,
@@ -104,7 +104,7 @@ eventSys.on(e.net.world.tilesUpdated, tiles => {
 	for (let i = 0; i < tiles.length; i++) {
 		let t = tiles[i];
 
-		if (camera.isVisible(t.x, t.y, 1, 1)) {
+		if (isVisible(t.x, t.y, 1, 1)) {
 			new Fx(WORLDFX.RECT_FADE_ALIGNED(1, t.x, t.y), { htmlRgb: color.toHTML(t.rgb ^ 0xFFFFFF), tag: '' + t.id });
 			made = true;
 		}
@@ -117,7 +117,7 @@ eventSys.on(e.net.world.tilesUpdated, tiles => {
 eventSys.on(e.net.chunk.set, (chunkX, chunkY, data) => {
 	let wX = chunkX * protocol.chunkSize;
 	let wY = chunkY * protocol.chunkSize;
-	if (camera.isVisible(wX, wY, protocol.chunkSize, protocol.chunkSize)) {
+	if (isVisible(wX, wY, protocol.chunkSize, protocol.chunkSize)) {
 		new Fx(WORLDFX.RECT_FADE_ALIGNED(16, chunkX, chunkY));
 		renderer.render(renderer.rendertype.FX);
 	}
@@ -126,7 +126,7 @@ eventSys.on(e.net.chunk.set, (chunkX, chunkY, data) => {
 eventSys.on(e.net.chunk.lock, (chunkX, chunkY, state, local) => {
 	let wX = chunkX * protocol.chunkSize;
 	let wY = chunkY * protocol.chunkSize;
-	if (!local && camera.isVisible(wX, wY, protocol.chunkSize, protocol.chunkSize)) {
+	if (!local && isVisible(wX, wY, protocol.chunkSize, protocol.chunkSize)) {
 		new Fx(WORLDFX.RECT_FADE_ALIGNED(16, chunkX, chunkY), {
 			htmlRgb: state ? "#00FF00" : "#FF0000"
 		});

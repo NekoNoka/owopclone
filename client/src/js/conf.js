@@ -1,11 +1,23 @@
 "use strict";
-
+// a bunch of pre defined variables either dynamic/static or otherwise usable by all other files in the codebase
 import { eventSys, propertyDefaults, getTime, cookiesEnabled, storageEnabled, absMod, escapeHTML, mkHTML, setTooltip, waitFrames, line, loadScript, getDefaultWorld, getCookie } from "./util.js";
 import toolSet from "../img/toolset.png";
 import unloadedPat from "../img/unloaded.png";
 import launchSoundUrl from "../audio/launch.mp3";
 import placeSoundUrl from "../audio/place.mp3";
 import clickSoundUrl from "../audio/click.mp3";
+
+export const cameraValues = {
+	x: 0,
+	y: 0,
+	zoom: -1
+}
+
+export const camera = {
+	get x() { return cameraValues.x; },
+	get y() { return cameraValues.y; },
+	get zoom() { return cameraValues.zoom; },
+}
 
 export const sounds = {
 	play: function (sound) {
@@ -28,6 +40,26 @@ export const activeFx = [];
 export let protocol = null;
 
 let evtId = 0;
+
+export const mouse = {
+	x: 0,
+	y: 0,
+	lastX: 0,
+	lastY: 0,
+	get worldX() { return camera.x * 16 + this.x / (camera.zoom / 16); },
+	get worldY() { return camera.y * 16 + this.y / (camera.zoom / 16); },
+	mouseDownWorldX: 0,
+	mouseDownWorldY: 0,
+	get tileX() { return Math.floor(this.worldX / 16); },
+	get tileY() { return Math.floor(this.worldY / 16); },
+	buttons: 0,
+	validTile: false,
+	insideViewport: false,
+	touches: [],
+	cancelMouseDown: function () { this.buttons = 0; },
+};
+
+export const keysDown = {};
 
 export const RANK = {
 	NONE: 0,
@@ -129,7 +161,7 @@ export const PublicAPI = window.NWOP = window.WorldOfPixels = {
 	}
 };
 
-export const cursors = {
+export const cursors = PublicAPI.cursors = {
 	set: new Image(),
 	cursor: { imgpos: [0, 0], hotspot: [0, 0] },
 	move: { imgpos: [1, 0], hotspot: [18, 18] },
@@ -158,8 +190,19 @@ export const elements = {
 	xyDisplay: null,
 	chatInput: null,
 	chat: null,
-	devChat: null,
 };
+
+export function statusMsg(showSpinner, message) {
+	// const statusShown = elements.status.isConnected;
+	if (message === null) {
+		elements.status.style.display = "none";
+		return;
+	} else {
+		elements.status.style.display = "";
+	}
+	elements.statusMsg.innerHTML = message;
+	elements.spinner.style.display = showSpinner ? "" : "none";
+}
 
 export const KeyCode = {
 	// Alphabet
@@ -204,8 +247,6 @@ export const KeyCode = {
 	numpadDecimal: 110, numpadDivide: 111, numpadEnter: 13
 };
 
-PublicAPI.cursors = cursors;
-
 export const AnnoyingAPI = { ws: window.WebSocket };
 
 let userOptions = {};
@@ -218,7 +259,7 @@ if (storageEnabled()) {
 	}
 }
 
-export const options = propertyDefaults(userOptions, {
+export const options = PublicAPI.options = propertyDefaults(userOptions, {
 	serverAddress: [{
 		default: true,
 		title: 'Official Server',
@@ -247,9 +288,9 @@ export const options = propertyDefaults(userOptions, {
 	showPlayers: true,
 });
 
-export const misc = {
+export const misc = PublicAPI.misc = {
 	localStorage: storageEnabled() && window.localStorage,
-	_world: null,
+	world: null,
 	lastXYDisplay: [-1, -1],
 	devRecvReader: msg => { },
 	chatPostFormatRecvModifier: msg => msg,
@@ -263,11 +304,6 @@ export const misc = {
 	tickInterval: null,
 	lastMessage: null,
 	lastCleanup: 0,
-	set world(value) {
-		PublicAPI.world = getNewWorldApi();
-		return this._world = value;
-	},
-	get world() { return this._world; },
 	guiShown: false,
 	cookiesEnabled: cookiesEnabled(),
 	storageEnabled: storageEnabled(),
@@ -276,8 +312,6 @@ export const misc = {
 	donTimer: 0
 };
 
-PublicAPI.options = options;
-
 eventSys.on(EVENTS.net.connecting, server => {
 	protocol = server.proto;
-})
+});

@@ -1,6 +1,6 @@
 "use strict";
 
-import { EVENTS as e, options, cursors } from "./conf.js";
+import { options, cursors } from "./conf.js";
 
 function reduce(canvas) { /* Removes unused space from the image */
 	let nw = canvas.width;

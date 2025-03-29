@@ -1,30 +1,16 @@
 "use strict";
 
-import { EVENTS as e, protocol, options, elements, PublicAPI, activeFx, misc } from "./conf.js";
+import { EVENTS as e, protocol, options, elements, PublicAPI, activeFx, misc, cameraValues, camera } from "./conf.js";
 import { colorUtils as color, eventSys, getTime } from "./util.js";
 
-export { centerCameraTo, moveCameraBy, moveCameraTo, isVisible };
-
-const cameraValues = {
-	x: 0,
-	y: 0,
-	zoom: -1
-}
-
-export const camera = {
-	get x() { return cameraValues.x; },
-	get y() { return cameraValues.y; },
-	get zoom() { return cameraValues.zoom; },
-	set zoom(z) {
-		z = Math.min(options.zoomLimitMax, Math.max(options.zoomLimitMin, z));
-		if (z !== cameraValues.zoom) {
-			let center = getCenterPixel();
-			cameraValues.zoom = z;
-			centerCameraTo(center[0], center[1]);
-			eventSys.emit(e.camera.zoom, z);
-		}
-	},
-	isVisible
+export function setZoom(z) {
+	z = Math.min(options.zoomLimitMax, Math.max(options.zoomLimitMin, z));
+	if (z !== cameraValues.zoom) {
+		let x = Math.round(cameraValues.x + window.innerWidth / camera.zoom / 2);
+		let y = Math.round(cameraValues.y + window.innerHeight / camera.zoom / 2);
+		centerCameraTo(x, y);
+		eventSys.emit(e.camera.zoom, z);
+	}
 }
 
 const rendererValues = {
@@ -56,9 +42,6 @@ export const renderer = {
 	updateCamera: onCameraMove,
 	unloadFarClusters: unloadFarClusters,
 };
-
-PublicAPI.camera = camera;
-PublicAPI.renderer = renderer;
 
 class BufView {
 	constructor(u32data, x, y, w, h, realw) {
@@ -219,7 +202,7 @@ export function drawText(ctx, str, x, y, centered) {
 	ctx.fillText(str, x, y);
 }
 
-function isVisible(x, y, w, h) {
+export function isVisible(x, y, w, h) {
 	if (document.visibilityState === "hidden") return;
 	let cx = camera.x;
 	let cy = camera.y;
@@ -252,7 +235,6 @@ export function unloadFarClusters() { /* Slow? */
 		}
 	}
 }
-
 
 function render(type) {
 	let time = getTime(true);
@@ -534,13 +516,7 @@ function onCameraMove() {
 	requestRender(renderer.rendertype.FX);
 }
 
-function getCenterPixel() {
-	let x = Math.round(cameraValues.x + window.innerWidth / camera.zoom / 2);
-	let y = Math.round(cameraValues.y + window.innerHeight / camera.zoom / 2);
-	return [x, y];
-}
-
-function centerCameraTo(x, y) {
+export function centerCameraTo(x, y) {
 	if (typeof (x) == "number" && !isNaN(x)) {
 		cameraValues.x = -(window.innerWidth / camera.zoom / 2) + x;
 	}
@@ -552,13 +528,13 @@ function centerCameraTo(x, y) {
 	onCameraMove();
 }
 
-function moveCameraBy(x, y) {
+export function moveCameraBy(x, y) {
 	cameraValues.x += x;
 	cameraValues.y += y;
 	onCameraMove();
 }
 
-function moveCameraTo(x, y) {
+export function moveCameraTo(x, y) {
 	cameraValues.x = x;
 	cameraValues.y = y;
 	onCameraMove();
@@ -633,7 +609,7 @@ eventSys.once(e.init, () => {
 	rendererValues.animContext = elements.animCanvas.getContext("2d", { alpha: false });
 	window.addEventListener("resize", onResize);
 	onResize();
-	camera.zoom = options.defaultZoom;
+	cameraValues.zoom = options.defaultZoom;
 	centerCameraTo(0, 0);
 
 	const mkPatternFromUrl = (url, cb) => {
@@ -668,3 +644,6 @@ eventSys.once(e.init, () => {
 	}
 	eventSys.once(e.misc.toolsInitialized, frameLoop);
 });
+
+PublicAPI.camera = camera;
+PublicAPI.renderer = renderer;

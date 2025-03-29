@@ -1,12 +1,11 @@
 "use strict";
 
-import { EVENTS as e, protocol, options, RANK, elements, PublicAPI, cursors, sounds, misc } from "./conf.js";
+import { EVENTS as e, protocol, options, RANK, elements, PublicAPI, cursors, sounds, misc, keysDown, camera, mouse } from "./conf.js";
 import { absMod, setTooltip, line, eventSys } from "./util.js";
 import { net } from "./networking.js";
 import { player } from "./local_player.js";
-import { camera, moveCameraBy, renderer, drawText } from "./canvas_renderer.js";
+import { moveCameraBy, renderer, drawText, setZoom } from "./canvas_renderer.js";
 import { windowSys, GUIWindow } from "./windowsys.js";
-import { keysDown, mouse } from "./main.js";
 import { PM } from "./pixelTools.js";
 import { PLAYERFX } from "./Fx.js";
 import newText from "../json/newText.json";
@@ -20,9 +19,7 @@ let windowShown = false;
 const textData = { newText, cyrillic }
 
 export function updateToolWindow(name) {
-	if (!toolsWindow) {
-		return;
-	}
+	if (!toolsWindow) return;
 	let tool = tools[name];
 	let children = toolsWindow.container.children;
 	for (let i = 0; i < children.length; i++) {
@@ -145,9 +142,7 @@ export function showToolOpts(hide) {
 }
 
 export function updateToolbar(win = toolsWindow) {
-	if (!win) {
-		return;
-	}
+	if (!win) return;
 
 	const container = win.container;
 	const toolButtonClick = name => event => {
@@ -613,7 +608,7 @@ eventSys.once(e.misc.toolsRendered, () => {
 					nzoom = options.defaultZoom;
 				}
 				nzoom = Math.round(nzoom);
-				camera.zoom = nzoom;
+				setZoom(nzoom);
 				if (camera.zoom !== lzoom) {
 					moveCameraBy(offX, offY);
 				}

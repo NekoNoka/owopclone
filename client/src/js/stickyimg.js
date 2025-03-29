@@ -1,7 +1,6 @@
 "use strict";
 
-import { camera } from "./canvas_renderer.js";
-import { EVENTS as e, elements } from "./conf.js";
+import { EVENTS as e, elements, camera } from "./conf.js";
 import { eventSys } from "./util.js";
 
 export function stickyimg(path, w, h, o) {

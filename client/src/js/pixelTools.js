@@ -1,8 +1,7 @@
 "use strict";
 
 import { colorUtils as color, eventSys } from "./util.js";
-import { EVENTS as e, RANK, misc } from "./conf.js";
-import { mouse } from "./main.js";
+import { EVENTS as e, RANK, misc, mouse } from "./conf.js";
 import { player } from "./local_player.js";
 import { net } from "./networking.js";
 import { centerCameraTo } from "./canvas_renderer.js";

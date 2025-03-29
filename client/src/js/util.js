@@ -1,5 +1,5 @@
 "use strict";
-
+// a bunch of pre defined functions either dynamic/static or otherwise usable by all other files in the codebase
 import { EventEmitter } from "events";
 
 export const eventSys = new EventEmitter();

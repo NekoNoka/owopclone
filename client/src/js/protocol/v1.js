@@ -1,12 +1,12 @@
 "use strict";
 
 import { Protocol } from "./Protocol.js";
-import { EVENTS as e, RANK, options, elements } from "../conf.js";
+import { EVENTS as e, RANK, options, elements, mouse } from "../conf.js";
 import { Chunk } from "../World.js";
 import { Bucket, eventSys, decompress } from "../util.js";
 import { loadAndRequestCaptcha } from "../captcha.js";
 import { player, shouldUpdate, networkRankVerification } from "../local_player.js";
-import { retryingConnect, mouse } from "../main.js";
+import { net } from "../networking.js";
 
 export const captchaState = {
 	CA_WAITING: 0,
@@ -180,8 +180,9 @@ class ProtocolV1Impl extends Protocol {
 		// console.log(message);
 		message = message.data;
 		if (typeof message === 'string') {
-			if (message.indexOf("DEV") == 0) eventSys.emit(e.net.devChat, message.slice(3));
-			else {
+			if (message.indexOf("DEV") == 0) {
+				// eventSys.emit(e.net.devChat, message.slice(3)); // DEPRECIATED: e.net.devChat
+			} else {
 				eventSys.emit(e.net.chat, message);
 			}
 			return;
@@ -352,7 +353,7 @@ class ProtocolV1Impl extends Protocol {
 								let message = ProtocolV1.misc.tokenVerification + token;
 								if (this.ws.readyState != WebSocket.OPEN) {
 									setTimeout(function () {
-										retryingConnect(() => options.serverAddress[0], this.worldName, token);
+										net.retryingConnect(() => options.serverAddress[0], this.worldName, token);
 									}, 125);
 								} else {
 									this.ws.send(message);

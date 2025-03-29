@@ -1,10 +1,9 @@
 "use strict";
 
-import { protocol, EVENTS as e, options, RANK, sounds } from "./conf.js";
+import { protocol, EVENTS as e, options, RANK, sounds, camera } from "./conf.js";
 import { colorUtils, eventSys } from "./util.js";
 import { net } from "./networking.js";
-import { camera, isVisible, renderer } from "./canvas_renderer.js";
-import { PM } from "./pixelTools.js";
+import { isVisible, renderer } from "./canvas_renderer.js";
 import { player } from "./local_player.js";
 import { Player } from "./Player.js";
 import { Fx } from "./Fx.js";
@@ -259,8 +258,6 @@ export class World {
 				chunksUpdated[key] = chunk;
 				// console.log(t);
 				chunk.update(t.x, t.y, t.rgb);
-				if (t.id !== player.id) PM.unsetPixel(t.x, t.y, t.rgb);
-				PM.setPixel(t.x, t.y, t.rgb);
 			}
 		}
 		for (let c in chunksUpdated) {

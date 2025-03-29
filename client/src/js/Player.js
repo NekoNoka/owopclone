@@ -2,7 +2,7 @@
 
 import { colorUtils as color, Lerp } from "./util.js";
 import { misc } from "./conf.js";
-import { playerList, playerListTable, playerListWindow } from "./main.js";
+import { playerList, playerListTable, playerListWindow } from "./playerlist.js";
 import { Fx, PLAYERFX } from "./Fx.js";
 import { tools } from "./tools.js";
 

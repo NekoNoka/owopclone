@@ -17,8 +17,6 @@ export const windowSys = {
 	closeAllWindows: closeAllWindows
 };
 
-PublicAPI.windowSys = windowSys;
-
 function closeAllWindows() {
 	for (let x in windowSys.windows) {
 		windowSys.windows[x].close();
@@ -322,3 +320,5 @@ export function centerWindow(win) {
 	win = win.getWindow();
 	win.move(window.innerWidth / 2 - win.realw / 2 | 0, window.innerHeight / 2 - win.realh / 2 | 0);
 }
+
+PublicAPI.windowSys = windowSys;
