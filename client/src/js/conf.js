@@ -1,5 +1,5 @@
-"use strict";
-// a bunch of pre defined variables either dynamic/static or otherwise usable by all other files in the codebase
+"use strict"; // a bunch of pre defined variables either dynamic/static or otherwise usable by all other files in the codebase
+
 import { eventSys, propertyDefaults, getTime, cookiesEnabled, storageEnabled, absMod, escapeHTML, mkHTML, setTooltip, waitFrames, line, loadScript, getDefaultWorld, getCookie } from "./util.js";
 import toolSet from "../img/toolset.png";
 import unloadedPat from "../img/unloaded.png";
@@ -7,19 +7,36 @@ import launchSoundUrl from "../audio/launch.mp3";
 import placeSoundUrl from "../audio/place.mp3";
 import clickSoundUrl from "../audio/click.mp3";
 
+export const PublicAPI = window.NWOP = window.WorldOfPixels = {
+	RANK: RANK,
+	util: {
+		getTime,
+		cookiesEnabled,
+		storageEnabled,
+		absMod,
+		escapeHTML,
+		mkHTML,
+		setTooltip,
+		waitFrames,
+		line,
+		loadScript
+	},
+	eventSys: eventSys
+};
+
 export const cameraValues = {
 	x: 0,
 	y: 0,
 	zoom: -1
-}
+};
 
 export const camera = {
 	get x() { return cameraValues.x; },
 	get y() { return cameraValues.y; },
 	get zoom() { return cameraValues.zoom; },
-}
+};
 
-export const sounds = {
+export const sounds = PublicAPI.sounds = {
 	play: function (sound) {
 		sound.currentTime = 0;
 		if (options.enableSounds) {
@@ -41,7 +58,7 @@ export let protocol = null;
 
 let evtId = 0;
 
-export const mouse = {
+export const mouse = PublicAPI.mouse = {
 	x: 0,
 	y: 0,
 	lastX: 0,
@@ -128,7 +145,7 @@ export const EVENTS = {
 	}
 };
 
-export const PUBLIC_EVENTS = {
+export const PUBLIC_EVENTS = PublicAPI.events = {
 	loaded: EVENTS.loaded,
 	init: EVENTS.init,
 	tick: EVENTS.tick,
@@ -144,22 +161,6 @@ export const PUBLIC_EVENTS = {
 	disconnected: EVENTS.net.disconnected,
 };
 
-export const PublicAPI = window.NWOP = window.WorldOfPixels = {
-	RANK: RANK,
-	events: PUBLIC_EVENTS,
-	util: {
-		getTime,
-		cookiesEnabled,
-		storageEnabled,
-		absMod,
-		escapeHTML,
-		mkHTML,
-		setTooltip,
-		waitFrames,
-		line,
-		loadScript
-	}
-};
 
 export const cursors = PublicAPI.cursors = {
 	set: new Image(),
@@ -183,9 +184,9 @@ export const cursors = PublicAPI.cursors = {
 	kick: { imgpos: [2, 1], hotspot: [3, 6] },
 	ban: { imgpos: [2, 2], hotspot: [10, 4] },
 	write: { imgpos: [1, 3], hotspot: [10, 4] } // fix hotspot
-}
+};
 
-export const elements = {
+export const elements = PublicAPI.elements = {
 	viewport: null,
 	xyDisplay: null,
 	chatInput: null,
@@ -315,3 +316,5 @@ export const misc = PublicAPI.misc = {
 eventSys.on(EVENTS.net.connecting, server => {
 	protocol = server.proto;
 });
+
+PublicAPI.world = misc.world;

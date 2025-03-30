@@ -1,9 +1,9 @@
 "use strict";
 
-import { EVENTS as e, AnnoyingAPI as aa, misc, statusMsg, elements } from "./conf.js";
+import { EVENTS as e, AnnoyingAPI as aa, misc, statusMsg, elements, PublicAPI } from "./conf.js";
 import { eventSys, eventOnce } from "./util.js";
 
-export const net = {
+export const net = PublicAPI.net = {
 	currentServer: null,
 	protocol: null,
 	isConnected,

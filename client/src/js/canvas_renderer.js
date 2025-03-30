@@ -8,6 +8,7 @@ export function setZoom(z) {
 	if (z !== cameraValues.zoom) {
 		let x = Math.round(cameraValues.x + window.innerWidth / camera.zoom / 2);
 		let y = Math.round(cameraValues.y + window.innerHeight / camera.zoom / 2);
+		cameraValues.zoom = z;
 		centerCameraTo(x, y);
 		eventSys.emit(e.camera.zoom, z);
 	}

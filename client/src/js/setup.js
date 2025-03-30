@@ -18,23 +18,23 @@ const noticeId = 0;
 
 let statusSet = false;
 
-export function getNewWorldApi() {
-    let obj = {
-        get name() { return misc.world.name; },
-    };
-    let defProp = function (prop) {
-        Object.defineProperty(obj, prop, {
-            get: function () { return misc.world && this['_' + prop] || (this['_' + prop] = misc.world[prop].bind(misc.world)); },
-        });
-    }
+// export function getNewWorldApi() {
+//     let obj = {
+//         get name() { return misc.world.name; },
+//     };
+//     let defProp = function (prop) {
+//         Object.defineProperty(obj, prop, {
+//             get: function () { return misc.world && this['_' + prop] || (this['_' + prop] = misc.world[prop].bind(misc.world)); },
+//         });
+//     }
 
-    defProp('getPixel');
-    defProp('setPixel');
-    defProp('undo');
-    defProp('redo');
-    defProp('unloadFarChunks');
-    return obj;
-}
+//     defProp('getPixel');
+//     defProp('setPixel');
+//     defProp('undo');
+//     defProp('redo');
+//     defProp('unloadFarChunks');
+//     return obj;
+// }
 
 function receiveMessage(rawText) {
     rawText = misc.chatRecvModifier(rawText);
@@ -1114,31 +1114,24 @@ window.addEventListener("load", () => {
 
 
 /* Public API definitions */
-// PublicAPI.emit = eventSys.emit.bind(eventSys);
-// PublicAPI.on = eventSys.on.bind(eventSys);
-// PublicAPI.once = eventSys.once.bind(eventSys);
-// PublicAPI.removeListener = eventSys.removeListener.bind(eventSys);
-// PublicAPI.elements = elements;
-// PublicAPI.mouse = mouse;
-// PublicAPI.world = getNewWorldApi();
-// PublicAPI.chat = {
-// 	send: (msg) => net.protocol && net.protocol.sendMessage(msg),
-// 	clear: clearChat,
-// 	local: receiveMessage,
-// 	get onDevMsg() { return misc.devRecvReader; },
-// 	set onDevMsg(fn) { misc.devRecvReader = fn; },
-// 	get postFormatRecvModifier() { return misc.chatPostFormatRecvModifier; },
-// 	set postFormatRecvModifier(fn) { misc.chatPostFormatRecvModifier = fn; },
-// 	get recvModifier() { return misc.chatRecvModifier; },
-// 	set recvModifier(fn) { misc.chatRecvModifier = fn; },
-// 	get sendModifier() { return misc.chatSendModifier; },
-// 	set sendModifier(fn) { misc.chatSendModifier = fn; }
-// };
-// PublicAPI.sounds = sounds;
-// PublicAPI.poke = () => {
-// 	if (net.protocol) {
-// 		net.protocol.lastSentX = Infinity;
-// 	}
-// };
-// PublicAPI.muted = [];
-// PublicAPI.net = net;
+PublicAPI.emit = eventSys.emit.bind(eventSys);
+PublicAPI.on = eventSys.on.bind(eventSys);
+PublicAPI.once = eventSys.once.bind(eventSys);
+PublicAPI.removeListener = eventSys.removeListener.bind(eventSys);
+PublicAPI.chat = {
+	send: (msg) => net.protocol && net.protocol.sendMessage(msg),
+	clear: clearChat,
+	local: receiveMessage,
+	get onDevMsg() { return misc.devRecvReader; },
+	set onDevMsg(fn) { misc.devRecvReader = fn; },
+	get postFormatRecvModifier() { return misc.chatPostFormatRecvModifier; },
+	set postFormatRecvModifier(fn) { misc.chatPostFormatRecvModifier = fn; },
+	get recvModifier() { return misc.chatRecvModifier; },
+	set recvModifier(fn) { misc.chatRecvModifier = fn; },
+	get sendModifier() { return misc.chatSendModifier; },
+	set sendModifier(fn) { misc.chatSendModifier = fn; }
+};
+PublicAPI.poke = () => {
+	if (net.protocol) net.protocol.lastSentX = Infinity;
+};
+PublicAPI.muted = [];

@@ -223,7 +223,6 @@ eventSys.on(e.net.sec.rank, newRank => {
 		case RANK.DEVELOPER:
 		case RANK.OWNER:
 			showPlayerList(localStorage.showPlayerList === "true" ? true : false);
-			//PublicAPI.tools = toolsApi; /* this is what lazyness does to you */
 			break;
 	}
 	elements.rankDisplay.textContent = `Rank: ${Object.keys(RANK).find(key => RANK[key] === rank)}`;
