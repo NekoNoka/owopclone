@@ -610,7 +610,7 @@ eventSys.once(e.init, () => {
 	rendererValues.animContext = elements.animCanvas.getContext("2d", { alpha: false });
 	window.addEventListener("resize", onResize);
 	onResize();
-	cameraValues.zoom = options.defaultZoom;
+	setZoom(options.defaultZoom);
 	centerCameraTo(0, 0);
 
 	const mkPatternFromUrl = (url, cb) => {
