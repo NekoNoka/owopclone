@@ -13,6 +13,9 @@ import { World } from "./World.js";
 import { load_tool_icons } from "./tool_renderer.js";
 import { updateClientFx, player } from "./local_player.js";
 import { stickyimg } from "./stickyimg.js";
+import { showPlayerList } from "./playerlist.js";
+
+window.showPlayerList = showPlayerList;
 
 const noticeId = 0;
 

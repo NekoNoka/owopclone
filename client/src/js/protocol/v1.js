@@ -453,8 +453,8 @@ class ProtocolV1Impl extends Protocol {
 		dv.setUint8(8, rgb[0]);
 		dv.setUint8(9, rgb[1]);
 		dv.setUint8(10, rgb[2]);
-		this.ws.send(array);
 		this.pendingEdits[`${x},${y}`] = setTimeout(undocb, 2000);
+		this.ws.send(array);
 		return 0;
 	}
 

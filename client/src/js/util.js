@@ -227,18 +227,29 @@ export function decompress(u8arr) {
 	return u8decompressedarr;
 }
 
-export function line(x1, y1, x2, y2, size, plot) {
-	var dx = Math.abs(x2 - x1), sx = x1 < x2 ? 1 : -1;
-	var dy = -Math.abs(y2 - y1), sy = y1 < y2 ? 1 : -1;
-	var err = dx + dy,
-		e2;
+export function line(x1, y1, x2, y2, plot) {
+	if (x1 === undefined || y1 === undefined || x2 === undefined || y2 === undefined) return console.error();
+	let dx = Math.abs(x2 - x1);
+	let sx = x1 < x2 ? 1 : -1;
+	let dy = -Math.abs(y2 - y1);
+	let sy = y1 < y2 ? 1 : -1;
+	let err = dx + dy;
+	let e2 = undefined;
 
+	let i = 0;
 	while (true) {
-		plot(x1, y1);
-		if (x1 == x2 && y1 == y2) break;
+		plot(x1, y1, i);
+		i++;
+		if (x1 === x2 && y1 === y2) break;
 		e2 = 2 * err;
-		if (e2 >= dy) { err += dy; x1 += sx; }
-		if (e2 <= dx) { err += dx; y1 += sy; }
+		if (e2 >= dy) {
+			err += dy;
+			x1 += sx;
+		}
+		if (e2 <= dx) {
+			err += dx;
+			y1 += sy;
+		}
 	}
 }
 
@@ -246,7 +257,7 @@ export function createContextMenu(x, y, buttons) {
 	let shown = false;
 	let contextMenu = document.createElement("div");
 	contextMenu.className = "context-menu";
-	
+
 	function removeMenu(event) {
 		document.body.removeChild(contextMenu);
 		document.removeEventListener("click", removeMenu);

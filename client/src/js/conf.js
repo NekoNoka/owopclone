@@ -161,7 +161,6 @@ export const PUBLIC_EVENTS = PublicAPI.events = {
 	disconnected: EVENTS.net.disconnected,
 };
 
-
 export const cursors = PublicAPI.cursors = {
 	set: new Image(),
 	cursor: { imgpos: [0, 0], hotspot: [0, 0] },
