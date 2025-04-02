@@ -472,7 +472,7 @@ eventSys.once(e.misc.toolsRendered, () => {
 							start = true;
 						}
 						PM.startHistory();
-						line(lastX, lastY, mouse.tileX, mouse.tileY, 1, (x, y) => {
+						line(lastX, lastY, mouse.tileX, mouse.tileY, (x, y) => {
 							// brush.drawEllipse(x - brushSize /2, y - brushSize /2, x + brushSize /2, y + brushSize /2, color, (px, py)=>{
 							// 	let pixel = misc.world.getPixel(px, py);
 							// 	if (pixel !== null && !(color[0] === pixel[0] && color[1] === pixel[1] && color[2] === pixel[2])) {
@@ -926,21 +926,6 @@ eventSys.once(e.misc.toolsRendered, () => {
 	addTool(new Tool('Line', cursors.wand, PLAYERFX.NONE, RANK.USER, tool => {
 		let start = null;
 		let end = null;
-		let queue = [];
-		function line(x1, y1, x2, y2, plot) {
-			let dx = Math.abs(x2 - x1), sx = x1 < x2 ? 1 : -1;
-			let dy = -Math.abs(y2 - y1), sy = y1 < y2 ? 1 : -1;
-			let err = dx + dy,
-				e2;
-
-			while (true) {
-				plot(x1, y1);
-				if (x1 == x2 && y1 == y2) break;
-				e2 = 2 * err;
-				if (e2 >= dy) { err += dy; x1 += sx; }
-				if (e2 <= dx) { err += dx; y1 += sy; }
-			}
-		}
 		let defaultFx = PLAYERFX.RECT_SELECT_ALIGNED(1);
 		tool.setFxRenderer((fx, ctx, time) => {
 			ctx.globalAlpha = 0.8;
@@ -956,64 +941,30 @@ eventSys.once(e.misc.toolsRendered, () => {
 				ctx.stroke();
 			}
 		});
-		function tick() {
-			for (let painted = 0; painted < 3 && queue.length; painted++) {
-				let current = queue.pop();
-				let c = misc.world.getPixel(current[0], current[1]);
-				let pc = player.selectedColor;
-				if ((c[0] != pc[0] || c[1] != pc[1] || c[2] != pc[2]) && !PM.setPixel(current[0], current[1], player.selectedColor)) {
-					queue.push(current);
-					break;
-				}
-			}
-			if (!queue.length) {
-				start = null;
-				end = null;
-				tool.setEvent('tick', null);
-				return;
-			}
-		}
 		tool.setEvent('mousedown', mouse => {
 			if (!(mouse.buttons & 0b100)) {
-				queue = [];
-				tool.setEvent('tick', null);
 				start = [mouse.tileX, mouse.tileY];
 				end = [mouse.tileX, mouse.tileY];
 			}
 		});
 		tool.setEvent('mousemove', mouse => {
-			if (!queue.length) {
-				end = [mouse.tileX, mouse.tileY];
-			}
+			end = [mouse.tileX, mouse.tileY];
 		});
 		tool.setEvent('mouseup', mouse => {
-			if (!(mouse.buttons & 0b11) && !queue.length) {
-				end = [mouse.tileX, mouse.tileY];
-				if (!start) {
-					end = null;
-					return;
-				}
-				if (player.rank >= RANK.ADMIN) {
-					PM.startHistory();
-					line(start[0], start[1], end[0], end[1], (x, y) => {
-						PM.setPixel(x, y, player.selectedColor);
-					});
-					PM.endHistory();
-					start = null;
-					end = null;
-				} else {
-					line(start[0], start[1], end[0], end[1], (x, y) => {
-						queue.push([x, y]);
-					});
-					tool.setEvent('tick', tick);
-				}
-			}
-		});
-		tool.setEvent('deselect', mouse => {
-			queue = [];
+			if (mouse.buttons & 0b11) return;
+			end = [mouse.tileX, mouse.tileY];
+			if (!start) return end = null;
+			PM.startHistory();
+			line(start[0], start[1], end[0], end[1], (x, y) => {
+				PM.setPixel(x, y, player.selectedColor);
+			});
+			PM.endHistory();
 			start = null;
 			end = null;
-			tool.setEvent('tick', null);
+		});
+		tool.setEvent('deselect', mouse => {
+			start = null;
+			end = null;
 		});
 	}));
 

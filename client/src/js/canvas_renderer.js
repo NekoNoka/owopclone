@@ -647,4 +647,5 @@ eventSys.once(e.init, () => {
 });
 
 PublicAPI.camera = camera;
+PublicAPI.cameraValues = cameraValues;
 PublicAPI.renderer = renderer;
