@@ -420,7 +420,6 @@ class Brush {
 					const py = y + i - this.centerY;
 					let pixel = misc.world.getPixel(px, py);
 					if (pixel !== null && !(color[0] === pixel[0] && color[1] === pixel[1] && color[2] === pixel[2])) {
-						// misc.world.setPixel(px, py, color);
 						PM.setPixel(px, py, color);
 					}
 				}
@@ -473,12 +472,6 @@ eventSys.once(e.misc.toolsRendered, () => {
 						}
 						PM.startHistory();
 						line(lastX, lastY, mouse.tileX, mouse.tileY, (x, y) => {
-							// brush.drawEllipse(x - brushSize /2, y - brushSize /2, x + brushSize /2, y + brushSize /2, color, (px, py)=>{
-							// 	let pixel = misc.world.getPixel(px, py);
-							// 	if (pixel !== null && !(color[0] === pixel[0] && color[1] === pixel[1] && color[2] === pixel[2])) {
-							// 		misc.world.setPixel(px, py, color);
-							// 	}
-							// });
 							tool.extra.brush.draw(x, y, color);
 						});
 						lastX = mouse.tileX;
