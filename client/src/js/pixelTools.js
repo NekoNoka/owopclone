@@ -1,7 +1,7 @@
 "use strict";
 
 import { colorUtils as color, eventSys } from "./util.js";
-import { EVENTS as e, RANK, misc, mouse } from "./conf.js";
+import { EVENTS as e, RANK, misc, mouse, PublicAPI } from "./conf.js";
 import { player } from "./local_player.js";
 import { net } from "./networking.js";
 import { centerCameraTo } from "./canvas_renderer.js";
@@ -277,7 +277,7 @@ export class PixelManager {
 		if (this.record) {
 			const stack = this.actionStack[x + "," + y];
 			if (!(stack instanceof Action)) {
-				const beforePixel = new Pixel(x, y, this.getPixel(x, y, 1));
+				const beforePixel = new Pixel(x, y, this.getPixel(x, y));
 				if (JSON.stringify(beforePixel.c) !== JSON.stringify(p.c)) {
 					this.actionStack[x + "," + y] = new Action(beforePixel, p);
 				}
@@ -287,7 +287,7 @@ export class PixelManager {
 		}
 
 		// **Immediate update in the world**
-		misc.world.setPixel(x, y, c);
+		// misc.world.setPixel(x, y, c);
 
 		// **Queue Processing to Maintain Undo/Redo and Chunk Logic**
 		this.queue[p.x + "," + p.y] = p;
@@ -300,21 +300,8 @@ export class PixelManager {
 		this.checkMove = true;
 		return true;
 	}
-	getPixel(x, y, a = true) {
-		if (!Number.isInteger(x) || !Number.isInteger(y)) {
-			console.error('Invalid inputs for "getPixel" on PixelManager instance.');
-			return undefined;
-		}
-
-		if (a && this.queue && this.queue[x + "," + y] && this.queue[x + "," + y].c) {
-			return this.queue[x + "," + y].c;
-		}
-
-		if (typeof misc.world.getPixel === "function") {
-			return misc.world.getPixel(x, y);
-		}
-
-		return undefined;
+	getPixel(x, y) {
+		return (this.queue[x + "," + y] || {}).c;
 	}
 	// this is an internal function to place pixels every tick.
 	placePixel() {
@@ -357,19 +344,12 @@ export class PixelManager {
 
 				if (p.x < (xcc - 31) || p.y < (ycc - 31) || p.x > (xcc + 46) || p.y > (ycc + 46)) continue;
 
-				const c = this.getPixel(p.x, p.y, 0);
+				const c = misc.world.getPixel(p.x, p.y);
 				if (!c) continue;
 
-				if (p.c.int !== color.toInt(c)) {
-					if (!p.placed) {
-						p.placed = misc.world.setPixel(p.x, p.y, p.c);
-					} else if (!p.time || Date.now() - p.time > 250) {
-						misc.world.setPixel(p.x, p.y, p.c);
-						p.time = Date.now();
-					}
-				} else if (p.o) {
-					this.deletePixel(p);
-					p.placed = true;
+				if (!p.placed) {
+					p.placed = !misc.world.setPixel(p.x, p.y, p.c);
+					if (p.placed && p.o) this.deletePixel(p);
 				}
 			}
 		}
@@ -377,4 +357,4 @@ export class PixelManager {
 	}
 }
 
-export const PM = new PixelManager;
+export const PM = PublicAPI.PM = new PixelManager();
