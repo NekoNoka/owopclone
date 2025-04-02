@@ -301,7 +301,9 @@ export class PixelManager {
 		return true;
 	}
 	getPixel(x, y) {
-		return (this.queue[x + "," + y] || {}).c;
+		let p = this.queue[x + "," + y];
+		if (!p) return misc.world.getPixel(x, y);
+		return p.c;
 	}
 	// this is an internal function to place pixels every tick.
 	placePixel() {
@@ -342,14 +344,13 @@ export class PixelManager {
 				const chunkKey = p.cx + "," + p.cy;
 				if (!this.ignoreProtectedChunks && misc.world.protectedChunks[chunkKey]) continue;
 
-				if (p.x < (xcc - 31) || p.y < (ycc - 31) || p.x > (xcc + 46) || p.y > (ycc + 46)) continue;
-
-				const c = misc.world.getPixel(p.x, p.y);
-				if (!c) continue;
-
 				if (!p.placed) {
-					p.placed = !misc.world.setPixel(p.x, p.y, p.c);
+					console.log(p);
+					let opcode = misc.world.setPixel(p.x, p.y, p.c);
+					p.placed = (opcode === true || opcode === 0);
+					console.log(opcode);
 					if (p.placed && p.o) this.deletePixel(p);
+					if (!p.placed) break;
 				}
 			}
 		}

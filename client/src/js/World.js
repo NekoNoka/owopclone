@@ -307,10 +307,11 @@ export class World {
 		if (chunk && (!chunk.locked || player.rank >= RANK.MODERATOR)) {
 			let oldPixel = this.getPixel(x, y, chunk);
 			if (!oldPixel || (oldPixel[0] === color[0] && oldPixel[1] === color[1] && oldPixel[2] === color[2])) {
-				return net.protocol.updatePixel(x, y, color, () => {
+				let opcode = net.protocol.updatePixel(x, y, color, () => {
 					chunk.update(x, y, colorUtils.u24_888(oldPixel[0], oldPixel[1], oldPixel[2]));
 					eventSys.emit(e.renderer.updateChunk, chunk);
 				});
+				if (opcode !== 0) return opcode;
 			}
 			if (!noUndo) {
 				oldPixel.push(x, y, time);
