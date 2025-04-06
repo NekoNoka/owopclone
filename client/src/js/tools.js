@@ -513,11 +513,11 @@ eventSys.once(e.misc.toolsRendered, () => {
 					return mouse.buttons;
 				}
 			});
-			tool.setEvent('scroll', (mouse, event, rawEvent) => {
-				if (!rawEvent.ctrlKey) {
-					let dx = Math.max(-500, Math.min(event.spinX * 16, 500));
-					let dy = Math.max(-500, Math.min(event.spinY * 16, 500));
-					let pxAmount = camera.zoom//Math.max(camera.zoom, 2);
+			tool.setEvent('scroll', (mouse, event) => {
+				if (!event.ctrlKey) {
+					let dx = Math.sign(event.deltaX) * 64;
+					let dy = Math.sign(event.deltaY) * 64;
+					let pxAmount = camera.zoom;
 					moveCameraBy(dx / pxAmount, dy / pxAmount);
 					return true;
 				}

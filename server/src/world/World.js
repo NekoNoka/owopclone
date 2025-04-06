@@ -98,9 +98,7 @@ export class World {
 
 	getClient(self, targetId) {
 		if (["0", "self", "me", "myself", "this", "@s", "imlazy"].includes(targetId.toLowerCase())) return self;
-		let target = this.clients.get(parseInt(targetId));
-		if (!target) return null;
-		return target;
+		return this.clients.get(parseInt(targetId)) || null;
 	}
 
 	setProp(key, value) {
