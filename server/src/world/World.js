@@ -1,9 +1,6 @@
 import { Region } from '../region/Region.js';
 import { RANK } from '../util/util.js';
-import { DEFAULT_PROPS } from '../util/util.js';
 import { Property } from '../util/Property.js';
-
-let textEncoder = new TextEncoder();
 
 export class World {
 	constructor(serverWorldManager, name, data) {

@@ -37,20 +37,44 @@ export const camera = {
 };
 
 export const sounds = PublicAPI.sounds = {
-	play: function (sound) {
-		sound.currentTime = 0;
-		if (options.enableSounds) {
-			sound.play();
-		}
+	launchAudio: new Audio(),
+	placeAudio: new Audio(),
+	clickAudio: new Audio(),
+	launchLastPlayed: 0,
+	placeLastPlayed: 0,
+	clickLastPlayed: 0,
+	launch: function () {
+		if (!options.enableSounds) return;
+		let currentTime = Date.now();
+		// if (currentTime - this.launchLastPlayed < 0) return;
+
+		this.launchAudio.currentTime = 0;
+		this.launchAudio.play();
+		this.launchLastPlayed = currentTime;
+	},
+	place: function () {
+		if (!options.enableSounds) return;
+		let currentTime = Date.now();
+		if (currentTime - this.placeLastPlayed < 30) return; // why 30?, in which time sec/mili/other?
+
+		this.placeAudio.currentTime = 0;
+		this.placeAudio.play();
+		this.placeLastPlayed = currentTime;
+	},
+	click: function () {
+		if (!options.enableSounds) return;
+		let currentTime = Date.now();
+		// if (currentTime - this.clickLastPlayed < 0) return;
+
+		this.clickAudio.currentTime = 0;
+		this.clickAudio.play();
+		this.clickLastPlayed = currentTime;
 	}
 };
 
-sounds.launch = new Audio();
-sounds.launch.src = launchSoundUrl;
-sounds.place = new Audio();
-sounds.place.src = placeSoundUrl;
-sounds.click = new Audio();
-sounds.click.src = clickSoundUrl;
+sounds.launchAudio.src = launchSoundUrl;
+sounds.placeAudio.src = placeSoundUrl;
+sounds.clickAudio.src = clickSoundUrl;
 
 export const activeFx = [];
 
@@ -246,8 +270,6 @@ export const KeyCode = {
 	numpadMultiply: 106, numpadAdd: 107, numpadSubtract: 109,
 	numpadDecimal: 110, numpadDivide: 111, numpadEnter: 13
 };
-
-export const AnnoyingAPI = { ws: window.WebSocket };
 
 let userOptions = {};
 

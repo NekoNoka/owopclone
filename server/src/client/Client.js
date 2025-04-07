@@ -556,6 +556,7 @@ export class Client {
 		}
 		message = Buffer.from(message);
 		switch (message.length) {
+			// request chunk
 			case 8: {
 				let chunkX = message.readInt32LE(0);
 				if (chunkX > maxChunkCoord || chunkX < minChunkCoord) {
@@ -583,7 +584,7 @@ export class Client {
 				region.requestChunk(this, (chunkY & 0xf) << 4 | chunkX & 0xf);
 				return;
 			}
-			//set pixel
+			// set pixel
 			case 11: {
 				if (this.rank < 1) return;
 				let x = message.readInt32LE(0);
@@ -623,7 +624,7 @@ export class Client {
 				region.setPixel(this, x & 0xff, y & 0xff, message[8], message[9], message[10]);
 				return;
 			}
-			//chunk paste
+			// chunk paste
 			case 776: {
 				if (this.rank < 2) return;
 				if (this.rank < 3) {
@@ -669,7 +670,7 @@ export class Client {
 				region.pasteChunk((chunkY & 0xf) << 4 | chunkX & 0xf, message.subarray(8));
 				return;
 			}
-			//erase chunk
+			// erase chunk
 			case 13: {
 				if (this.rank < RANK.ARTIST) return;
 				if (this.rank < RANK.ADMIN) {
@@ -705,7 +706,7 @@ export class Client {
 				region.eraseChunk((chunkY & 0xf) << 4 | chunkX & 0xf, message[8], message[9], message[10]);
 				return;
 			}
-			//protect chunk
+			// protect chunk
 			case 10: {
 				if (this.rank < 2) return;
 				if (this.rank < 3) {
@@ -743,7 +744,7 @@ export class Client {
 				region.protectChunk((chunkY & 0xf) << 4 | chunkX & 0xf, message[8]);
 				return;
 			}
-			//player update
+			// player update
 			case 12: {
 				this.updated = true;
 				let x = message.readInt32LE(0);
@@ -771,14 +772,6 @@ export class Client {
 				}
 				this.x = x;
 				this.y = y;
-				return;
-			}
-			//rank verification
-			case 1: {
-				if (message[0] > this.rank) {
-					this.destroy();
-					return;
-				}
 				return;
 			}
 			default: {
@@ -858,7 +851,7 @@ export class Client {
 				this.destroy();
 				return;
 			}
-			message = Buffer.from(message)
+			message = Buffer.from(message);
 			//check if too long
 			if (message.length > 26) {
 				this.destroy();
@@ -952,9 +945,8 @@ export class Client {
 		if (message.startsWith("/")) {
 			message = message.trim();
 			handleCommand(this, message);
-		}
-		else {
-			if (this.rank < RANK.ADMIN && this.mute) return;
+		} else {
+			if (this.mute) return;
 			message = message.trim();
 			if (message.length === 0) return;
 			this.world.sendChat(this, message);

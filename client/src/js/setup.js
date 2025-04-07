@@ -891,7 +891,6 @@ eventSys.on(e.net.donUntil, (ts, pmult) => {
             + ((mins % 60) < 10 ? '0' : '') + (mins % 60) + ':'
             + ((secs % 60) < 10 ? '0' : '') + (secs % 60);
         // elements.dInfoDisplay.setAttribute("data-tmo", tmer);
-
     };
 
     clearInterval(misc.donTimer);
@@ -906,9 +905,7 @@ eventSys.on(e.net.donUntil, (ts, pmult) => {
 eventSys.on(e.net.chat, receiveMessage);
 
 eventSys.on(e.net.world.setId, id => {
-    if (!misc.storageEnabled) {
-        return;
-    }
+    if (!misc.storageEnabled) return;
 
     // function autoNick() {
     // 	if (misc.localStorage.nick) {
@@ -995,7 +992,7 @@ eventSys.on(e.net.world.join, world => {
     net.showLoadScr(false, false);
     showWorldUI(!options.noUi);
     renderer.showGrid(!options.noUi);
-    sounds.play(sounds.launch);
+    sounds.launch();
     misc.world = new World(world);
     eventSys.emit(e.misc.worldInitialized);
 });

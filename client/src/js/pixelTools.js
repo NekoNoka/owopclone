@@ -127,10 +127,15 @@ export class PixelManager {
 		eventSys.on(e.net.world.tilesUpdated, (message) => {
 			for (let i = 0; i < message.length; i++) {
 				let p = message[i];
-				if (p.id === player.id) continue;
-				let placedColor = [(p & (255 << 0)) >> 0, (p & (255 << 8)) >> 8, (p & (255 << 16)) >> 16];
-				if (this.whitelist.has(`${p.id}`)) this.setPixel(p.x, p.y, placedColor);
 				let pixel = this.queue[`${p.x},${p.y}`];
+				let placedColor = [(p.rgb & (255 << 0)) >> 0, (p.rgb & (255 << 8)) >> 8, (p.rgb & (255 << 16)) >> 16];
+				if (p.id === player.id) {
+					console.log(pixel.c, placedColor, p.id);
+					const eq = (a, b) => a[0] == b[0] && a[1] == b[1] && a[2] == b[2];
+					if (!eq(pixel.c, color.fromInt(placedColor))) pixel.placed = false;
+					continue;
+				}
+				if (this.whitelist.has(`${p.id}`)) this.setPixel(p.x, p.y, placedColor);
 				if (pixel) {
 					this.checkMove = true;
 					pixel.placed = false;
@@ -286,9 +291,6 @@ export class PixelManager {
 			}
 		}
 
-		// **Immediate update in the world**
-		// misc.world.setPixel(x, y, c);
-
 		// **Queue Processing to Maintain Undo/Redo and Chunk Logic**
 		this.queue[p.x + "," + p.y] = p;
 		if (!this.chunkQueue[chunkKey]) this.chunkQueue[chunkKey] = new Chunk(p);
@@ -305,7 +307,6 @@ export class PixelManager {
 		if (!p) return misc.world.getPixel(x, y);
 		return p.c;
 	}
-	// this is an internal function to place pixels every tick.
 	placePixel() {
 		if (player.rank >= RANK.MODERATOR && this.enableMod) {
 			const cx = Math.floor(mouse.tileX / 16);
@@ -338,17 +339,15 @@ export class PixelManager {
 
 			for (let i = 0; i < this.extra.placeData.length; i++) {
 				const e = this.extra.placeData[i][1];
-				const p = this.queue[(tX + e.x) + "," + (tY + e.y)];
+				const p = this.queue[`${tX + e.x},${tY + e.y}`];
 				if (!p) continue;
 
 				const chunkKey = p.cx + "," + p.cy;
 				if (!this.ignoreProtectedChunks && misc.world.protectedChunks[chunkKey]) continue;
 
 				if (!p.placed) {
-					console.log(p);
 					let opcode = misc.world.setPixel(p.x, p.y, p.c);
 					p.placed = (opcode === true || opcode === 0);
-					console.log(opcode);
 					if (p.placed && p.o) this.deletePixel(p);
 					if (!p.placed) break;
 				}

@@ -148,7 +148,7 @@ export function updateToolbar(win = toolsWindow) {
 	const toolButtonClick = name => event => {
 		player.tool = name;
 		showToolOpts(false);
-		sounds.play(sounds.click);
+		sounds.click();
 	};
 
 	container.innerHTML = "";
@@ -933,7 +933,6 @@ eventSys.once(e.misc.toolsRendered, () => {
 	addTool(new Tool('Circle', cursors.circle, PLAYERFX.NONE, RANK.USER, tool => {
 		let start = null;
 		let end = null;
-		let queue = [];
 		function isFilled(x, y, width, height) {
 			return Math.sqrt(Math.pow(x / width, 2) + Math.pow(y / height, 2)) <= 1;
 		}
@@ -979,61 +978,40 @@ eventSys.once(e.misc.toolsRendered, () => {
 				ctx.stroke();
 			}
 		});
-		function tick() {
-			for (let i = queue.length - 1; i >= 0; i--) {
-				let pixel = queue[i];
-				if (PM.setPixel(pixel[0], pixel[1], player.selectedColor)) {
-					queue.splice(i, 1);
-				}
-			}
-
-			if (queue.length === 0) {
-				start = null;
-				end = null;
-				tool.setEvent("tick", null);
-				PM.endHistory();
-			}
-		}
 		tool.setEvent("mousedown", mouse => {
 			if (!(mouse.buttons & 0b100)) {
-				queue = [];
-				tool.setEvent("tick", null);
 				start = [mouse.tileX, mouse.tileY];
 				end = [mouse.tileX, mouse.tileY];
 			}
 		});
 		tool.setEvent("mousemove", mouse => {
-			if (!queue.length) {
-				end = [mouse.tileX, mouse.tileY];
-			}
+			end = [mouse.tileX, mouse.tileY];
 		});
 		tool.setEvent("mouseup", mouse => {
-			if (!(mouse.buttons & 0b11) && !queue.length) {
+			if (!(mouse.buttons & 0b11)) {
 				end = [mouse.tileX, mouse.tileY];
 				if (!start) {
 					end = null;
 					return;
 				}
-				circle(start[0], start[1], end[0], end[1], (x, y) => {
-					queue.push([x, y]);
-				});
 				PM.startHistory();
-				tool.setEvent("tick", tick);
+				circle(start[0], start[1], end[0], end[1], (x, y) => {
+					PM.setPixel(x, y, player.selectedColor);
+				});
+				PM.endHistory();
+				start = null;
+				end = null;
 			}
 		});
 		tool.setEvent("deselect", mouse => {
-			queue = [];
 			start = null;
 			end = null;
-			tool.setEvent("tick", null);
 		});
 	}));
 
 	addTool(new Tool('Rect', cursors.rect, PLAYERFX.NONE, RANK.USER, tool => {
 		let start = null;
 		let end = null;
-		let queue = [];
-
 		function rectangle(x1, y1, x2, y2, plot) {
 			if (x2 < x1) [x1, x2] = [x2, x1];
 			if (y2 < y1) [y1, y2] = [y2, y1];
@@ -1047,7 +1025,6 @@ eventSys.once(e.misc.toolsRendered, () => {
 				plot(x2, y);
 			}
 		}
-
 		let defaultFx = PLAYERFX.RECT_SELECT_ALIGNED(1);
 		tool.setFxRenderer((fx, ctx, time) => {
 			ctx.globalAlpha = 0.8;
@@ -1062,24 +1039,6 @@ eventSys.once(e.misc.toolsRendered, () => {
 				ctx.stroke();
 			}
 		});
-
-		function tick() {
-
-			for (let i = queue.length - 1; i >= 0; i--) {
-				let pixel = queue[i];
-				if (PM.setPixel(pixel[0], pixel[1], player.selectedColor)) {
-					queue.splice(i, 1);
-				}
-			}
-
-			if (queue.length === 0) {
-				start = null;
-				end = null;
-				tool.setEvent("tick", null);
-				PM.endHistory();
-			}
-		}
-
 		tool.setEvent("mousedown", mouse => {
 			if (!(mouse.buttons & 0b100)) {
 				queue = [];
@@ -1088,33 +1047,26 @@ eventSys.once(e.misc.toolsRendered, () => {
 				end = [mouse.tileX, mouse.tileY];
 			}
 		});
-
 		tool.setEvent("mousemove", mouse => {
-			if (!queue.length) {
-				end = [mouse.tileX, mouse.tileY];
-			}
+			end = [mouse.tileX, mouse.tileY];
 		});
-
 		tool.setEvent("mouseup", mouse => {
-			if (!(mouse.buttons & 0b11) && !queue.length) {
+			if (!(mouse.buttons & 0b11)) {
 				end = [mouse.tileX, mouse.tileY];
 				if (!start) {
 					end = null;
 					return;
 				}
-				rectangle(start[0], start[1], end[0], end[1], (x, y) => {
-					queue.push([x, y]);
-				});
 				PM.startHistory();
-				tool.setEvent("tick", tick);
+				rectangle(start[0], start[1], end[0], end[1], (x, y) => {
+					PM.setPixel(x, y, player.selectedColor);
+				});
+				PM.endHistory();
 			}
 		});
-
 		tool.setEvent("deselect", mouse => {
-			queue = [];
 			start = null;
 			end = null;
-			tool.setEvent("tick", null);
 		});
 	}));
 
@@ -1128,21 +1080,6 @@ eventSys.once(e.misc.toolsRendered, () => {
 		tool.extra.end = undefined;
 		tool.extra.newText = textData.newText;
 		tool.extra.cyrillic = textData.cyrillic;
-		let queue = [];
-		function tick() {
-			for (let i = queue.length - 1; i >= 0; i--) {
-				let pixel = queue[i];
-				if (PM.setPixel(pixel[0], pixel[1], player.selectedColor)) {
-					queue.splice(i, 1);
-				}
-			}
-
-			if (queue.length === 0) {
-				tool.extra.start = null;
-				tool.extra.end = null;
-				tool.setEvent("tick", null);
-			}
-		}
 		function setText(t, pos, func) {
 			let localPos = [...pos];
 			let furthestPos = [...pos];
@@ -1253,11 +1190,7 @@ eventSys.once(e.misc.toolsRendered, () => {
 				}
 			} else if (mouse.buttons === 2 && tool.extra.end && isInside()) {
 				PM.startHistory();
-				// setText(tool.extra.text, [...tool.extra.start], (x, y) => PM.setPixel(x, y, tool.extra.state.rainbow ? Color.hue(x - y, 8) : player.selectedColor));
-				setText(tool.extra.text, [...tool.extra.start], (x, y) => {
-					queue.push([x, y]);
-				});
-				tool.setEvent('tick', tick);
+				setText(tool.extra.text, [...tool.extra.start], (x, y) => PM.setPixel(x, y, player.selectedColor));
 				PM.endHistory();
 				return true;
 			}

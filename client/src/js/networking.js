@@ -1,6 +1,6 @@
 "use strict";
 
-import { EVENTS as e, AnnoyingAPI as aa, misc, statusMsg, elements, PublicAPI } from "./conf.js";
+import { EVENTS as e, misc, statusMsg, elements, PublicAPI } from "./conf.js";
 import { eventSys, eventOnce } from "./util.js";
 
 export const net = PublicAPI.net = {
@@ -18,7 +18,7 @@ function isConnected() {
 
 function connect(server, worldName, captcha) {
 	eventSys.emit(e.net.connecting, server);
-	net.connection = new aa.ws(server.url);
+	net.connection = new window.WebSocket(server.url);
 	net.connection.binaryType = 'arraybuffer';
 	net.currentServer = server;
 	net.protocol = new server.proto.class(net.connection, worldName, captcha);

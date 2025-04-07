@@ -76,9 +76,8 @@ export class Server {
 			if (process.env.DH_PARAMS_FILE_NAME) options.dh_params_file_name = process.env.DH_PARAMS_FILE_NAME
 			if (process.env.KEY_FILE_NAME) options.key_file_name = process.env.KEY_FILE_NAME
 			if (process.env.PASSPHRASE) options.passphrase = process.env.PASSPHRASE
-			server = uWS.SSLApp(options)
-		}
-		else {
+			server = uWS.SSLApp(options);
+		} else {
 			server = uWS.App();
 		}
 		server.ws("/*", {
@@ -153,7 +152,6 @@ export class Server {
 				}
 			},
 			message: (ws, message, isBinary) => {
-				// console.log(message);
 				try {
 					ws.client.handleMessage(message, isBinary);
 				}

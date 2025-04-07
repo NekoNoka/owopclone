@@ -207,10 +207,6 @@ eventSys.on(e.net.sec.rank, newRank => {
 	if (networkRankVerification[0] < newRank) return;
 	rank = newRank;
 	console.log('Got rank:', newRank);
-	/* This is why we can't have nice things */
-	if (net.isConnected()) {
-		net.protocol.ws.send((new Uint8Array([newRank])).buffer);
-	}
 	switch (newRank) {
 		case RANK.USER:
 			showPlayerList(localStorage.showPlayerList === "true" ? true : false);
