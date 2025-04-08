@@ -53,17 +53,17 @@ export class Server {
 		await saveAndClose();
 	}
 
-	getClientsByUsername(username){
+	getClientsByUsername(username) {
 		let c = [];
-		for(let client of this.clients.map.values()){
-			if(client.getAccountUsername()===username) c.push(client);
+		for (let client of this.clients.map.values()) {
+			if (client.getAccountUsername() === username) c.push(client);
 		}
 		return c;
 	}
 
-	getClientByUsername(username){
-		for(let client of this.clients.map.values()){
-			if(client.getAccountUsername()===username) return client;
+	getClientByUsername(username) {
+		for (let client of this.clients.map.values()) {
+			if (client.getAccountUsername() === username) return client;
 		}
 		return null;
 	}
@@ -94,12 +94,12 @@ export class Server {
 					let origin = req.getHeader("origin");
 					let cookies = req.getHeader('cookie');
 					let token = '';
-					let isBot = req.getHeader('is-bot') === true || req.getHeader('is-bot')=="true" || false; // change to false before pushing you fucking maggot
+					let isBot = req.getHeader('is-bot') === true || req.getHeader('is-bot') == "true" || false; // change to false before pushing you fucking maggot
 					token = cookies.split('; ').map(cookie => cookie.split('='))
-					.reduce((acc, [key, value])=>{
-						acc[key] = value;
-						return acc;
-					}, {})['nmToken'] || null;
+						.reduce((acc, [key, value]) => {
+							acc[key] = value;
+							return acc;
+						}, {})['nmToken'] || null;
 					// console.log(cookies);
 					// console.log(token.toString());
 					// console.log('fart');
@@ -117,8 +117,7 @@ export class Server {
 					if (this.destroyed) {
 						res.writeStatus("503 Service Unavailable");
 						res.end();
-					}
-					else {
+					} else {
 						res.cork(() => {
 							res.upgrade({
 								origin,
@@ -135,15 +134,13 @@ export class Server {
 			},
 			open: async ws => {
 				ws.subscribe(this.globalTopic);
-				// console.log("hi");
-				// console.log(ws.token)
 				try {
 					this.stats.totalConnections++;
 					let client = this.clients.createClient(ws);
 					ws.client = client;
 					await client.setStatus("Logging in...", true, true);
-					if(!await client.checkIsLoggedIn()) return;
-					if(client.destroyed) return;
+					if (!await client.checkIsLoggedIn()) return;
+					if (client.destroyed) return;
 					await client.setStatus("Logged in!", true);
 					client.startProtocol();
 				}
@@ -162,7 +159,7 @@ export class Server {
 			close: (ws, code, message) => {
 				try {
 					ws.closed = true;
-					if(!ws.client.destroyed) ws.client.destroy();
+					if (!ws.client.destroyed) ws.client.destroy();
 				}
 				catch (err) {
 					console.error(err);

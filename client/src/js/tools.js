@@ -1041,7 +1041,6 @@ eventSys.once(e.misc.toolsRendered, () => {
 		});
 		tool.setEvent("mousedown", mouse => {
 			if (!(mouse.buttons & 0b100)) {
-				queue = [];
 				tool.setEvent("tick", null);
 				start = [mouse.tileX, mouse.tileY];
 				end = [mouse.tileX, mouse.tileY];
@@ -1062,6 +1061,8 @@ eventSys.once(e.misc.toolsRendered, () => {
 					PM.setPixel(x, y, player.selectedColor);
 				});
 				PM.endHistory();
+				start = null;
+				end = null;
 			}
 		});
 		tool.setEvent("deselect", mouse => {
