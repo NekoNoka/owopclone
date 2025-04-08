@@ -64,10 +64,8 @@ function receiveMessage(rawText) {
 
     let parsedJson = JSON.parse(rawText);
     let text = parsedJson.text;
-    let realText = text;
     let sender = parsedJson.sender;
     let data = parsedJson.data;
-    let clientInfo = parsedJson.clientInfo;
     let allowHTML = false;
     statusSet = false;
     if (sender === 'server') {

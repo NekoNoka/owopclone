@@ -1112,10 +1112,10 @@ eventSys.once(e.misc.toolsRendered, () => {
 			}
 			return furthestPos;
 		}
+		let defaultFx = PLAYERFX.RECT_SELECT_ALIGNED(1);
 		tool.setFxRenderer((fx, ctx, time) => {
-			// if (someRenderer(fx, ctx, time, () => 1)) return;
+			if (!fx.extra.isLocalPlayer) return defaultFx(fx, ctx, time);
 
-			// let camera = camera;
 			let oldlinew = ctx.lineWidth;
 			ctx.lineWidth = 2;
 			let s = undefined;

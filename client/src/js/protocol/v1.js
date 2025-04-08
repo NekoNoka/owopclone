@@ -187,7 +187,7 @@ class ProtocolV1Impl extends Protocol {
 			}
 			return;
 		}
-
+		
 		let dv = new DataView(message);
 		let oc = ProtocolV1.opCode.server;
 		switch (dv.getUint8(0)) {

@@ -123,7 +123,7 @@ export class Server {
 								origin,
 								ip,
 								closed: false,
-								token: token,
+								token,
 								isBot,
 							}, secWebSocketKey, secWebSocketProtocol, secWebSocketExtensions, context);
 						});
