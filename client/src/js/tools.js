@@ -1,7 +1,7 @@
 "use strict";
 
 import { EVENTS as e, protocol, options, RANK, elements, PublicAPI, cursors, sounds, misc, keysDown, camera, mouse } from "./conf.js";
-import { absMod, setTooltip, line, eventSys } from "./util.js";
+import { colorUtils as color, absMod, setTooltip, line, eventSys } from "./util.js";
 import { net } from "./networking.js";
 import { player } from "./local_player.js";
 import { moveCameraBy, renderer, drawText, setZoom } from "./canvas_renderer.js";
@@ -148,7 +148,7 @@ export function updateToolbar(win = toolsWindow) {
 	const toolButtonClick = name => event => {
 		player.tool = name;
 		showToolOpts(false);
-		sounds.play(sounds.click);
+		sounds.click();
 	};
 
 	container.innerHTML = "";
@@ -434,8 +434,8 @@ eventSys.once(e.misc.toolsRendered, () => {
 		tool => {
 			tool.extra.brushSize = 1;
 			tool.extra.brush = new Brush(0, 0, tool.extra.brushSize - 1, tool.extra.brushSize - 1, 0, 0);
-			let lastX,
-				lastY;
+			let lastX;
+			let lastY;
 			let last1PX;
 			let last1PY;
 			let last2PX;
@@ -446,7 +446,6 @@ eventSys.once(e.misc.toolsRendered, () => {
 				/* White color if right clicking */
 
 				let color = mouse.buttons === 2 ? player.secondaryColor : player.selectedColor;
-				let brushSize = tool.extra.brushSize - 1 || 0;
 
 				switch (mouse.buttons) {
 					case 1:
@@ -513,11 +512,11 @@ eventSys.once(e.misc.toolsRendered, () => {
 					return mouse.buttons;
 				}
 			});
-			tool.setEvent('scroll', (mouse, event, rawEvent) => {
-				if (!rawEvent.ctrlKey) {
-					let dx = Math.max(-500, Math.min(event.spinX * 16, 500));
-					let dy = Math.max(-500, Math.min(event.spinY * 16, 500));
-					let pxAmount = camera.zoom//Math.max(camera.zoom, 2);
+			tool.setEvent('scroll', (mouse, event) => {
+				if (!event.ctrlKey) {
+					let dx = Math.sign(event.deltaX) * 64;
+					let dy = Math.sign(event.deltaY) * 64;
+					let pxAmount = camera.zoom;
 					moveCameraBy(dx / pxAmount, dy / pxAmount);
 					return true;
 				}
@@ -818,101 +817,70 @@ eventSys.once(e.misc.toolsRendered, () => {
 
 	// Fill tool
 	addTool(new Tool('Fill', cursors.fill, PLAYERFX.NONE, RANK.USER, tool => {
-		tool.extra.tickAmount = 9;
-		let queue = [];
-		let fillingColor = null;
-		let defaultFx = PLAYERFX.RECT_SELECT_ALIGNED(1);
 		tool.setFxRenderer((fx, ctx, time) => {
+			let defaultFx = PLAYERFX.RECT_SELECT_ALIGNED(1);
+			if (!fx.extra.isLocalPlayer) return defaultFx(fx, ctx, time);
 			ctx.globalAlpha = 0.8;
-			ctx.strokeStyle = fx.extra.player.htmlRgb;
+			ctx.strokeStyle = color.toHTML(tool.extra.button === 1 ? player.selectedColor : player.secondaryColor);
 			let z = camera.zoom;
-			if (!fillingColor || !fx.extra.isLocalPlayer) {
-				defaultFx(fx, ctx, time);
-			} else {
-				ctx.beginPath();
-				for (let i = 0; i < queue.length; i++) {
-					ctx.rect((queue[i][0] - camera.x) * z, (queue[i][1] - camera.y) * z, z, z);
-				}
-				ctx.stroke();
+			if (!tool.extra.fillingColor) return defaultFx(fx, ctx, time);
+			ctx.beginPath();
+			for (let current in tool.extra.queue) {
+				current = tool.extra.queue[current];
+				let x = current.x
+				let y = current.y;
+				ctx.rect((x - camera.x) * z, (y - camera.y) * z, z, z);
 			}
+			ctx.stroke();
+			return 0;
 		});
+		tool.extra.usedQueue = {};
+		tool.extra.queue = {};
+		tool.extra.fillingColor = undefined;
+		tool.extra.button = 0;
+		const eq = (a, b) => a && b && a[0] === b[0] && a[1] === b[1] && a[2] === b[2];
+		const isFillColor = (x, y) => eq(PM.getPixel(x, y), tool.extra.fillingColor) && (!tool.extra.usedQueue[`${x},${y}`]) && (tool.extra.queue[`${x},${y}`] = { x: x, y: y }, true);
+
 		function tick() {
-			const eq = (a, b) => a && b && a[0] === b[0] && a[1] === b[1] && a[2] === b[2];
-			const check = (x, y) => {
-				if (eq(misc.world.getPixel(x, y), fillingColor)) {
-					queue.unshift([x, y]);
-					return true;
-				}
-				return false;
-			};
-
-			if (!queue.length || !fillingColor) {
-				return;
-			}
-
-			let selClr = player.selectedColor;
-			let painted = 0;
-			let tickAmount = tool.extra.tickAmount;
-			if (keysDown[17]) { /* Ctrl */
-				tickAmount *= 3;
-			}
-
-			for (let painted = 0; painted < tickAmount && queue.length; painted++) {
-				let current = queue.pop();
-				let x = current[0];
-				let y = current[1];
+			let selClr = tool.extra.button === 1 ? player.selectedColor : player.secondaryColor;
+			for (let current in tool.extra.queue) {
+				current = tool.extra.queue[current];
+				let x = current.x;
+				let y = current.y;
 				let thisClr = misc.world.getPixel(x, y);
-				if (eq(thisClr, fillingColor) && !eq(thisClr, selClr)) {
-					if (!PM.setPixel(x, y, selClr)) {
-						queue.push(current);
-						break;
-					}
+				if (eq(thisClr, tool.extra.fillingColor) && !eq(thisClr, selClr)) {
+					PM.setPixel(x, y, selClr);
 
-					// diamond check first
-					let top = check(x, y - 1);
-					let bottom = check(x, y + 1);
-					let left = check(x - 1, y);
-					let right = check(x + 1, y);
+					let t = isFillColor(x, y - 1);
+					let b = isFillColor(x, y + 1);
+					let l = isFillColor(x - 1, y);
+					let r = isFillColor(x + 1, y);
 
-					// if corners are not closed by parts of the diamond, then they can be accessed
-					if (top && left) {
-						check(x - 1, y - 1);
-					}
-					if (top && right) {
-						check(x + 1, y - 1);
-					}
-					if (bottom && left) {
-						check(x - 1, y + 1);
-					}
-					if (bottom && right) {
-						check(x + 1, y + 1);
-					}
-
-					// Shape diamond, infra not like
-					/*check(x    , y - 1);
-					check(x - 1, y    );
-					check(x + 1, y    );
-					check(x    , y + 1);*/
+					t && l && isFillColor(x - 1, y - 1);
+					t && r && isFillColor(x + 1, y - 1);
+					b && l && isFillColor(x - 1, y + 1);
+					b && r && isFillColor(x + 1, y + 1);
 				}
+				delete tool.extra.queue[`${x},${y}`];
+				tool.extra.usedQueue[`${x},${y}`] = true;
 			}
 		}
-		tool.setEvent('mousedown', mouse => {
-			if (!(mouse.buttons & 0b100)) {
-				fillingColor = misc.world.getPixel(mouse.tileX, mouse.tileY);
-				if (fillingColor) {
-					PM.startHistory();
-					queue.push([mouse.tileX, mouse.tileY]);
-					tool.setEvent('tick', tick);
-				}
-			}
+		tool.setEvent("mousedown", (mouse, event) => {
+			if (event.which !== 1 && event.which !== 3) return;
+			tool.extra.button = event.which;
+			tool.extra.fillingColor = misc.world.getPixel(mouse.tileX, mouse.tileY);
+			tool.extra.queue[`${mouse.tileX},${mouse.tileY}`] = { x: mouse.tileX, y: mouse.tileY };
+			PM.startHistory();
+			tool.setEvent("tick", tick);
 		});
-		tool.setEvent('mouseup deselect', mouse => {
-			if (!mouse || !(mouse.buttons & 0b1)) {
-				PM.endHistory();
-				fillingColor = null;
-				queue = [];
-				tool.setEvent('tick', null);
-			}
+		tool.setEvent("mouseup deselect", mouse => {
+			PM.endHistory();
+			tool.extra.usedQueue = {};
+			tool.extra.queue = {};
+			tool.extra.fillingColor = undefined;
+			tool.extra.button = 0;
+			tool.setEvent("tick", null);
+			return mouse && 1 & mouse.buttons;
 		});
 	}));
 
@@ -964,7 +932,6 @@ eventSys.once(e.misc.toolsRendered, () => {
 	addTool(new Tool('Circle', cursors.circle, PLAYERFX.NONE, RANK.USER, tool => {
 		let start = null;
 		let end = null;
-		let queue = [];
 		function isFilled(x, y, width, height) {
 			return Math.sqrt(Math.pow(x / width, 2) + Math.pow(y / height, 2)) <= 1;
 		}
@@ -1010,61 +977,40 @@ eventSys.once(e.misc.toolsRendered, () => {
 				ctx.stroke();
 			}
 		});
-		function tick() {
-			for (let i = queue.length - 1; i >= 0; i--) {
-				let pixel = queue[i];
-				if (PM.setPixel(pixel[0], pixel[1], player.selectedColor)) {
-					queue.splice(i, 1);
-				}
-			}
-
-			if (queue.length === 0) {
-				start = null;
-				end = null;
-				tool.setEvent("tick", null);
-				PM.endHistory();
-			}
-		}
 		tool.setEvent("mousedown", mouse => {
 			if (!(mouse.buttons & 0b100)) {
-				queue = [];
-				tool.setEvent("tick", null);
 				start = [mouse.tileX, mouse.tileY];
 				end = [mouse.tileX, mouse.tileY];
 			}
 		});
 		tool.setEvent("mousemove", mouse => {
-			if (!queue.length) {
-				end = [mouse.tileX, mouse.tileY];
-			}
+			end = [mouse.tileX, mouse.tileY];
 		});
 		tool.setEvent("mouseup", mouse => {
-			if (!(mouse.buttons & 0b11) && !queue.length) {
+			if (!(mouse.buttons & 0b11)) {
 				end = [mouse.tileX, mouse.tileY];
 				if (!start) {
 					end = null;
 					return;
 				}
-				circle(start[0], start[1], end[0], end[1], (x, y) => {
-					queue.push([x, y]);
-				});
 				PM.startHistory();
-				tool.setEvent("tick", tick);
+				circle(start[0], start[1], end[0], end[1], (x, y) => {
+					PM.setPixel(x, y, player.selectedColor);
+				});
+				PM.endHistory();
+				start = null;
+				end = null;
 			}
 		});
 		tool.setEvent("deselect", mouse => {
-			queue = [];
 			start = null;
 			end = null;
-			tool.setEvent("tick", null);
 		});
 	}));
 
 	addTool(new Tool('Rect', cursors.rect, PLAYERFX.NONE, RANK.USER, tool => {
 		let start = null;
 		let end = null;
-		let queue = [];
-
 		function rectangle(x1, y1, x2, y2, plot) {
 			if (x2 < x1) [x1, x2] = [x2, x1];
 			if (y2 < y1) [y1, y2] = [y2, y1];
@@ -1078,7 +1024,6 @@ eventSys.once(e.misc.toolsRendered, () => {
 				plot(x2, y);
 			}
 		}
-
 		let defaultFx = PLAYERFX.RECT_SELECT_ALIGNED(1);
 		tool.setFxRenderer((fx, ctx, time) => {
 			ctx.globalAlpha = 0.8;
@@ -1093,59 +1038,35 @@ eventSys.once(e.misc.toolsRendered, () => {
 				ctx.stroke();
 			}
 		});
-
-		function tick() {
-
-			for (let i = queue.length - 1; i >= 0; i--) {
-				let pixel = queue[i];
-				if (PM.setPixel(pixel[0], pixel[1], player.selectedColor)) {
-					queue.splice(i, 1);
-				}
-			}
-
-			if (queue.length === 0) {
-				start = null;
-				end = null;
-				tool.setEvent("tick", null);
-				PM.endHistory();
-			}
-		}
-
 		tool.setEvent("mousedown", mouse => {
 			if (!(mouse.buttons & 0b100)) {
-				queue = [];
 				tool.setEvent("tick", null);
 				start = [mouse.tileX, mouse.tileY];
 				end = [mouse.tileX, mouse.tileY];
 			}
 		});
-
 		tool.setEvent("mousemove", mouse => {
-			if (!queue.length) {
-				end = [mouse.tileX, mouse.tileY];
-			}
+			end = [mouse.tileX, mouse.tileY];
 		});
-
 		tool.setEvent("mouseup", mouse => {
-			if (!(mouse.buttons & 0b11) && !queue.length) {
+			if (!(mouse.buttons & 0b11)) {
 				end = [mouse.tileX, mouse.tileY];
 				if (!start) {
 					end = null;
 					return;
 				}
-				rectangle(start[0], start[1], end[0], end[1], (x, y) => {
-					queue.push([x, y]);
-				});
 				PM.startHistory();
-				tool.setEvent("tick", tick);
+				rectangle(start[0], start[1], end[0], end[1], (x, y) => {
+					PM.setPixel(x, y, player.selectedColor);
+				});
+				PM.endHistory();
+				start = null;
+				end = null;
 			}
 		});
-
 		tool.setEvent("deselect", mouse => {
-			queue = [];
 			start = null;
 			end = null;
-			tool.setEvent("tick", null);
 		});
 	}));
 
@@ -1159,21 +1080,6 @@ eventSys.once(e.misc.toolsRendered, () => {
 		tool.extra.end = undefined;
 		tool.extra.newText = textData.newText;
 		tool.extra.cyrillic = textData.cyrillic;
-		let queue = [];
-		function tick() {
-			for (let i = queue.length - 1; i >= 0; i--) {
-				let pixel = queue[i];
-				if (PM.setPixel(pixel[0], pixel[1], player.selectedColor)) {
-					queue.splice(i, 1);
-				}
-			}
-
-			if (queue.length === 0) {
-				tool.extra.start = null;
-				tool.extra.end = null;
-				tool.setEvent("tick", null);
-			}
-		}
 		function setText(t, pos, func) {
 			let localPos = [...pos];
 			let furthestPos = [...pos];
@@ -1205,10 +1111,10 @@ eventSys.once(e.misc.toolsRendered, () => {
 			}
 			return furthestPos;
 		}
+		let defaultFx = PLAYERFX.RECT_SELECT_ALIGNED(1);
 		tool.setFxRenderer((fx, ctx, time) => {
-			// if (someRenderer(fx, ctx, time, () => 1)) return;
+			if (!fx.extra.isLocalPlayer) return defaultFx(fx, ctx, time);
 
-			// let camera = camera;
 			let oldlinew = ctx.lineWidth;
 			ctx.lineWidth = 2;
 			let s = undefined;
@@ -1284,11 +1190,7 @@ eventSys.once(e.misc.toolsRendered, () => {
 				}
 			} else if (mouse.buttons === 2 && tool.extra.end && isInside()) {
 				PM.startHistory();
-				// setText(tool.extra.text, [...tool.extra.start], (x, y) => PM.setPixel(x, y, tool.extra.state.rainbow ? Color.hue(x - y, 8) : player.selectedColor));
-				setText(tool.extra.text, [...tool.extra.start], (x, y) => {
-					queue.push([x, y]);
-				});
-				tool.setEvent('tick', tick);
+				setText(tool.extra.text, [...tool.extra.start], (x, y) => PM.setPixel(x, y, player.selectedColor));
 				PM.endHistory();
 				return true;
 			}

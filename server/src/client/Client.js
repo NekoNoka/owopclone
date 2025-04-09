@@ -90,7 +90,6 @@ export class Client {
 
 	async checkIsLoggedIn() {
 		if(this.ip.ip==="0000:0000:0000:0000:0000:ffff:7f00:0001"){
-			console.log("islocalhostdev");
 			// await this.fetchUserInfo();
 			this.accountInfo = {"data":{"user":{"account":{"id":1,"username":"developer"},"info":{"displayName":"developer"},"owopData":{"global":{"rank":5,"isBanned":0,"banExpiration":0,"banReason":null},"worlds":[{"entryId":0,"id":0,"worldName":"main","rank":5,"isBanned":0,"banExpiration":0,"banReason":null}]}}}};
 			return true;
@@ -254,18 +253,13 @@ export class Client {
 			// console.log("sending");
 			const success = this.ws.send(JSON.stringify(message), false, sent => {
 				if (sent) {
-					// console.log("sent late");
 					resolve();
-				}
-				else {
+				} else {
 					reject(new Error("failed"));
 				}
 			});
 
-			if (success) {
-				// console.log("success");
-				resolve();
-			}
+			if (success) resolve();
 		});
 	}
 
@@ -556,6 +550,7 @@ export class Client {
 		}
 		message = Buffer.from(message);
 		switch (message.length) {
+			// request chunk
 			case 8: {
 				let chunkX = message.readInt32LE(0);
 				if (chunkX > maxChunkCoord || chunkX < minChunkCoord) {
@@ -583,7 +578,7 @@ export class Client {
 				region.requestChunk(this, (chunkY & 0xf) << 4 | chunkX & 0xf);
 				return;
 			}
-			//set pixel
+			// set pixel
 			case 11: {
 				if (this.rank < 1) return;
 				let x = message.readInt32LE(0);
@@ -623,7 +618,7 @@ export class Client {
 				region.setPixel(this, x & 0xff, y & 0xff, message[8], message[9], message[10]);
 				return;
 			}
-			//chunk paste
+			// chunk paste
 			case 776: {
 				if (this.rank < 2) return;
 				if (this.rank < 3) {
@@ -669,7 +664,7 @@ export class Client {
 				region.pasteChunk((chunkY & 0xf) << 4 | chunkX & 0xf, message.subarray(8));
 				return;
 			}
-			//erase chunk
+			// erase chunk
 			case 13: {
 				if (this.rank < RANK.ARTIST) return;
 				if (this.rank < RANK.ADMIN) {
@@ -705,7 +700,7 @@ export class Client {
 				region.eraseChunk((chunkY & 0xf) << 4 | chunkX & 0xf, message[8], message[9], message[10]);
 				return;
 			}
-			//protect chunk
+			// protect chunk
 			case 10: {
 				if (this.rank < 2) return;
 				if (this.rank < 3) {
@@ -743,7 +738,7 @@ export class Client {
 				region.protectChunk((chunkY & 0xf) << 4 | chunkX & 0xf, message[8]);
 				return;
 			}
-			//player update
+			// player update
 			case 12: {
 				this.updated = true;
 				let x = message.readInt32LE(0);
@@ -771,14 +766,6 @@ export class Client {
 				}
 				this.x = x;
 				this.y = y;
-				return;
-			}
-			//rank verification
-			case 1: {
-				if (message[0] > this.rank) {
-					this.destroy();
-					return;
-				}
 				return;
 			}
 			default: {
@@ -858,7 +845,7 @@ export class Client {
 				this.destroy();
 				return;
 			}
-			message = Buffer.from(message)
+			message = Buffer.from(message);
 			//check if too long
 			if (message.length > 26) {
 				this.destroy();
@@ -952,9 +939,8 @@ export class Client {
 		if (message.startsWith("/")) {
 			message = message.trim();
 			handleCommand(this, message);
-		}
-		else {
-			if (this.rank < RANK.ADMIN && this.mute) return;
+		} else {
+			if (this.mute) return;
 			message = message.trim();
 			if (message.length === 0) return;
 			this.world.sendChat(this, message);

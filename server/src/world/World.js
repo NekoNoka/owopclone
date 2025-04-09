@@ -1,9 +1,6 @@
 import { Region } from '../region/Region.js';
 import { RANK } from '../util/util.js';
-import { DEFAULT_PROPS } from '../util/util.js';
 import { Property } from '../util/Property.js';
-
-let textEncoder = new TextEncoder();
 
 export class World {
 	constructor(serverWorldManager, name, data) {
@@ -98,9 +95,7 @@ export class World {
 
 	getClient(self, targetId) {
 		if (["0", "self", "me", "myself", "this", "@s", "imlazy"].includes(targetId.toLowerCase())) return self;
-		let target = this.clients.get(parseInt(targetId));
-		if (!target) return null;
-		return target;
+		return this.clients.get(parseInt(targetId)) || null;
 	}
 
 	setProp(key, value) {

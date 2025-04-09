@@ -1,6 +1,6 @@
 "use strict";
 
-import { EVENTS as e, AnnoyingAPI as aa } from "../conf.js";
+import { EVENTS as e } from "../conf.js";
 import { eventSys } from "../util.js";
 
 export class Protocol {
@@ -17,7 +17,7 @@ export class Protocol {
 	}
 
 	isConnected() {
-		return this.ws.readyState === aa.ws.OPEN;
+		return this.ws.readyState === WebSocket.OPEN;
 	}
 
 	openHandler() {

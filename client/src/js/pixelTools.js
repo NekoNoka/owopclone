@@ -127,18 +127,23 @@ export class PixelManager {
 		eventSys.on(e.net.world.tilesUpdated, (message) => {
 			for (let i = 0; i < message.length; i++) {
 				let p = message[i];
-				if (p.id === player.id) continue;
-				let placedColor = [(p & (255 << 0)) >> 0, (p & (255 << 8)) >> 8, (p & (255 << 16)) >> 16];
-				if (this.whitelist.has(`${p.id}`)) this.setPixel(p.x, p.y, placedColor);
 				let pixel = this.queue[`${p.x},${p.y}`];
-				if (pixel) {
-					this.checkMove = true;
-					pixel.placed = false;
-					this.moveQueue[`${Math.floor(p.x / 16)},${Math.floor(p.y / 16)}`] = true;
-					this.chunkQueue[`${pixel.cx},${pixel.cy}`].placed = false;
-					this.chunkQueue[`${pixel.cx},${pixel.cy}`].t = new Date().getTime();
-					this.updateBorder(p.x, p.y);
+				let placedColor = [(p.rgb & (255 << 0)) >> 0, (p.rgb & (255 << 8)) >> 8, (p.rgb & (255 << 16)) >> 16];
+				if (p.id === player.id) {
+					const eq = (a, b) => a[0] == b[0] && a[1] == b[1] && a[2] == b[2];
+					if (!eq(pixel.c, color.fromInt(placedColor))) pixel.placed = false;
+					continue;
 				}
+				// if (this.whitelist.has(`${p.id}`)) this.setPixel(p.x, p.y, placedColor);
+				this.deletePixel(p);
+				// if (pixel) {
+				// 	this.checkMove = true;
+				// 	pixel.placed = false;
+				// 	this.moveQueue[`${Math.floor(p.x / 16)},${Math.floor(p.y / 16)}`] = true;
+				// 	this.chunkQueue[`${pixel.cx},${pixel.cy}`].placed = false;
+				// 	this.chunkQueue[`${pixel.cx},${pixel.cy}`].t = new Date().getTime();
+				// 	this.updateBorder(p.x, p.y);
+				// }
 			}
 		});
 		eventSys.on(e.net.world.leave, () => {
@@ -241,19 +246,6 @@ export class PixelManager {
 	}
 	deletePixel(p) {
 		delete this.queue[`${p.x},${p.y}`];
-		this.chunkQueue[`${p.cx},${p.cy}`].deletePixel(p);
-		let found = undefined;
-		// ! MARK FOR DELETION
-		// i can remove this if i develop the chunks system to manage movequeue
-		for (let i = 0; i < 16; i++) {
-			for (let j = 0; j < 16; j++) {
-				found = this.queue[`${p.cx * 16 + i},${p.cy * 16 + j}`];
-				if (found) break;
-			}
-			if (found) break;
-		}
-		if (!found) delete this.moveQueue[`${p.cx},${p.cy}`];
-		this.updateBorder(p.x, p.y);
 	}
 	setPixel(x, y, c, placeOnce = false) {
 		if (!this.enabled) return misc.world.setPixel(x, y, c);
@@ -286,9 +278,6 @@ export class PixelManager {
 			}
 		}
 
-		// **Immediate update in the world**
-		// misc.world.setPixel(x, y, c);
-
 		// **Queue Processing to Maintain Undo/Redo and Chunk Logic**
 		this.queue[p.x + "," + p.y] = p;
 		if (!this.chunkQueue[chunkKey]) this.chunkQueue[chunkKey] = new Chunk(p);
@@ -301,9 +290,10 @@ export class PixelManager {
 		return true;
 	}
 	getPixel(x, y) {
-		return (this.queue[x + "," + y] || {}).c;
+		let p = this.queue[x + "," + y];
+		if (!p) return misc.world.getPixel(x, y);
+		return p.c;
 	}
-	// this is an internal function to place pixels every tick.
 	placePixel() {
 		if (player.rank >= RANK.MODERATOR && this.enableMod) {
 			const cx = Math.floor(mouse.tileX / 16);
@@ -336,20 +326,17 @@ export class PixelManager {
 
 			for (let i = 0; i < this.extra.placeData.length; i++) {
 				const e = this.extra.placeData[i][1];
-				const p = this.queue[(tX + e.x) + "," + (tY + e.y)];
+				const p = this.queue[`${tX + e.x},${tY + e.y}`];
 				if (!p) continue;
 
 				const chunkKey = p.cx + "," + p.cy;
 				if (!this.ignoreProtectedChunks && misc.world.protectedChunks[chunkKey]) continue;
 
-				if (p.x < (xcc - 31) || p.y < (ycc - 31) || p.x > (xcc + 46) || p.y > (ycc + 46)) continue;
-
-				const c = misc.world.getPixel(p.x, p.y);
-				if (!c) continue;
-
 				if (!p.placed) {
-					p.placed = !misc.world.setPixel(p.x, p.y, p.c);
+					let opcode = misc.world.setPixel(p.x, p.y, p.c);
+					p.placed = (opcode === true || opcode === 0);
 					if (p.placed && p.o) this.deletePixel(p);
+					if (!p.placed) break;
 				}
 			}
 		}

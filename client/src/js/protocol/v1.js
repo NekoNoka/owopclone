@@ -187,7 +187,7 @@ class ProtocolV1Impl extends Protocol {
 			}
 			return;
 		}
-
+		
 		let dv = new DataView(message);
 		let oc = ProtocolV1.opCode.server;
 		switch (dv.getUint8(0)) {
@@ -206,8 +206,6 @@ class ProtocolV1Impl extends Protocol {
 				}));
 				break;
 			case oc.worldUpdate:
-				// let shouldRender = 0;
-
 				//cursors
 				let updated = false;
 				let updates = {};
@@ -313,7 +311,7 @@ class ProtocolV1Impl extends Protocol {
 				for (let i = 0, u = 0; i < u8data.length; i += 3) { /* Need to make a copy ;-; */
 					let color = u8data[i + 2] << 16
 						| u8data[i + 1] << 8
-						| u8data[i]
+						| u8data[i];
 					u32data[u++] = 0xFF000000 | color;
 				}
 				if (!this.chunksLoading[key]) {
@@ -346,7 +344,7 @@ class ProtocolV1Impl extends Protocol {
 						// the reconnect screen afterwards, making the user redo it
 						if (this.captcha) {
 							let message = ProtocolV1.misc.tokenVerification + this.captcha;
-							this.ws.send(message);
+							this.ws.send(message); // captcha
 						} else {
 							loadAndRequestCaptcha();
 							eventSys.once(e.misc.captchaToken, token => {
@@ -356,7 +354,7 @@ class ProtocolV1Impl extends Protocol {
 										net.retryingConnect(() => options.serverAddress[0], this.worldName, token);
 									}, 125);
 								} else {
-									this.ws.send(message);
+									this.ws.send(message); // captcha
 								}
 							});
 						}
@@ -405,7 +403,7 @@ class ProtocolV1Impl extends Protocol {
 			dv.setUint8(i, nstr[0][i]);
 		}
 		dv.setUint16(nstr[0].length, ProtocolV1.misc.worldVerification, true);
-		this.ws.send(array);
+		this.ws.send(array); // handlePreWorld connect to world
 		return nstr[1];
 	}
 
@@ -421,7 +419,7 @@ class ProtocolV1Impl extends Protocol {
 		let dv = new DataView(array);
 		dv.setInt32(0, x, true);
 		dv.setInt32(4, y, true);
-		this.ws.send(array);
+		this.ws.send(array); // request chunk
 	}
 
 	allChunksLoaded() {
@@ -454,7 +452,7 @@ class ProtocolV1Impl extends Protocol {
 		dv.setUint8(9, rgb[1]);
 		dv.setUint8(10, rgb[2]);
 		this.pendingEdits[`${x},${y}`] = setTimeout(undocb, 2000);
-		this.ws.send(array);
+		this.ws.send(array); // set pixel
 		return 0;
 	}
 
@@ -478,14 +476,14 @@ class ProtocolV1Impl extends Protocol {
 			let tool = player.tool;
 			let toolId = tool !== null ? +ProtocolV1.tools.id[tool.id] : 0;
 			dv.setUint8(11, toolId);
-			this.ws.send(array);
+			this.ws.send(array); // player update
 		}
 	}
 
 	sendMessage(str) {
 		if (str.length && this.id !== null) {
 			if (player.rank >= RANK.ADMIN || this.chatBucket.canSpend(1)) {
-				this.ws.send(str + ProtocolV1.misc.chatVerification);
+				this.ws.send(str + ProtocolV1.misc.chatVerification); // handleString
 				return true;
 			} else {
 				console.log("slow down");
@@ -507,7 +505,7 @@ class ProtocolV1Impl extends Protocol {
 		dv.setInt32(0, x, true);
 		dv.setInt32(4, y, true);
 		dv.setUint8(8, newState);
-		this.ws.send(array);
+		this.ws.send(array); // protect chunk
 		eventSys.emit(e.net.chunk.lock, x, y, newState, true);
 	}
 
@@ -525,7 +523,7 @@ class ProtocolV1Impl extends Protocol {
 			buf[b + 1] = data[i] >> 8 & 0xFF;
 			buf[b + 2] = data[i] >> 16 & 0xFF;
 		}
-		this.ws.send(buf.buffer);
+		this.ws.send(buf.buffer); // chunk paste
 		return true;
 	}
 
@@ -538,7 +536,7 @@ class ProtocolV1Impl extends Protocol {
 			dv.setUint8(8, rgb[0]);
 			dv.setUint8(9, rgb[1]);
 			dv.setUint8(10, rgb[2]);
-			this.ws.send(array);
+			this.ws.send(array); // erase chunk
 			return true;
 		}
 		return false;

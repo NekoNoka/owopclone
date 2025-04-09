@@ -8,8 +8,6 @@ import { player } from "./local_player.js";
 import { Player } from "./Player.js";
 import { Fx } from "./Fx.js";
 
-let lastPlace = 0;
-
 export class Chunk {
 	constructor(x, y, netdata, locked) { /* netdata = Uint32Array */
 		this.needsRedraw = false;
@@ -306,11 +304,20 @@ export class World {
 		let chunk = this.chunks[`${Math.floor(x / chunkSize)},${Math.floor(y / chunkSize)}`];
 		if (chunk && (!chunk.locked || player.rank >= RANK.MODERATOR)) {
 			let oldPixel = this.getPixel(x, y, chunk);
-			if (!oldPixel || (oldPixel[0] === color[0] && oldPixel[1] === color[1] && oldPixel[2] === color[2])) {
-				return net.protocol.updatePixel(x, y, color, () => {
+			// this updates it as if the old pixel was being put back???
+			// if a pixel is placed twice this works and the pixel gets placed
+			if (!(oldPixel[0] === color[0] && oldPixel[1] === color[1] && oldPixel[2] === color[2])) {
+				let opcode = net.protocol.updatePixel(x, y, color, () => {
 					chunk.update(x, y, colorUtils.u24_888(oldPixel[0], oldPixel[1], oldPixel[2]));
+					eventSys.emit(e.net.world.tilesUpdated, [{
+						x: x,
+						y: y,
+						rgb: colorUtils.toBGRInt(oldPixel),
+						id: player.id
+					}]);
 					eventSys.emit(e.renderer.updateChunk, chunk);
 				});
+				if (opcode !== 0) return opcode;
 			}
 			if (!noUndo) {
 				oldPixel.push(x, y, time);
@@ -318,10 +325,7 @@ export class World {
 			}
 			chunk.update(x, y, colorUtils.u24_888(color[0], color[1], color[2]));
 			eventSys.emit(e.renderer.updateChunk, chunk);
-			if (time - lastPlace > 30) {
-				sounds.play(sounds.place);
-				lastPlace = time;
-			}
+			sounds.place();
 			return true;
 		} else if (chunk && chunk.locked) {
 			this.pathFx.extra.placeTime = time;

@@ -5,8 +5,7 @@ import { EVENTS as e, RANK, options, PublicAPI, elements, KeyCode, sounds, misc,
 import { windowSys, UtilDialog } from "./windowsys.js";
 import { PM } from "./pixelTools.js";
 import { renderer, moveCameraBy, setZoom } from "./canvas_renderer.js";
-import { normalizeWheel } from "./normalizeWheel.js";
-import anchrome from "./anchrome.js";
+import anchorme from "./anchorme.js";
 import { net } from "./networking.js";
 import { resolveProtocols } from "./protocol/all.js";
 import { World } from "./World.js";
@@ -65,10 +64,8 @@ function receiveMessage(rawText) {
 
     let parsedJson = JSON.parse(rawText);
     let text = parsedJson.text;
-    let realText = text;
     let sender = parsedJson.sender;
     let data = parsedJson.data;
-    let clientInfo = parsedJson.clientInfo;
     let allowHTML = false;
     statusSet = false;
     if (sender === 'server') {
@@ -209,7 +206,6 @@ function receiveMessage(rawText) {
         if (!text) return;
         let span = document.createElement('span');
         /* more spam prevention here later */
-        console.log(text);
         if (!allowHTML) text = escapeHTML(text).replace(/\&#x2F;/g, '/');
         let textByNls = text.split('\n');
         let firstNl = textByNls.shift();
@@ -217,7 +213,7 @@ function receiveMessage(rawText) {
         firstNl = firstNl.replace(/(?:&lt;|<):(.+?):([0-9]{8,32})(?:&gt;|>)/g, '<img class="emote" src="https://cdn.discordapp.com/emojis/$2.png?v=1">'); // static
         text = firstNl + '\n' + textByNls.join('\n');
         text = misc.chatPostFormatRecvModifier(text);
-        span.innerHTML = anchrome(text, {
+        span.innerHTML = anchorme(text, {
             attributes: [{
                 name: 'target',
                 value: '_blank'
@@ -721,31 +717,17 @@ function init() {
     });
 
     const mousewheel = event => {
-        const nevt = normalizeWheel(event);
         if (player.tool !== null && misc.world !== null && player.tool.isEventDefined('scroll')) {
-            if (player.tool.call('scroll', [mouse, nevt, event])) {
+            if (player.tool.call('scroll', [mouse, event])) {
                 return;
             }
         }
-        if (event.ctrlKey) {
-            setZoom(cameraValues.zoom + Math.max(-1, Math.min(1, -nevt.pixelY)));
-            //-nevt.spinY * camera.zoom / options.zoomLimitMax; // <- needs to be nicer
-        } else {
-            let delta = Math.max(-1, Math.min(1, nevt.spinY));
-            let pIndex = player.paletteIndex;
-            if (delta > 0) {
-                pIndex++;
-            } else if (delta < 0) {
-                pIndex--;
-            }
-            player.paletteIndex = pIndex;
-        }
+        if (event.ctrlKey) setZoom(cameraValues.zoom + Math.sign(-event.deltaY));
+        else player.paletteIndex += Math.sign(event.deltaY);
     };
 
-    let wheelEventName = ('onwheel' in document) ? 'wheel' : ('onmousewheel' in document) ? 'mousewheel' : 'DOMMouseScroll';
-
-    viewport.addEventListener(wheelEventName, mousewheel, { passive: true });
-    viewport.addEventListener(wheelEventName, e => {
+    viewport.addEventListener("wheel", mousewheel, { passive: true });
+    viewport.addEventListener("wheel", e => {
         e.preventDefault();
         return false;
     }, { passive: false });
@@ -906,7 +888,6 @@ eventSys.on(e.net.donUntil, (ts, pmult) => {
             + ((mins % 60) < 10 ? '0' : '') + (mins % 60) + ':'
             + ((secs % 60) < 10 ? '0' : '') + (secs % 60);
         // elements.dInfoDisplay.setAttribute("data-tmo", tmer);
-
     };
 
     clearInterval(misc.donTimer);
@@ -921,9 +902,7 @@ eventSys.on(e.net.donUntil, (ts, pmult) => {
 eventSys.on(e.net.chat, receiveMessage);
 
 eventSys.on(e.net.world.setId, id => {
-    if (!misc.storageEnabled) {
-        return;
-    }
+    if (!misc.storageEnabled) return;
 
     // function autoNick() {
     // 	if (misc.localStorage.nick) {
@@ -1010,7 +989,7 @@ eventSys.on(e.net.world.join, world => {
     net.showLoadScr(false, false);
     showWorldUI(!options.noUi);
     renderer.showGrid(!options.noUi);
-    sounds.play(sounds.launch);
+    sounds.launch();
     misc.world = new World(world);
     eventSys.emit(e.misc.worldInitialized);
 });
