@@ -434,8 +434,8 @@ eventSys.once(e.misc.toolsRendered, () => {
 		tool => {
 			tool.extra.brushSize = 1;
 			tool.extra.brush = new Brush(0, 0, tool.extra.brushSize - 1, tool.extra.brushSize - 1, 0, 0);
-			let lastX,
-				lastY;
+			let lastX;
+			let lastY;
 			let last1PX;
 			let last1PY;
 			let last2PX;
@@ -446,7 +446,6 @@ eventSys.once(e.misc.toolsRendered, () => {
 				/* White color if right clicking */
 
 				let color = mouse.buttons === 2 ? player.secondaryColor : player.selectedColor;
-				let brushSize = tool.extra.brushSize - 1 || 0;
 
 				switch (mouse.buttons) {
 					case 1:

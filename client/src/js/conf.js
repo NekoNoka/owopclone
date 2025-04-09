@@ -337,5 +337,3 @@ export const misc = PublicAPI.misc = {
 eventSys.on(EVENTS.net.connecting, server => {
 	protocol = server.proto;
 });
-
-PublicAPI.world = misc.world;

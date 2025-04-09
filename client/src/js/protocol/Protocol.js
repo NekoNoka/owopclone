@@ -17,7 +17,7 @@ export class Protocol {
 	}
 
 	isConnected() {
-		return this.ws.readyState === window.WebSocket.OPEN;
+		return this.ws.readyState === WebSocket.OPEN;
 	}
 
 	openHandler() {

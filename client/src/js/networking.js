@@ -18,7 +18,7 @@ function isConnected() {
 
 function connect(server, worldName, captcha) {
 	eventSys.emit(e.net.connecting, server);
-	net.connection = new window.WebSocket(server.url);
+	net.connection = new WebSocket(server.url);
 	net.connection.binaryType = 'arraybuffer';
 	net.currentServer = server;
 	net.protocol = new server.proto.class(net.connection, worldName, captcha);

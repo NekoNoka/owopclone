@@ -253,18 +253,13 @@ export class Client {
 			// console.log("sending");
 			const success = this.ws.send(JSON.stringify(message), false, sent => {
 				if (sent) {
-					// console.log("sent late");
 					resolve();
-				}
-				else {
+				} else {
 					reject(new Error("failed"));
 				}
 			});
 
-			if (success) {
-				// console.log("success");
-				resolve();
-			}
+			if (success) resolve();
 		});
 	}
 

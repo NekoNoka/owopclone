@@ -206,7 +206,6 @@ function receiveMessage(rawText) {
         if (!text) return;
         let span = document.createElement('span');
         /* more spam prevention here later */
-        console.log(text);
         if (!allowHTML) text = escapeHTML(text).replace(/\&#x2F;/g, '/');
         let textByNls = text.split('\n');
         let firstNl = textByNls.shift();

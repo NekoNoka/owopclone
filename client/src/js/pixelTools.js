@@ -130,20 +130,20 @@ export class PixelManager {
 				let pixel = this.queue[`${p.x},${p.y}`];
 				let placedColor = [(p.rgb & (255 << 0)) >> 0, (p.rgb & (255 << 8)) >> 8, (p.rgb & (255 << 16)) >> 16];
 				if (p.id === player.id) {
-					console.log(pixel.c, placedColor, p.id);
 					const eq = (a, b) => a[0] == b[0] && a[1] == b[1] && a[2] == b[2];
 					if (!eq(pixel.c, color.fromInt(placedColor))) pixel.placed = false;
 					continue;
 				}
-				if (this.whitelist.has(`${p.id}`)) this.setPixel(p.x, p.y, placedColor);
-				if (pixel) {
-					this.checkMove = true;
-					pixel.placed = false;
-					this.moveQueue[`${Math.floor(p.x / 16)},${Math.floor(p.y / 16)}`] = true;
-					this.chunkQueue[`${pixel.cx},${pixel.cy}`].placed = false;
-					this.chunkQueue[`${pixel.cx},${pixel.cy}`].t = new Date().getTime();
-					this.updateBorder(p.x, p.y);
-				}
+				// if (this.whitelist.has(`${p.id}`)) this.setPixel(p.x, p.y, placedColor);
+				this.deletePixel(p);
+				// if (pixel) {
+				// 	this.checkMove = true;
+				// 	pixel.placed = false;
+				// 	this.moveQueue[`${Math.floor(p.x / 16)},${Math.floor(p.y / 16)}`] = true;
+				// 	this.chunkQueue[`${pixel.cx},${pixel.cy}`].placed = false;
+				// 	this.chunkQueue[`${pixel.cx},${pixel.cy}`].t = new Date().getTime();
+				// 	this.updateBorder(p.x, p.y);
+				// }
 			}
 		});
 		eventSys.on(e.net.world.leave, () => {
@@ -246,19 +246,6 @@ export class PixelManager {
 	}
 	deletePixel(p) {
 		delete this.queue[`${p.x},${p.y}`];
-		this.chunkQueue[`${p.cx},${p.cy}`].deletePixel(p);
-		let found = undefined;
-		// ! MARK FOR DELETION
-		// i can remove this if i develop the chunks system to manage movequeue
-		for (let i = 0; i < 16; i++) {
-			for (let j = 0; j < 16; j++) {
-				found = this.queue[`${p.cx * 16 + i},${p.cy * 16 + j}`];
-				if (found) break;
-			}
-			if (found) break;
-		}
-		if (!found) delete this.moveQueue[`${p.cx},${p.cy}`];
-		this.updateBorder(p.x, p.y);
 	}
 	setPixel(x, y, c, placeOnce = false) {
 		if (!this.enabled) return misc.world.setPixel(x, y, c);
