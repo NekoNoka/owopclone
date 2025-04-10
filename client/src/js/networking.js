@@ -1,7 +1,7 @@
 "use strict";
 
 import { EVENTS as e, misc, statusMsg, elements, PublicAPI } from "./conf.js";
-import { eventSys, eventOnce } from "./util.js";
+import { eventSys, elementOn } from "./util.js";
 
 export const net = PublicAPI.net = {
 	currentServer: null,
@@ -28,7 +28,7 @@ function showLoadScr(bool, showOptions) {
     elements.loadOptions.className = showOptions ? "framed" : "hide";
     if (!bool) {
         elements.loadScr.style.transform = "translateY(-110%)"; /* +10% for shadow */
-        eventOnce(elements.loadScr, "transitionend webkitTransitionEnd oTransitionEnd msTransitionEnd", () => {
+        elementOn(elements.loadScr, "transitionend webkitTransitionEnd oTransitionEnd msTransitionEnd", () => {
             if (isConnected()) elements.loadScr.className = "hide";
         });
     } else {

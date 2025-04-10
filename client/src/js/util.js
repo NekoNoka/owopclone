@@ -117,7 +117,7 @@ export function loadScript(name, callback) {
 	}));
 }
 
-export function eventOnce(element, events, func) {
+export function elementOn(element, events, func) {
 	let ev = events.split(' ');
 	let f = e => {
 		for (let i = 0; i < ev.length; i++) {
@@ -228,7 +228,7 @@ export function decompress(u8arr) {
 }
 
 export function line(x1, y1, x2, y2, plot) {
-	if (x1 === undefined || y1 === undefined || x2 === undefined || y2 === undefined) return console.error();
+	if (x1 === undefined || y1 === undefined || x2 === undefined || y2 === undefined) return;
 	let dx = Math.abs(x2 - x1);
 	let sx = x1 < x2 ? 1 : -1;
 	let dy = -Math.abs(y2 - y1);

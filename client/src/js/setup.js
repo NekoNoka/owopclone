@@ -1100,6 +1100,7 @@ PublicAPI.emit = eventSys.emit.bind(eventSys);
 PublicAPI.on = eventSys.on.bind(eventSys);
 PublicAPI.once = eventSys.once.bind(eventSys);
 PublicAPI.removeListener = eventSys.removeListener.bind(eventSys);
+PublicAPI.colorUtils = colorUtils;
 PublicAPI.chat = {
 	send: (msg) => net.protocol && net.protocol.sendMessage(msg),
 	clear: clearChat,
