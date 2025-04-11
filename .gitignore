@@ -1,11 +1,10 @@
 **/node_modules/
 **/package-lock.json
+**/.env
 
-server/.env
 server/config.json
 server/data/
 
-client/.env
 client/dist/
 
 .vscode/

@@ -131,7 +131,7 @@ export class PixelManager {
 				let placedColor = [(p.rgb & (255 << 0)) >> 0, (p.rgb & (255 << 8)) >> 8, (p.rgb & (255 << 16)) >> 16];
 				if (p.id === player.id) {
 					const eq = (a, b) => a[0] == b[0] && a[1] == b[1] && a[2] == b[2];
-					if (!eq(pixel.c, color.fromInt(placedColor))) pixel.placed = false;
+					if (!eq(pixel.c, placedColor)) pixel.placed = false;
 					continue;
 				}
 				// if (this.whitelist.has(`${p.id}`)) this.setPixel(p.x, p.y, placedColor);
