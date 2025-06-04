@@ -1,14 +1,12 @@
 "use strict";
 
-import { EVENTS as e, RANK, elements, PublicAPI, mouse } from "./conf.js";
+import { EVENTS as e, RANK, elements, PublicAPI } from "./conf.js";
 import { colorUtils as color, eventSys, absMod, setTooltip } from "./util.js";
 import { showPlayerList } from "./playerlist.js";
-import { renderer } from "./canvas_renderer.js";
+import { renderer, camera } from "./canvas_renderer.js";
 import { tools, updateToolbar, updateToolWindow, showToolOpts } from "./tools.js";
 import { Fx, PLAYERFX } from "./Fx.js";
 import { net } from "./networking.js";
-
-export { updateClientFx };
 
 let toolSelected = null;
 
@@ -30,6 +28,24 @@ let paletteIndex = 0;
 let secondaryColor = [0xFF, 0xFF, 0xFF];
 
 export const undoHistory = [];
+
+export const mouse = PublicAPI.mouse = {
+	x: 0,
+	y: 0,
+	lastX: 0,
+	lastY: 0,
+	get worldX() { return camera.x * 16 + this.x / (camera.zoom / 16); },
+	get worldY() { return camera.y * 16 + this.y / (camera.zoom / 16); },
+	mouseDownWorldX: 0,
+	mouseDownWorldY: 0,
+	get tileX() { return Math.floor(this.worldX / 16); },
+	get tileY() { return Math.floor(this.worldY / 16); },
+	buttons: 0,
+	validTile: false,
+	insideViewport: false,
+	touches: [],
+	cancelMouseDown: function () { this.buttons = 0; },
+};
 
 const clientFx = new Fx(PLAYERFX.NONE, {
 	isLocalPlayer: true,
@@ -103,6 +119,10 @@ export const player = PublicAPI.player = {
 
 export function shouldUpdate() { /* sets colorChanged to false when called */
 	return somethingChanged ? !(somethingChanged = false) : somethingChanged;
+}
+
+export function updateClientFx() {
+	renderer.render(renderer.rendertype.FX);
 }
 
 function changedColor(isSecondary) {
@@ -199,10 +219,6 @@ function selectTool(name) {
 	return true;
 }
 
-function updateClientFx() {
-	renderer.render(renderer.rendertype.FX);
-}
-
 eventSys.on(e.net.sec.rank, newRank => {
 	if (networkRankVerification[0] < newRank) return;
 	rank = newRank;
@@ -225,7 +241,7 @@ eventSys.on(e.net.sec.rank, newRank => {
 	updateToolbar();
 });
 
-eventSys.once(e.init, () => {
+export function local_playerInit() {
 	elements.paletteInput.onclick = function () {
 		let c = player.selectedColor;
 		this.value = color.toHTML(color.u24_888(c[0], c[1], c[2]));;
@@ -237,4 +253,4 @@ eventSys.once(e.init, () => {
 	elements.paletteCreate.onclick = () => elements.paletteInput.click();
 	setTooltip(elements.paletteCreate, "Add color");
 	updatePalette();
-});
+}

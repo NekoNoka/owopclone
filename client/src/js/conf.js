@@ -1,18 +1,15 @@
 "use strict"; // a bunch of pre defined variables either dynamic/static or otherwise usable by all other files in the codebase
 
-import { eventSys, propertyDefaults, getTime, cookiesEnabled, storageEnabled, absMod, escapeHTML, mkHTML, setTooltip, waitFrames, line, loadScript, getDefaultWorld, getCookie } from "./util.js";
-import toolSet from "../img/toolset.png";
+import { eventSys, propertyDefaults, getTime, absMod, escapeHTML, mkHTML, setTooltip, waitFrames, line, loadScript, getDefaultWorld } from "./util.js";
 import unloadedPat from "../img/unloaded.png";
 import launchSoundUrl from "../audio/launch.mp3";
 import placeSoundUrl from "../audio/place.mp3";
 import clickSoundUrl from "../audio/click.mp3";
 
-export const PublicAPI = window.NWOP = window.WorldOfPixels = {
+export const PublicAPI = window.NWOP = window.WorldOfPixels = window.OWOP = {
 	RANK: RANK,
 	util: {
 		getTime,
-		cookiesEnabled,
-		storageEnabled,
 		absMod,
 		escapeHTML,
 		mkHTML,
@@ -24,29 +21,46 @@ export const PublicAPI = window.NWOP = window.WorldOfPixels = {
 	eventSys: eventSys
 };
 
-export const cameraValues = {
-	x: 0,
-	y: 0,
-	zoom: -1
-};
+export const options = PublicAPI.options = propertyDefaults(userOptions, {
+	serverAddress: [{
+		default: true,
+		title: 'Official Server',
+		proto: 'v1',
+		url: location.hostname === 'localhost' ? `ws://localhost:8081` : location.href.replace("http", "ws").replace("8080", "8081"),
+		// url: "ws://losercity.neomoth.dev/",
+	}],
+	fallbackFps: 30,
+	maxChatBuffer: 512,
+	tickSpeed: 30,
+	minGridZoom: 1,
+	movementSpeed: 1,
+	defaultWorld: getDefaultWorld(),
+	enableSounds: true,
+	enableIdView: true,
+	defaultZoom: 15,
+	zoomStrength: 1,
+	zoomLimitMin: 1,
+	zoomLimitMax: 32,
+	unloadDistance: 10,
+	unloadedPatternUrl: unloadedPat,
+	noUi: false,
+	backgroundUrl: null,
+	hexCoords: false,
+	showProtectionOutlines: true,
+	showPlayers: true,
+});
 
-export const camera = {
-	get x() { return cameraValues.x; },
-	get y() { return cameraValues.y; },
-	get zoom() { return cameraValues.zoom; },
-};
-
-export const sounds = PublicAPI.sounds = {
-	launchAudio: new Audio(),
-	placeAudio: new Audio(),
-	clickAudio: new Audio(),
+export const soundSys = PublicAPI.soundSys = {
+	launchAudio: new Audio(launchSoundUrl),
+	placeAudio: new Audio(placeSoundUrl),
+	clickAudio: new Audio(clickSoundUrl),
 	launchLastPlayed: 0,
 	placeLastPlayed: 0,
 	clickLastPlayed: 0,
 	launch: function () {
 		if (!options.enableSounds) return;
 		let currentTime = Date.now();
-		// if (currentTime - this.launchLastPlayed < 0) return;
+		// if (currentTime - this.clickLastPlayed < 0) return;
 
 		this.launchAudio.currentTime = 0;
 		this.launchAudio.play();
@@ -55,7 +69,7 @@ export const sounds = PublicAPI.sounds = {
 	place: function () {
 		if (!options.enableSounds) return;
 		let currentTime = Date.now();
-		if (currentTime - this.placeLastPlayed < 30) return; // why 30?, in which time sec/mili/other?
+		// if (currentTime - this.clickLastPlayed < 0) return;
 
 		this.placeAudio.currentTime = 0;
 		this.placeAudio.play();
@@ -72,33 +86,9 @@ export const sounds = PublicAPI.sounds = {
 	}
 };
 
-sounds.launchAudio.src = launchSoundUrl;
-sounds.placeAudio.src = placeSoundUrl;
-sounds.clickAudio.src = clickSoundUrl;
-
 export const activeFx = [];
 
-export let protocol = null;
-
 let evtId = 0;
-
-export const mouse = PublicAPI.mouse = {
-	x: 0,
-	y: 0,
-	lastX: 0,
-	lastY: 0,
-	get worldX() { return camera.x * 16 + this.x / (camera.zoom / 16); },
-	get worldY() { return camera.y * 16 + this.y / (camera.zoom / 16); },
-	mouseDownWorldX: 0,
-	mouseDownWorldY: 0,
-	get tileX() { return Math.floor(this.worldX / 16); },
-	get tileY() { return Math.floor(this.worldY / 16); },
-	buttons: 0,
-	validTile: false,
-	insideViewport: false,
-	touches: [],
-	cancelMouseDown: function () { this.buttons = 0; },
-};
 
 export const keysDown = {};
 
@@ -113,14 +103,13 @@ export const RANK = {
 	OWNER: 6,
 };
 
-export const EVENTS = {
+export const EVENTS = PublicAPI.events = {
 	loaded: ++evtId,
 	init: ++evtId,
 	tick: ++evtId,
 	misc: {
 		toolsRendered: ++evtId,
 		toolsInitialized: ++evtId,
-		logoMakeRoom: ++evtId,
 		worldInitialized: ++evtId,
 		windowAdded: ++evtId,
 		windowClosed: ++evtId,
@@ -169,63 +158,27 @@ export const EVENTS = {
 	}
 };
 
-export const PUBLIC_EVENTS = PublicAPI.events = {
-	loaded: EVENTS.loaded,
-	init: EVENTS.init,
-	tick: EVENTS.tick,
-	toolsInitialized: EVENTS.misc.toolsInitialized,
-	allChunksLoaded: EVENTS.net.chunk.allLoaded,
-	camMoved: EVENTS.camera.moved,
-	camZoomed: EVENTS.camera.zoom,
-	chat: EVENTS.net.chat,
-	joinedWorld: EVENTS.net.world.join,
-	leftWorld: EVENTS.net.world.leave,
-	connnecting: EVENTS.net.connecting,
-	connected: EVENTS.net.connected,
-	disconnected: EVENTS.net.disconnected,
-};
-
-export const cursors = PublicAPI.cursors = {
-	set: new Image(),
-	cursor: { imgpos: [0, 0], hotspot: [0, 0] },
-	move: { imgpos: [1, 0], hotspot: [18, 18] },
-	pipette: { imgpos: [0, 1], hotspot: [0, 28] },
-	erase: { imgpos: [0, 2], hotspot: [4, 26] },
-	zoom: { imgpos: [1, 2], hotspot: [19, 10] },
-	fill: { imgpos: [1, 1], hotspot: [3, 29] },
-	brush: { imgpos: [0, 3], hotspot: [0, 26] },
-	select: { imgpos: [2, 0], hotspot: [0, 0] }, // needs better hotspot
-	selectprotect: { imgpos: [4, 0], hotspot: [0, 0] },
-	copy: { imgpos: [3, 0], hotspot: [0, 0] }, // and this
-	paste: { imgpos: [3, 1], hotspot: [0, 0] }, // this too
-	cut: { imgpos: [3, 2], hotspot: [11, 5] },
-	wand: { imgpos: [3, 3], hotspot: [0, 0] },
-	circle: { imgpos: [4, 3], hotspot: [0, 0] },
-	rect: { imgpos: [4, 2], hotspot: [0, 0] },
-	write: { imgpos: [0, 3], hotspot: [0, 0] },
-	shield: { imgpos: [2, 3], hotspot: [18, 18] },
-	kick: { imgpos: [2, 1], hotspot: [3, 6] },
-	ban: { imgpos: [2, 2], hotspot: [10, 4] },
-	write: { imgpos: [1, 3], hotspot: [10, 4] } // fix hotspot
-};
-
 export const elements = PublicAPI.elements = {
 	viewport: null,
 	xyDisplay: null,
 	chatInput: null,
 	chat: null,
+	status: null,
+	windows: null,
 };
 
-export function statusMsg(showSpinner, message) {
+export function statusMsg(showSpinner = false, message = null) {
 	// const statusShown = elements.status.isConnected;
-	if (message === null) {
-		elements.status.style.display = "none";
-		return;
-	} else {
-		elements.status.style.display = "";
+	if (elements.status) {
+		if (message === null) {
+			elements.status.style.display = "none";
+			return;
+		} else {
+			elements.status.style.display = "";
+		}
+		elements.statusMsg.innerHTML = message;
 	}
-	elements.statusMsg.innerHTML = message;
-	elements.spinner.style.display = showSpinner ? "" : "none";
+	if (elements.spinner) elements.spinner.style.display = showSpinner ? "" : "none";
 }
 
 export const KeyCode = {
@@ -273,46 +226,30 @@ export const KeyCode = {
 
 let userOptions = {};
 
-if (storageEnabled()) {
-	try {
-		userOptions = JSON.parse(localStorage.getItem('nwopOptions') || '{}');
-	} catch (e) {
-		console.error('Error parsing user options.', e);
-	}
+try {
+	userOptions = JSON.parse((localStorage && localStorage.getItem('nwopOptions')) || '{}');
+} catch (e) {
+	console.error('Error parsing user options.', e);
 }
 
-export const options = PublicAPI.options = propertyDefaults(userOptions, {
-	serverAddress: [{
-		default: true,
-		title: 'Official Server',
-		proto: 'v1',
-		url: location.hostname === 'localhost' ? `ws://localhost:8081` : location.href.replace("http", "ws"),
-	}],
-	fallbackFps: 30,
-	maxChatBuffer: 512,
-	tickSpeed: 30,
-	minGridZoom: 1,
-	movementSpeed: 1,
-	defaultWorld: getDefaultWorld(),
-	enableSounds: true,
-	enableIdView: true,
-	defaultZoom: 15,
-	zoomStrength: 1,
-	zoomLimitMin: 1,
-	zoomLimitMax: 32,
-	unloadDistance: 10,
-	toolSetUrl: toolSet,
-	unloadedPatternUrl: unloadedPat,
-	noUi: false,
-	backgroundUrl: null,
-	hexCoords: false,
-	showProtectionOutlines: true,
-	showPlayers: true,
-});
+function getCookie(name) {
+	let cookie = document.cookie.split(';');
+	for (let i = 0; i < cookie.length; i++) {
+		let index = cookie[i].indexOf(name);
+		if (index === 0 || (index === 1 && cookie[i][0] === ' ')) {
+			let offset = index + name.length + 1;
+			return cookie[i].substring(offset, cookie[i].length);
+		}
+	}
+	return null;
+}
 
 export const misc = PublicAPI.misc = {
-	localStorage: storageEnabled() && window.localStorage,
+	localStorage: (window && window.localStorage),
 	world: null,
+	get _world() {
+		return this.world;
+	},
 	lastXYDisplay: [-1, -1],
 	devRecvReader: msg => { },
 	chatPostFormatRecvModifier: msg => msg,
@@ -327,12 +264,12 @@ export const misc = PublicAPI.misc = {
 	lastMessage: null,
 	lastCleanup: 0,
 	guiShown: false,
-	cookiesEnabled: cookiesEnabled(),
-	storageEnabled: storageEnabled(),
-	showEUCookieNag: !options.noUi && cookiesEnabled() && getCookie('nagAccepted') !== 'true',
+	showEUCookieNag: !options.noUi && navigator.cookieEnabled && getCookie('nagAccepted') !== 'true',
 	usingFirefox: navigator.userAgent.indexOf('Firefox') !== -1,
 	donTimer: 0
 };
+
+export let protocol = null;
 
 eventSys.on(EVENTS.net.connecting, server => {
 	protocol = server.proto;

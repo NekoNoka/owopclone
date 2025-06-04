@@ -1,16 +1,16 @@
-import { tools } from "./tools.js";
+import { tools, toolsInit } from "./tools.js";
 
-import { createContextMenu, escapeHTML, getTime, setCookie, loadScript, colorUtils, eventSys } from "./util.js";
-import { EVENTS as e, RANK, options, PublicAPI, elements, KeyCode, sounds, misc, keysDown, camera, mouse, statusMsg, cameraValues } from "./conf.js";
+import { createContextMenu, escapeHTML, getTime, colorUtils, eventSys } from "./util.js";
+import { EVENTS as e, RANK, options, PublicAPI, elements, KeyCode, soundSys, misc, keysDown, statusMsg } from "./conf.js";
 import { windowSys, UtilDialog } from "./windowsys.js";
 import { PM } from "./pixelTools.js";
-import { renderer, moveCameraBy, setZoom } from "./canvas_renderer.js";
+import { renderer, moveCameraBy, camera, canvas_rendererInit } from "./canvas_renderer.js";
 import anchorme from "./anchorme.js";
 import { net } from "./networking.js";
 import { resolveProtocols } from "./protocol/all.js";
 import { World } from "./World.js";
-import { load_tool_icons } from "./tool_renderer.js";
-import { updateClientFx, player } from "./local_player.js";
+// import { load_tool_icons } from "./tool_renderer.js";
+import { updateClientFx, player, local_playerInit, mouse } from "./local_player.js";
 import { stickyimg } from "./stickyimg.js";
 import { showPlayerList } from "./playerlist.js";
 
@@ -321,16 +321,12 @@ function updatePlayerCount() {
     let final = countStr + text;
     elements.playerCountDisplay.innerHTML = final;
 
-    let title = 'World of Pixels';
+    let title = 'Neo\'s World of Pixels';
     if (misc.world) {
         title = '(' + countStr + '/' + misc.world.name + ') ' + title;
     }
 
     document.title = title;
-}
-
-function logoMakeRoom(bool) {
-    elements.loadUl.style.transform = bool ? "translateY(-75%) scale(0.5)" : "";
 }
 
 function dismissNotice() {
@@ -360,43 +356,24 @@ function showWorldUI(bool) {
 
 eventSys.on(e.net.disconnected, () => {
     showWorldUI(false);
-	if (!statusSet) statusMsg(false, "Lost connection with the server.");
+    if (!statusSet) statusMsg(false, "Lost connection with the server.");
 });
 
+function storageEnabled() {
+    return !!(window && window.localStorage);
+}
+
 function saveWorldPasswords() {
-    if (misc.storageEnabled) {
+    if (storageEnabled()) {
         misc.localStorage.worldPasswords = JSON.stringify(misc.worldPasswords);
     }
 }
 
-function checkFunctionality(callback) {
-    /* Multi Browser Support */
-    window.requestAnimationFrame =
-        window.requestAnimationFrame ||
-        window.mozRequestAnimationFrame ||
-        window.webkitRequestAnimationFrame ||
-        window.msRequestAnimationFrame ||
-        function (f) {
-            setTimeout(f, 1000 / options.fallbackFps);
-        };
-
-    Number.isInteger = Number.isInteger || (n => Math.floor(n) === n && Math.abs(n) !== Infinity);
-    Math.trunc = Math.trunc || (n => n | 0);
-
-    let toBlob = HTMLCanvasElement.prototype.toBlob = HTMLCanvasElement.prototype.toBlob || HTMLCanvasElement.prototype.msToBlob;
-
-    if (!toBlob) { /* Load toBlob polyfill */
-        loadScript(require('./polyfill/canvas-toBlob.js'), callback);
-    } else {
-        callback();
-    }
-}
-
-function init() {
+function setupInit() {
     let viewport = elements.viewport;
     let chatinput = elements.chatInput;
 
-    if (misc.storageEnabled && misc.localStorage.worldPasswords) {
+    if (storageEnabled() && misc.localStorage.worldPasswords) {
         try {
             misc.worldPasswords = JSON.parse(misc.localStorage.worldPasswords);
         } catch (e) { }
@@ -433,7 +410,7 @@ function init() {
                     let text = chatinput.value;
                     historyIndex = 0;
                     chatHistory.unshift(text);
-                    if (misc.storageEnabled) {
+                    if (storageEnabled()) {
                         // if (text.startsWith("/adminlogin ")) {
                         // misc.localStorage.adminlogin = text.slice(12);
                         // } else if (text.startsWith("/modlogin ")) {
@@ -575,6 +552,15 @@ function init() {
                     event.preventDefault();
                     break;
 
+                case KeyCode.y: /* Ctrl + Y */
+                    if (!event.ctrlKey || !misc.world) {
+                        break;
+                    }
+                    if (event.shiftKey) PM.undo(event.altKey);
+                    else PM.redo(event.altKey);
+                    event.preventDefault();
+                    break;
+
                 case KeyCode.backtick: /* F */
                     let parseClr = clr => {
                         let tmp = clr.split(',');
@@ -661,6 +647,7 @@ function init() {
             }
         }
     });
+
     viewport.addEventListener("mousedown", event => {
         closeChat();
         mouse.lastX = mouse.x;
@@ -686,7 +673,6 @@ function init() {
             player.tool.call('mousedown', [mouse, event]);
         }
     });
-
     window.addEventListener("mouseup", event => {
         /* Old versions of firefox have the buttons property as the
          * buttons released, instead of the currently pressed buttons.
@@ -707,7 +693,6 @@ function init() {
             player.tool.call('mouseup', [mouse, event]);
         }
     });
-
     window.addEventListener("mousemove", event => {
         let cancelledButtons = updateMouse(event, 'mousemove', event.pageX, event.pageY);
         let remainingButtons = mouse.buttons & ~cancelledButtons;
@@ -722,7 +707,7 @@ function init() {
                 return;
             }
         }
-        if (event.ctrlKey) setZoom(cameraValues.zoom + Math.sign(-event.deltaY));
+        if (event.ctrlKey) camera.zoom += Math.sign(-event.deltaY);
         else player.paletteIndex += Math.sign(event.deltaY);
     };
 
@@ -783,6 +768,9 @@ function init() {
 
     /* Calls other initialization functions */
     eventSys.emit(e.init);
+    canvas_rendererInit();
+    local_playerInit();
+    toolsInit();
 
     updateXYDisplay(0, 0);
 
@@ -830,42 +818,11 @@ function connect() {
     //delete window.localStorage;
 }
 
-eventSys.once(e.misc.toolsInitialized, function () {
-    for (let toolName in tools) {
-        if (tools[toolName].rankRequired <= player.rank) {
-            player.tool = toolName;
-            return;
-        }
-    }
-    player.tool = null;
-});
+function setCookie(name, value) {
+    document.cookie = `${name}=${value}; expires=Fri, 31 Dec 99999 23:59:59 GMT`;
+}
 
-eventSys.once(e.loaded, () => statusMsg(true, "Initializing..."));
 eventSys.once(e.misc.loadingCaptcha, () => statusMsg(true, "Trying to load captcha..."));
-eventSys.once(e.misc.logoMakeRoom, () => {
-    statusMsg(false, null);
-    logoMakeRoom();
-});
-
-eventSys.once(e.loaded, () => {
-    load_tool_icons(() => eventSys.emit(e.misc.toolsRendered));
-});
-
-eventSys.once(e.loaded, function () {
-    init();
-    if (misc.showEUCookieNag) {
-        windowSys.addWindow(new UtilDialog('Cookie notice',
-            `This box alerts you that we're going to use cookies!
-If you don't accept their usage, disable cookies and reload the page.`, false, () => {
-            setCookie('nagAccepted', 'true');
-            misc.showEUCookieNag = false;
-            logoMakeRoom(false);
-            connect();
-        }));
-    } else {
-        connect();
-    }
-});
 
 eventSys.on(e.net.maxCount, count => {
     misc.world.maxCount = count;
@@ -902,7 +859,7 @@ eventSys.on(e.net.donUntil, (ts, pmult) => {
 eventSys.on(e.net.chat, receiveMessage);
 
 eventSys.on(e.net.world.setId, id => {
-    if (!misc.storageEnabled) return;
+    if (!storageEnabled()) return;
 
     // function autoNick() {
     // 	if (misc.localStorage.nick) {
@@ -912,12 +869,10 @@ eventSys.on(e.net.world.setId, id => {
 
     // Automatic login
     // let desiredRank = misc.localStorage.adminlogin ? RANK.ADMIN : misc.localStorage.modlogin ? RANK.MODERATOR : net.protocol.worldName in misc.worldPasswords ? RANK.USER : RANK.NONE;
-    let desiredRank =
-        misc.localStorage.ownerlogin ? RANK.OWNER : misc.localStorage.devlogin ? RANK.DEVELOPER : misc.localStorage.adminlogin ? RANK.ADMIN : misc.localStorage.modlogin ? RANK.MODERATOR : net.protocol.worldName in misc.worldPasswords ? RANK.USER : RANK.NONE;
+    let desiredRank = misc.localStorage.ownerlogin ? RANK.OWNER : misc.localStorage.devlogin ? RANK.DEVELOPER : misc.localStorage.adminlogin ? RANK.ADMIN : misc.localStorage.modlogin ? RANK.MODERATOR : net.protocol.worldName in misc.worldPasswords ? RANK.USER : RANK.NONE;
     if (desiredRank > RANK.NONE) {
         let mightBeMod = false;
         let onWrong = function () {
-            console.log("WRONG");
             eventSys.removeListener(e.net.sec.rank, onCorrect);
             if (desiredRank == RANK.OWNER) {
                 delete misc.localStorage.ownerlogin;
@@ -934,9 +889,6 @@ eventSys.on(e.net.world.setId, id => {
             net.retryingConnect(() => net.currentServer, net.protocol.worldName)
         };
         let onCorrect = function (newrank) {
-            console.log("yeppers")
-            // console.log(newrank);
-            // console.log(desiredRank);
             if ((mightBeMod && (newrank == RANK.ADMIN || newrank == RANK.MODERATOR)) || !mightBeMod && newrank == desiredRank) {
                 eventSys.removeListener(e.net.disconnected, onWrong);
                 eventSys.removeListener(e.net.sec.rank, onCorrect);
@@ -973,6 +925,10 @@ eventSys.on(e.net.world.setId, id => {
     }
 });
 
+function logoMakeRoom(bool) {
+    elements.loadUl.style.transform = bool ? "translateY(-75%) scale(0.5)" : "";
+}
+
 eventSys.on(e.misc.windowAdded, window => {
     if (misc.world === null) {
         statusMsg(false, null);
@@ -989,13 +945,18 @@ eventSys.on(e.net.world.join, world => {
     net.showLoadScr(false, false);
     showWorldUI(!options.noUi);
     renderer.showGrid(!options.noUi);
-    sounds.launch();
+    soundSys.launch();
     misc.world = new World(world);
-    eventSys.emit(e.misc.worldInitialized);
 });
 
 eventSys.on(e.net.connected, () => {
     clearChat();
+
+    let pb = net.protocol.placeBucket;
+    setInterval(() => {
+        pb.update();
+        elements.pBucketDisplay.textContent = `Place bucket: ${pb.allowance.toFixed(1)} (${pb.rate}/${pb.time}s).`;
+    }, 100);
 });
 
 eventSys.on(e.camera.moved, camera => {
@@ -1085,15 +1046,25 @@ window.addEventListener("load", () => {
         document.getElementById("help").className = "hidden";
     });
 
-    checkFunctionality(() => eventSys.emit(e.loaded));
+    eventSys.emit(e.loaded);
 
-    setInterval(() => {
-        let pb = net.protocol.placeBucket;
-        pb.update();
-        elements.pBucketDisplay.textContent = `Place bucket: ${pb.allowance.toFixed(1)} (${pb.rate}/${pb.time}s).`;
-    }, 100);
+    statusMsg(true, "Initializing...");
+    setupInit();
+
+    // load_tool_icons(() => eventSys.emit(e.misc.toolsRendered));
+    if (misc.showEUCookieNag) {
+        windowSys.addWindow(new UtilDialog('Cookie notice',
+            `This box alerts you that we're going to use cookies!
+If you don't accept their usage, disable cookies and reload the page.`, false, () => {
+            setCookie('nagAccepted', 'true');
+            misc.showEUCookieNag = false;
+            logoMakeRoom(false);
+            connect();
+        }));
+    } else {
+        connect();
+    }
 });
-
 
 /* Public API definitions */
 PublicAPI.emit = eventSys.emit.bind(eventSys);
@@ -1102,19 +1073,19 @@ PublicAPI.once = eventSys.once.bind(eventSys);
 PublicAPI.removeListener = eventSys.removeListener.bind(eventSys);
 PublicAPI.colorUtils = colorUtils;
 PublicAPI.chat = {
-	send: (msg) => net.protocol && net.protocol.sendMessage(msg),
-	clear: clearChat,
-	local: receiveMessage,
-	get onDevMsg() { return misc.devRecvReader; },
-	set onDevMsg(fn) { misc.devRecvReader = fn; },
-	get postFormatRecvModifier() { return misc.chatPostFormatRecvModifier; },
-	set postFormatRecvModifier(fn) { misc.chatPostFormatRecvModifier = fn; },
-	get recvModifier() { return misc.chatRecvModifier; },
-	set recvModifier(fn) { misc.chatRecvModifier = fn; },
-	get sendModifier() { return misc.chatSendModifier; },
-	set sendModifier(fn) { misc.chatSendModifier = fn; }
+    send: (msg) => net.protocol && net.protocol.sendMessage(msg),
+    clear: clearChat,
+    local: receiveMessage,
+    get onDevMsg() { return misc.devRecvReader; },
+    set onDevMsg(fn) { misc.devRecvReader = fn; },
+    get postFormatRecvModifier() { return misc.chatPostFormatRecvModifier; },
+    set postFormatRecvModifier(fn) { misc.chatPostFormatRecvModifier = fn; },
+    get recvModifier() { return misc.chatRecvModifier; },
+    set recvModifier(fn) { misc.chatRecvModifier = fn; },
+    get sendModifier() { return misc.chatSendModifier; },
+    set sendModifier(fn) { misc.chatSendModifier = fn; }
 };
 PublicAPI.poke = () => {
-	if (net.protocol) net.protocol.lastSentX = Infinity;
+    if (net.protocol) net.protocol.lastSentX = Infinity;
 };
 PublicAPI.muted = [];

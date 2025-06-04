@@ -6,6 +6,7 @@ import { eventSys, elementOn } from "./util.js";
 export const net = PublicAPI.net = {
 	currentServer: null,
 	protocol: null,
+	connection: null,
 	isConnected,
 	connect,
 	retryingConnect,

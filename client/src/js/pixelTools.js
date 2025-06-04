@@ -1,8 +1,8 @@
 "use strict";
 
 import { colorUtils as color, eventSys } from "./util.js";
-import { EVENTS as e, RANK, misc, mouse, PublicAPI } from "./conf.js";
-import { player } from "./local_player.js";
+import { EVENTS as e, RANK, misc, PublicAPI } from "./conf.js";
+import { player, mouse } from "./local_player.js";
 import { net } from "./networking.js";
 import { centerCameraTo } from "./canvas_renderer.js";
 
@@ -121,29 +121,18 @@ export class PixelManager {
 		this.extra.placeData.sort((a, b) => a[0] - b[0]);
 		this.extra.chunkPlaceData.sort((a, b) => a[0] - b[0]);
 
-		eventSys.on(e.tick, () => {
-			this.enabled ? this.placePixel() : void 0;
-		});
+		eventSys.on(e.tick, this.placePixel.bind(this));
 		eventSys.on(e.net.world.tilesUpdated, (message) => {
 			for (let i = 0; i < message.length; i++) {
 				let p = message[i];
+				if (p.id === player.id) continue;
 				let pixel = this.queue[`${p.x},${p.y}`];
-				let placedColor = [(p.rgb & (255 << 0)) >> 0, (p.rgb & (255 << 8)) >> 8, (p.rgb & (255 << 16)) >> 16];
-				if (p.id === player.id) {
-					const eq = (a, b) => a[0] == b[0] && a[1] == b[1] && a[2] == b[2];
-					if (!eq(pixel.c, placedColor)) pixel.placed = false;
-					continue;
+				if (pixel) {
+					this.deletePixel(pixel);
+					// pixel.placed = false;
+					// this.chunkQueue[`${pixel.cx},${pixel.cy}`].placed = false;
+					// this.chunkQueue[`${pixel.cx},${pixel.cy}`].t = new Date().getTime();
 				}
-				// if (this.whitelist.has(`${p.id}`)) this.setPixel(p.x, p.y, placedColor);
-				this.deletePixel(p);
-				// if (pixel) {
-				// 	this.checkMove = true;
-				// 	pixel.placed = false;
-				// 	this.moveQueue[`${Math.floor(p.x / 16)},${Math.floor(p.y / 16)}`] = true;
-				// 	this.chunkQueue[`${pixel.cx},${pixel.cy}`].placed = false;
-				// 	this.chunkQueue[`${pixel.cx},${pixel.cy}`].t = new Date().getTime();
-				// 	this.updateBorder(p.x, p.y);
-				// }
 			}
 		});
 		eventSys.on(e.net.world.leave, () => {
@@ -171,13 +160,13 @@ export class PixelManager {
 		this.checkMove = false;
 	}
 	updateBorder(x, y) {
-		let p = this.border[`${x},${y}`];
+		// let p = this.border[`${x},${y}`];
 		// if (!p) p = this.border[`${x},${y}`] = new BPoint(x, y);
 
-		let t = this.border[`${x},${y - 1}`];
-		let l = this.border[`${x - 1},${y}`];
-		let b = this.border[`${x},${y + 1}`];
-		let r = this.border[`${x + 1},${y}`];
+		// let t = this.border[`${x},${y - 1}`];
+		// let l = this.border[`${x - 1},${y}`];
+		// let b = this.border[`${x},${y + 1}`];
+		// let r = this.border[`${x + 1},${y}`];
 
 		// if (!t) t = new BPoint(x, y - 1);
 		// if (!l) l = new BPoint(x - 1, y);
@@ -284,7 +273,7 @@ export class PixelManager {
 		this.chunkQueue[chunkKey].setPixel(p);
 
 		this.moveQueue[chunkKey] = true;
-		this.updateBorder(p.x, p.y);
+		// this.updateBorder(p.x, p.y);
 
 		this.checkMove = true;
 		return true;
@@ -295,6 +284,7 @@ export class PixelManager {
 		return p.c;
 	}
 	placePixel() {
+		if (!this.enabled) return;
 		if (player.rank >= RANK.MODERATOR && this.enableMod) {
 			const cx = Math.floor(mouse.tileX / 16);
 			const cy = Math.floor(mouse.tileY / 16);

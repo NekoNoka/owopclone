@@ -1,8 +1,8 @@
 "use strict";
 
 import { colorUtils as color, getTime, eventSys } from "./util.js";
-import { EVENTS as e, protocol, activeFx, PublicAPI, camera } from "./conf.js";
-import { renderer, isVisible } from "./canvas_renderer.js";
+import { EVENTS as e, protocol, activeFx, PublicAPI } from "./conf.js";
+import { renderer, isVisible, camera } from "./canvas_renderer.js";
 
 export const PLAYERFX = {
 	NONE: null,

@@ -1,20 +1,20 @@
 "use strict";
 
-import { EVENTS as e, protocol, options, RANK, elements, PublicAPI, cursors, sounds, misc, keysDown, camera, mouse } from "./conf.js";
+import { EVENTS as e, protocol, options, RANK, elements, PublicAPI, soundSys, misc, keysDown } from "./conf.js";
 import { colorUtils as color, absMod, setTooltip, line, eventSys } from "./util.js";
 import { net } from "./networking.js";
-import { player } from "./local_player.js";
-import { moveCameraBy, renderer, drawText, setZoom } from "./canvas_renderer.js";
+import { player, mouse } from "./local_player.js";
+import { moveCameraBy, renderer, drawText, camera } from "./canvas_renderer.js";
 import { windowSys, GUIWindow } from "./windowsys.js";
 import { PM } from "./pixelTools.js";
 import { PLAYERFX } from "./Fx.js";
+import { cursors, load_tool_icons } from "./tool_renderer.js";
 import newText from "../json/newText.json";
 import cyrillic from "../json/cyrillic.json";
 
 export const tools = {};
 export let toolsWindow = null;
 export let toolOptsWindow = null;
-let windowShown = false;
 
 const textData = { newText, cyrillic }
 
@@ -148,7 +148,7 @@ export function updateToolbar(win = toolsWindow) {
 	const toolButtonClick = name => event => {
 		player.tool = name;
 		showToolOpts(false);
-		sounds.click();
+		soundSys.click();
 	};
 
 	container.innerHTML = "";
@@ -177,17 +177,6 @@ export function updateToolbar(win = toolsWindow) {
 	}
 	const outputNumber = input => input <= 7 ? 40 : 40 * Math.floor(input / 7);
 	toolsWindow.container.style.maxWidth = `${outputNumber(toolsWindow.container.children.length)}px`;
-}
-
-export function showToolsWindow(bool) {
-	if (windowShown !== bool) {
-		if (bool && toolsWindow) {
-			windowSys.addWindow(toolsWindow);
-		} else if (toolsWindow) {
-			windowSys.delWindow(toolsWindow);
-		}
-		windowShown = bool;
-	}
 }
 
 export function addTool(tool) {
@@ -428,392 +417,379 @@ class Brush {
 	}
 }
 
-eventSys.once(e.misc.toolsRendered, () => {
+function addDefaultTools() {
 	// Cursor tool
-	addTool(new Tool('Cursor', cursors.cursor, PLAYERFX.RECT_SELECT_ALIGNED(1), RANK.USER,
-		tool => {
-			tool.extra.brushSize = 1;
-			tool.extra.brush = new Brush(0, 0, tool.extra.brushSize - 1, tool.extra.brushSize - 1, 0, 0);
-			let lastX;
-			let lastY;
-			let last1PX;
-			let last1PY;
-			let last2PX;
-			let last2PY;
-			let start;
-			tool.setEvent('mousedown mousemove', (mouse, event) => {
-				let usedButtons = 0b11; /* Left and right mouse buttons are always used... */
-				/* White color if right clicking */
+	addTool(new Tool('Cursor', cursors.cursor, PLAYERFX.RECT_SELECT_ALIGNED(1), RANK.USER, tool => {
+		tool.extra.brushSize = 1;
+		tool.extra.brush = new Brush(0, 0, tool.extra.brushSize - 1, tool.extra.brushSize - 1, 0, 0);
+		let lastX;
+		let lastY;
+		let last1PX;
+		let last1PY;
+		let last2PX;
+		let last2PY;
+		let start;
+		tool.setEvent('mousedown mousemove', (mouse, event) => {
+			let usedButtons = 0b11; /* Left and right mouse buttons are always used... */
+			/* White color if right clicking */
 
-				let color = mouse.buttons === 2 ? player.secondaryColor : player.selectedColor;
+			let color = mouse.buttons === 2 ? player.secondaryColor : player.selectedColor;
 
-				switch (mouse.buttons) {
-					case 1:
-						if (event.ctrlKey) {
-							let color = misc.world.getPixel(mouse.tileX, mouse.tileY);
-							player.selectedColor = color;
-							break;
-						}
-					case 2:
-						if (event.ctrlKey) {
-							let color = misc.world.getPixel(mouse.tileX, mouse.tileY);
-							player.secondaryColor = color;
-							break;
-						}
-						if (!lastX || !lastY) {
-							lastX = mouse.tileX;
-							lastY = mouse.tileY;
-							last1PX = mouse.tileX;
-							last1PY = mouse.tileY;
-							last2PX = mouse.tileX;
-							last2PY = mouse.tileY;
-							start = true;
-						}
-						PM.startHistory();
-						line(lastX, lastY, mouse.tileX, mouse.tileY, (x, y) => {
-							tool.extra.brush.draw(x, y, color);
-						});
+			switch (mouse.buttons) {
+				case 1:
+					if (event.ctrlKey) {
+						let pixelColor = misc.world.getPixel(mouse.tileX, mouse.tileY);
+						if (pixelColor) player.selectedColor = pixelColor;
+						break;
+					}
+				case 2:
+					if (event.ctrlKey) {
+						let pixelColor = misc.world.getPixel(mouse.tileX, mouse.tileY);
+						if (pixelColor) player.secondaryColor = pixelColor;
+						break;
+					}
+					if (!lastX || !lastY) {
 						lastX = mouse.tileX;
 						lastY = mouse.tileY;
-						break;
-					case 4:
-						if (event.ctrlKey) {
-							usedButtons |= 0b100;
-							let color = misc.world.getPixel(mouse.tileX, mouse.tileY);
-							if (color) {
-								player.selectedColor = color;
-							}
-						}
-						break;
-				}
-				return usedButtons;
-			});
-			tool.setEvent('mouseup deselect', mouse => {
-				PM.endHistory();
-				lastX = null;
-				lastY = null;
-				last1PX = undefined;
-				last1PY = undefined;
-				last2PX = undefined;
-				last2PY = undefined;
-			});
-		}
-	));
+						last1PX = mouse.tileX;
+						last1PY = mouse.tileY;
+						last2PX = mouse.tileX;
+						last2PY = mouse.tileY;
+						start = true;
+					}
+					PM.startHistory();
+					line(lastX, lastY, mouse.tileX, mouse.tileY, (x, y) => {
+						tool.extra.brush.draw(x, y, color);
+					});
+					lastX = mouse.tileX;
+					lastY = mouse.tileY;
+					break;
+				case 4:
+					if (event.ctrlKey) {
+						usedButtons |= 0b100;
+						let color = misc.world.getPixel(mouse.tileX, mouse.tileY);
+						if (color) player.selectedColor = color;
+					}
+					break;
+			}
+			return usedButtons;
+		});
+		tool.setEvent('mouseup deselect', mouse => {
+			PM.endHistory();
+			lastX = null;
+			lastY = null;
+			last1PX = undefined;
+			last1PY = undefined;
+			last2PX = undefined;
+			last2PY = undefined;
+		});
+	}));
 
 	// Move tool
-	addTool(new Tool('Move', cursors.move, PLAYERFX.NONE, RANK.NONE,
-		tool => {
-			function move(x, y, startX, startY) {
-				moveCameraBy((startX - x) / 16, (startY - y) / 16);
-			}
-			tool.setEvent('mousemove', (mouse, event) => {
-				if (mouse.buttons !== 0) {
-					move(mouse.worldX, mouse.worldY, mouse.mouseDownWorldX, mouse.mouseDownWorldY);
-					return mouse.buttons;
-				}
-			});
-			tool.setEvent('scroll', (mouse, event) => {
-				if (!event.ctrlKey) {
-					let dx = Math.sign(event.deltaX) * 64;
-					let dy = Math.sign(event.deltaY) * 64;
-					let pxAmount = camera.zoom;
-					moveCameraBy(dx / pxAmount, dy / pxAmount);
-					return true;
-				}
-			});
+	addTool(new Tool('Move', cursors.move, PLAYERFX.NONE, RANK.NONE, tool => {
+		function move(x, y, startX, startY) {
+			moveCameraBy((startX - x) / 16, (startY - y) / 16);
 		}
-	));
+		tool.setEvent('mousemove', (mouse, event) => {
+			if (mouse.buttons !== 0) {
+				move(mouse.worldX, mouse.worldY, mouse.mouseDownWorldX, mouse.mouseDownWorldY);
+				return mouse.buttons;
+			}
+		});
+		tool.setEvent('scroll', (mouse, event) => {
+			if (!event.ctrlKey) {
+				let dx = Math.sign(event.deltaX) * 64;
+				let dy = Math.sign(event.deltaY) * 64;
+				let pxAmount = camera.zoom;
+				moveCameraBy(dx / pxAmount, dy / pxAmount);
+				return true;
+			}
+		});
+	}));
 
 	// Pipette tool
-	addTool(new Tool('Pipette', cursors.pipette, PLAYERFX.NONE, RANK.NONE,
-		tool => {
-			tool.setEvent('mousedown mousemove', (mouse, event) => {
-				if (mouse.buttons !== 0 && !(mouse.buttons & 0b100)) {
-					let color = misc.world.getPixel(mouse.tileX, mouse.tileY);
-					if (color) {
-						player.selectedColor = color;
-					}
-					return mouse.buttons;
-				}
-			});
-		}
-	));
+	addTool(new Tool('Pipette', cursors.pipette, PLAYERFX.NONE, RANK.NONE, tool => {
+		tool.setEvent('mousedown mousemove', (mouse, event) => {
+			if (mouse.buttons === 1) {
+				let color = misc.world.getPixel(mouse.tileX, mouse.tileY);
+				if (color) player.selectedColor = color;
+			}
+			if (mouse.buttons === 2) {
+				let color = misc.world.getPixel(mouse.tileX, mouse.tileY);
+				if (color) player.secondaryColor = color;
+			}
+		});
+	}));
 
 	// Erase/Fill tool
-	addTool(new Tool('Eraser', cursors.erase, PLAYERFX.RECT_SELECT_ALIGNED(16), RANK.MODERATOR,
-		tool => {
-			function fillChunk(chunkX, chunkY, c) {
-				const color = c[2] << 16 | c[1] << 8 | c[0];
-				let chunk = misc.world.getChunkAt(chunkX, chunkY);
-				if (chunk) {
-					let empty = true;
-					firstLoop: for (let y = 0; y < protocol.chunkSize; y++) {
-						for (let x = 0; x < protocol.chunkSize; x++) {
-							if ((chunk.get(x, y) & 0xFFFFFF) != color) {
-								empty = false;
-								break firstLoop;
-							}
+	addTool(new Tool('Eraser', cursors.erase, PLAYERFX.RECT_SELECT_ALIGNED(16), RANK.MODERATOR, tool => {
+		function fillChunk(chunkX, chunkY, c) {
+			const color = c[2] << 16 | c[1] << 8 | c[0];
+			let chunk = misc.world.getChunkAt(chunkX, chunkY);
+			if (chunk) {
+				let empty = true;
+				firstLoop: for (let y = 0; y < protocol.chunkSize; y++) {
+					for (let x = 0; x < protocol.chunkSize; x++) {
+						if ((chunk.get(x, y) & 0xFFFFFF) != color) {
+							empty = false;
+							break firstLoop;
 						}
 					}
-					if (!empty) {
-						if (net.protocol.clearChunk(chunkX, chunkY, c)) {
-							chunk.set(color);
-						}
+				}
+				if (!empty) {
+					if (net.protocol.clearChunk(chunkX, chunkY, c)) {
+						chunk.set(color);
 					}
 				}
 			}
-
-			tool.setEvent('mousedown mousemove', (mouse, event) => {
-				if (mouse.buttons & 0b1) {
-					fillChunk(Math.floor(mouse.tileX / protocol.chunkSize), Math.floor(mouse.tileY / protocol.chunkSize), player.selectedColor);
-					return 1;
-				} else if (mouse.buttons & 0b10) {
-					fillChunk(Math.floor(mouse.tileX / protocol.chunkSize), Math.floor(mouse.tileY / protocol.chunkSize), [255, 255, 255]);
-					return 1;
-				}
-			});
 		}
-	));
+
+		tool.setEvent('mousedown mousemove', (mouse, event) => {
+			if (mouse.buttons & 0b1) {
+				fillChunk(Math.floor(mouse.tileX / protocol.chunkSize), Math.floor(mouse.tileY / protocol.chunkSize), player.selectedColor);
+				return 1;
+			} else if (mouse.buttons & 0b10) {
+				fillChunk(Math.floor(mouse.tileX / protocol.chunkSize), Math.floor(mouse.tileY / protocol.chunkSize), [255, 255, 255]);
+				return 1;
+			}
+		});
+	}));
 
 	// Zoom tool
-	addTool(new Tool('Zoom', cursors.zoom, PLAYERFX.NONE, RANK.NONE,
-		tool => {
-			function zoom(mouse, type) {
-				let lzoom = camera.zoom;
-				let nzoom = camera.zoom;
-				let offX = 0;
-				let offY = 0;
-				let w = window.innerWidth;
-				let h = window.innerHeight;
-				if (type === 1) {
-					// Zoom in
-					nzoom *= 1 + options.zoomStrength;
-					offX = (mouse.x - w / 2) / nzoom;
-					offY = (mouse.y - h / 2) / nzoom;
-				} else if (type === 2) {
-					// Zoom out
-					nzoom /= 1 + options.zoomStrength;
-					offX = (mouse.x - w / 2) * (3 / lzoom - 2 / nzoom);
-					offY = (mouse.y - h / 2) * (3 / lzoom - 2 / nzoom);
-				} else if (type === 3) {
-					// Reset zoom (right + left click)
-					nzoom = options.defaultZoom;
-				}
-				nzoom = Math.round(nzoom);
-				setZoom(nzoom);
-				if (camera.zoom !== lzoom) {
-					moveCameraBy(offX, offY);
-				}
+	addTool(new Tool('Zoom', cursors.zoom, PLAYERFX.NONE, RANK.NONE, tool => {
+		function zoom(mouse, type) {
+			let lzoom = camera.zoom;
+			let nzoom = camera.zoom;
+			let offX = 0;
+			let offY = 0;
+			let w = window.innerWidth;
+			let h = window.innerHeight;
+			if (type === 1) {
+				// Zoom in
+				nzoom *= 1 + options.zoomStrength;
+				offX = (mouse.x - w / 2) / nzoom;
+				offY = (mouse.y - h / 2) / nzoom;
+			} else if (type === 2) {
+				// Zoom out
+				nzoom /= 1 + options.zoomStrength;
+				offX = (mouse.x - w / 2) * (3 / lzoom - 2 / nzoom);
+				offY = (mouse.y - h / 2) * (3 / lzoom - 2 / nzoom);
+			} else if (type === 3) {
+				// Reset zoom (right + left click)
+				nzoom = options.defaultZoom;
 			}
-
-			tool.setEvent("mousedown", (mouse, event) => {
-				zoom(mouse, mouse.buttons);
-			});
-			tool.setEvent("touchstart", (mouse, event) => {
-				tool.extra.maxTouches = Math.max(tool.extra.maxTouches || 0, event.touches.length);
-			});
-			tool.setEvent("touchend", (mouse, event) => {
-				if (event.touches.length === 0) {
-					if (tool.extra.maxTouches > 1) {
-						zoom(mouse, tool.extra.maxTouches);
-					}
-					tool.extra.maxTouches = 0;
-				}
-			});
+			nzoom = Math.round(nzoom);
+			camera.zoom = nzoom;
+			if (camera.zoom !== lzoom) {
+				moveCameraBy(offX, offY);
+			}
 		}
-	));
+
+		tool.setEvent("mousedown", (mouse, event) => {
+			zoom(mouse, mouse.buttons);
+		});
+		tool.setEvent("touchstart", (mouse, event) => {
+			tool.extra.maxTouches = Math.max(tool.extra.maxTouches || 0, event.touches.length);
+		});
+		tool.setEvent("touchend", (mouse, event) => {
+			if (event.touches.length === 0) {
+				if (tool.extra.maxTouches > 1) {
+					zoom(mouse, tool.extra.maxTouches);
+				}
+				tool.extra.maxTouches = 0;
+			}
+		});
+	}));
 
 	// Area to PNG tool
-	addTool(new Tool('Export', cursors.select, PLAYERFX.NONE, RANK.NONE,
-		tool => {
-			tool.setFxRenderer((fx, ctx, time) => {
-				if (!fx.extra.isLocalPlayer) return 1;
-				let x = fx.extra.player.x;
-				let y = fx.extra.player.y;
-				let fxx = (Math.floor(x / 16) - camera.x) * camera.zoom;
-				let fxy = (Math.floor(y / 16) - camera.y) * camera.zoom;
-				let oldlinew = ctx.lineWidth;
-				ctx.lineWidth = 1;
-				if (tool.extra.end) {
-					let s = tool.extra.start;
-					let e = tool.extra.end;
-					let x = (s[0] - camera.x) * camera.zoom + 0.5;
-					let y = (s[1] - camera.y) * camera.zoom + 0.5;
-					let w = e[0] - s[0];
-					let h = e[1] - s[1];
-					ctx.beginPath();
-					ctx.rect(x, y, w * camera.zoom, h * camera.zoom);
-					ctx.globalAlpha = 1;
-					ctx.strokeStyle = "#FFFFFF";
-					ctx.stroke();
-					ctx.setLineDash([3, 4]);
-					ctx.strokeStyle = "#000000";
-					ctx.stroke();
-					ctx.globalAlpha = 0.25 + Math.sin(time / 500) / 4;
-					ctx.fillStyle = renderer.patterns.unloaded;
-					ctx.fill();
-					ctx.setLineDash([]);
-					let oldfont = ctx.font;
-					ctx.font = "16px sans-serif";
-					let txt = `${!tool.extra.clicking ? "Right click to screenshot " : ""}(${Math.abs(w)}x${Math.abs(h)})`;
-					let txtx = window.innerWidth >> 1;
-					let txty = window.innerHeight >> 1;
-					txtx = Math.max(x, Math.min(txtx, x + w * camera.zoom));
-					txty = Math.max(y, Math.min(txty, y + h * camera.zoom));
-
-					drawText(ctx, txt, txtx, txty, true);
-					ctx.font = oldfont;
-					ctx.lineWidth = oldlinew;
-					return 0;
-				} else {
-					ctx.beginPath();
-					ctx.moveTo(0, fxy + 0.5);
-					ctx.lineTo(window.innerWidth, fxy + 0.5);
-					ctx.moveTo(fxx + 0.5, 0);
-					ctx.lineTo(fxx + 0.5, window.innerHeight);
-
-					//ctx.lineWidth = 1;
-					ctx.globalAlpha = 1;
-					ctx.strokeStyle = "#FFFFFF";
-					ctx.stroke();
-					ctx.setLineDash([3]);
-					ctx.strokeStyle = "#000000";
-					ctx.stroke();
-
-					ctx.setLineDash([]);
-					ctx.lineWidth = oldlinew;
-					return 1;
-				}
-			});
-
-			function dlarea(x, y, w, h, onblob) {
-				let c = document.createElement('canvas');
-				c.width = w;
-				c.height = h;
-				let ctx = c.getContext('2d');
-				let d = ctx.createImageData(w, h);
-				for (let i = y; i < y + h; i++) {
-					for (let j = x; j < x + w; j++) {
-						let pix = misc.world.getPixel(j, i);
-						if (!pix) continue;
-						d.data[4 * ((i - y) * w + (j - x))] = pix[0];
-						d.data[4 * ((i - y) * w + (j - x)) + 1] = pix[1];
-						d.data[4 * ((i - y) * w + (j - x)) + 2] = pix[2];
-						d.data[4 * ((i - y) * w + (j - x)) + 3] = 255;
-					}
-				}
-				ctx.putImageData(d, 0, 0);
-				c.toBlob(onblob);
-			}
-
-			tool.extra.start = null;
-			tool.extra.end = null;
-			tool.extra.clicking = false;
-
-			tool.setEvent('mousedown', (mouse, event) => {
+	addTool(new Tool('Export', cursors.select, PLAYERFX.NONE, RANK.NONE, tool => {
+		tool.setFxRenderer((fx, ctx, time) => {
+			if (!fx.extra.isLocalPlayer) return 1;
+			let x = fx.extra.player.x;
+			let y = fx.extra.player.y;
+			let fxx = (Math.floor(x / 16) - camera.x) * camera.zoom;
+			let fxy = (Math.floor(y / 16) - camera.y) * camera.zoom;
+			let oldlinew = ctx.lineWidth;
+			ctx.lineWidth = 1;
+			if (tool.extra.end) {
 				let s = tool.extra.start;
 				let e = tool.extra.end;
-				const isInside = () => mouse.tileX >= s[0] && mouse.tileX < e[0] && mouse.tileY >= s[1] && mouse.tileY < e[1];
-				if (mouse.buttons === 1 && !tool.extra.end) {
-					tool.extra.start = [mouse.tileX, mouse.tileY];
-					tool.extra.clicking = true;
+				let x = (s[0] - camera.x) * camera.zoom + 0.5;
+				let y = (s[1] - camera.y) * camera.zoom + 0.5;
+				let w = e[0] - s[0];
+				let h = e[1] - s[1];
+				ctx.beginPath();
+				ctx.rect(x, y, w * camera.zoom, h * camera.zoom);
+				ctx.globalAlpha = 1;
+				ctx.strokeStyle = "#FFFFFF";
+				ctx.stroke();
+				ctx.setLineDash([3, 4]);
+				ctx.strokeStyle = "#000000";
+				ctx.stroke();
+				ctx.globalAlpha = 0.25 + Math.sin(time / 500) / 4;
+				ctx.fillStyle = renderer.patterns.unloaded;
+				ctx.fill();
+				ctx.setLineDash([]);
+				let oldfont = ctx.font;
+				ctx.font = "16px sans-serif";
+				let txt = `${!tool.extra.clicking ? "Right click to screenshot " : ""}(${Math.abs(w)}x${Math.abs(h)})`;
+				let txtx = window.innerWidth >> 1;
+				let txty = window.innerHeight >> 1;
+				txtx = Math.max(x, Math.min(txtx, x + w * camera.zoom));
+				txty = Math.max(y, Math.min(txty, y + h * camera.zoom));
+
+				drawText(ctx, txt, txtx, txty, true);
+				ctx.font = oldfont;
+				ctx.lineWidth = oldlinew;
+				return 0;
+			} else {
+				ctx.beginPath();
+				ctx.moveTo(0, fxy + 0.5);
+				ctx.lineTo(window.innerWidth, fxy + 0.5);
+				ctx.moveTo(fxx + 0.5, 0);
+				ctx.lineTo(fxx + 0.5, window.innerHeight);
+
+				//ctx.lineWidth = 1;
+				ctx.globalAlpha = 1;
+				ctx.strokeStyle = "#FFFFFF";
+				ctx.stroke();
+				ctx.setLineDash([3]);
+				ctx.strokeStyle = "#000000";
+				ctx.stroke();
+
+				ctx.setLineDash([]);
+				ctx.lineWidth = oldlinew;
+				return 1;
+			}
+		});
+
+		function dlarea(x, y, w, h, onblob) {
+			let c = document.createElement('canvas');
+			c.width = w;
+			c.height = h;
+			let ctx = c.getContext('2d');
+			let d = ctx.createImageData(w, h);
+			for (let i = y; i < y + h; i++) {
+				for (let j = x; j < x + w; j++) {
+					let pix = misc.world.getPixel(j, i);
+					if (!pix) continue;
+					d.data[4 * ((i - y) * w + (j - x))] = pix[0];
+					d.data[4 * ((i - y) * w + (j - x)) + 1] = pix[1];
+					d.data[4 * ((i - y) * w + (j - x)) + 2] = pix[2];
+					d.data[4 * ((i - y) * w + (j - x)) + 3] = 255;
+				}
+			}
+			ctx.putImageData(d, 0, 0);
+			c.toBlob(onblob);
+		}
+
+		tool.extra.start = null;
+		tool.extra.end = null;
+		tool.extra.clicking = false;
+
+		tool.setEvent('mousedown', (mouse, event) => {
+			let s = tool.extra.start;
+			let e = tool.extra.end;
+			const isInside = () => mouse.tileX >= s[0] && mouse.tileX < e[0] && mouse.tileY >= s[1] && mouse.tileY < e[1];
+			if (mouse.buttons === 1 && !tool.extra.end) {
+				tool.extra.start = [mouse.tileX, mouse.tileY];
+				tool.extra.clicking = true;
+				tool.setEvent('mousemove', (mouse, event) => {
+					if (tool.extra.start && mouse.buttons === 1) {
+						tool.extra.end = [mouse.tileX, mouse.tileY];
+						return 1;
+					}
+				});
+				const finish = () => {
+					tool.setEvent('mousemove mouseup deselect', null);
+					tool.extra.clicking = false;
+					let s = tool.extra.start;
+					let e = tool.extra.end;
+					if (e) {
+						if (s[0] === e[0] || s[1] === e[1]) {
+							tool.extra.start = null;
+							tool.extra.end = null;
+						}
+						if (s[0] > e[0]) {
+							let tmp = e[0];
+							e[0] = s[0];
+							s[0] = tmp;
+						}
+						if (s[1] > e[1]) {
+							let tmp = e[1];
+							e[1] = s[1];
+							s[1] = tmp;
+						}
+					}
+					renderer.render(renderer.rendertype.FX);
+				};
+				tool.setEvent('deselect', finish);
+				tool.setEvent('mouseup', (mouse, event) => {
+					if (!(mouse.buttons & 1)) {
+						finish();
+					}
+				});
+			} else if (mouse.buttons === 1 && tool.extra.end) {
+				if (isInside()) {
+					let offx = mouse.tileX;
+					let offy = mouse.tileY;
 					tool.setEvent('mousemove', (mouse, event) => {
-						if (tool.extra.start && mouse.buttons === 1) {
-							tool.extra.end = [mouse.tileX, mouse.tileY];
-							return 1;
-						}
+						let dx = mouse.tileX - offx;
+						let dy = mouse.tileY - offy;
+						tool.extra.start = [s[0] + dx, s[1] + dy];
+						tool.extra.end = [e[0] + dx, e[1] + dy];
 					});
-					const finish = () => {
-						tool.setEvent('mousemove mouseup deselect', null);
-						tool.extra.clicking = false;
-						let s = tool.extra.start;
-						let e = tool.extra.end;
-						if (e) {
-							if (s[0] === e[0] || s[1] === e[1]) {
-								tool.extra.start = null;
-								tool.extra.end = null;
-							}
-							if (s[0] > e[0]) {
-								let tmp = e[0];
-								e[0] = s[0];
-								s[0] = tmp;
-							}
-							if (s[1] > e[1]) {
-								let tmp = e[1];
-								e[1] = s[1];
-								s[1] = tmp;
-							}
-						}
-						renderer.render(renderer.rendertype.FX);
+					const end = () => {
+						tool.setEvent('mouseup deselect mousemove', null);
 					};
-					tool.setEvent('deselect', finish);
+					tool.setEvent('deselect', end);
 					tool.setEvent('mouseup', (mouse, event) => {
 						if (!(mouse.buttons & 1)) {
-							finish();
+							end();
 						}
 					});
-				} else if (mouse.buttons === 1 && tool.extra.end) {
-					if (isInside()) {
-						let offx = mouse.tileX;
-						let offy = mouse.tileY;
-						tool.setEvent('mousemove', (mouse, event) => {
-							let dx = mouse.tileX - offx;
-							let dy = mouse.tileY - offy;
-							tool.extra.start = [s[0] + dx, s[1] + dy];
-							tool.extra.end = [e[0] + dx, e[1] + dy];
-						});
-						const end = () => {
-							tool.setEvent('mouseup deselect mousemove', null);
-						};
-						tool.setEvent('deselect', end);
-						tool.setEvent('mouseup', (mouse, event) => {
-							if (!(mouse.buttons & 1)) {
-								end();
-							}
-						});
-					} else {
-						tool.extra.start = null;
-						tool.extra.end = null;
-					}
-				} else if (mouse.buttons === 2 && tool.extra.end && isInside()) {
+				} else {
 					tool.extra.start = null;
 					tool.extra.end = null;
-					let cvs = dlarea(s[0], s[1], e[0] - s[0], e[1] - s[1], b => {
-						let url = URL.createObjectURL(b);
-						let img = new Image();
-						img.onload = () => {
-							windowSys.addWindow(new GUIWindow("Resulting image", {
-								centerOnce: true,
-								closeable: true
-							}, function (win) {
-								let props = ['width', 'height'];
-								if (img.width > img.height) {
-									props.reverse();
-								}
-								let r = img[props[0]] / img[props[1]];
-								let shownSize = img[props[1]] >= 128 ? 256 : 128;
-								img[props[0]] = r * shownSize;
-								img[props[1]] = shownSize;
-								win.container.classList.add('centeredChilds')
-								let image = win.addObj(img);
-								setTooltip(img, "Right click to copy/save!");
-								/*let okButton = win.addObj(mkHTML("button", {
-									innerHTML: "OK",
-									style: "display: block; width: 80px; height: 30px; margin: auto;",
-									onclick: function() {
-										img.remove();
-										URL.revokeObjectURL(url);
-										win.getWindow().close();
-									}
-								}));*/
-							}));
-						};
-						img.src = url;
-					});
 				}
-			});
-		}
-	));
+			} else if (mouse.buttons === 2 && tool.extra.end && isInside()) {
+				tool.extra.start = null;
+				tool.extra.end = null;
+				let cvs = dlarea(s[0], s[1], e[0] - s[0], e[1] - s[1], b => {
+					let url = URL.createObjectURL(b);
+					let img = new Image();
+					img.onload = () => {
+						windowSys.addWindow(new GUIWindow("Resulting image", {
+							centerOnce: true,
+							closeable: true
+						}, function (win) {
+							let props = ['width', 'height'];
+							if (img.width > img.height) {
+								props.reverse();
+							}
+							let r = img[props[0]] / img[props[1]];
+							let shownSize = img[props[1]] >= 128 ? 256 : 128;
+							img[props[0]] = r * shownSize;
+							img[props[1]] = shownSize;
+							win.container.classList.add('centeredChilds')
+							let image = win.addObj(img);
+							setTooltip(img, "Right click to copy/save!");
+							/*let okButton = win.addObj(mkHTML("button", {
+								innerHTML: "OK",
+								style: "display: block; width: 80px; height: 30px; margin: auto;",
+								onclick: function() {
+									img.remove();
+									URL.revokeObjectURL(url);
+									win.getWindow().close();
+								}
+							}));*/
+						}));
+					};
+					img.src = url;
+				});
+			}
+		});
+	}));
 
 	// Fill tool
 	addTool(new Tool('Fill', cursors.fill, PLAYERFX.NONE, RANK.USER, tool => {
@@ -1242,367 +1218,365 @@ eventSys.once(e.misc.toolsRendered, () => {
 		});
 	}));
 
-	addTool(new Tool('Area Protect', cursors.selectprotect, PLAYERFX.NONE, RANK.MODERATOR,
-		tool => {
-			tool.setFxRenderer((fx, ctx, time) => {
-				if (!fx.extra.isLocalPlayer) return 1;
-				let x = fx.extra.player.x;
-				let y = fx.extra.player.y;
-				let fxx = (Math.round(x / 256) * protocol.chunkSize - camera.x) * camera.zoom;
-				let fxy = (Math.round(y / 256) * protocol.chunkSize - camera.y) * camera.zoom;
-				let oldlinew = ctx.lineWidth;
-				ctx.lineWidth = 1;
-				if (tool.extra.end) {
-					let s = tool.extra.start;
-					let e = tool.extra.end;
-					let x = (s[0] * protocol.chunkSize - camera.x) * camera.zoom + 0.5;
-					let y = (s[1] * protocol.chunkSize - camera.y) * camera.zoom + 0.5;
-					let rw = (e[0] - s[0]);
-					let rh = (e[1] - s[1]);
-					let w = rw * camera.zoom * protocol.chunkSize;
-					let h = rh * camera.zoom * protocol.chunkSize;
-					ctx.beginPath();
-					ctx.rect(x, y, w, h);
-					ctx.globalAlpha = 1;
-					ctx.strokeStyle = "#FFFFFF";
-					ctx.stroke();
-					ctx.setLineDash([3, 4]);
-					ctx.strokeStyle = "#000000";
-					ctx.stroke();
-					if (tool.extra.isSure) {
-						ctx.globalAlpha = 0.6;
-						ctx.fillStyle = "#00EE00";
-						ctx.fill();
-					}
-					ctx.globalAlpha = 0.25 + Math.sin(time / 500) / 4;
-					ctx.fillStyle = renderer.patterns.unloaded;
-					ctx.fill();
-					ctx.setLineDash([]);
-					let oldfont = ctx.font;
-					ctx.font = "16px sans-serif";
-					let txt = `${tool.extra.isSure ? "Click again to confirm. " : (!tool.extra.clicking ? "Left/Right click to add/remove protection, respectively. " : "")}(${Math.abs(rw)}x${Math.abs(rh)})`;
-					let txtx = window.innerWidth >> 1;
-					let txty = window.innerHeight >> 1;
-					txtx = Math.max(x, Math.min(txtx, x + w));
-					txty = Math.max(y, Math.min(txty, y + h));
-
-					drawText(ctx, txt, txtx, txty, true);
-					ctx.font = oldfont;
-					ctx.lineWidth = oldlinew;
-					return 0;
-				} else {
-					ctx.beginPath();
-					ctx.moveTo(0, fxy + 0.5);
-					ctx.lineTo(window.innerWidth, fxy + 0.5);
-					ctx.moveTo(fxx + 0.5, 0);
-					ctx.lineTo(fxx + 0.5, window.innerHeight);
-
-					//ctx.lineWidth = 1;
-					ctx.globalAlpha = 1;
-					ctx.strokeStyle = "#FFFFFF";
-					ctx.stroke();
-					ctx.setLineDash([3]);
-					ctx.strokeStyle = "#000000";
-					ctx.stroke();
-
-					ctx.setLineDash([]);
-					ctx.lineWidth = oldlinew;
-					return 1;
-				}
-			});
-
-			tool.extra.start = null;
-			tool.extra.end = null;
-			tool.extra.clicking = false;
-			tool.extra.isSure = false;
-
-			let timeout = null;
-
-			const sure = () => {
-				if (tool.extra.isSure) {
-					clearTimeout(timeout);
-					timeout = null;
-					tool.extra.isSure = false;
-					return true;
-				}
-				tool.extra.isSure = true;
-				setTimeout(() => {
-					tool.extra.isSure = false;
-					timeout = null;
-				}, 1000);
-				return false;
-			};
-
-			tool.setEvent('mousedown', (mouse, event) => {
-				let get = {
-					rx() { return mouse.tileX / protocol.chunkSize; },
-					ry() { return mouse.tileY / protocol.chunkSize; },
-					x() { return Math.round(mouse.tileX / protocol.chunkSize); },
-					y() { return Math.round(mouse.tileY / protocol.chunkSize); }
-				};
+	addTool(new Tool('Area Protect', cursors.selectprotect, PLAYERFX.NONE, RANK.MODERATOR, tool => {
+		tool.setFxRenderer((fx, ctx, time) => {
+			if (!fx.extra.isLocalPlayer) return 1;
+			let x = fx.extra.player.x;
+			let y = fx.extra.player.y;
+			let fxx = (Math.round(x / 256) * protocol.chunkSize - camera.x) * camera.zoom;
+			let fxy = (Math.round(y / 256) * protocol.chunkSize - camera.y) * camera.zoom;
+			let oldlinew = ctx.lineWidth;
+			ctx.lineWidth = 1;
+			if (tool.extra.end) {
 				let s = tool.extra.start;
 				let e = tool.extra.end;
-				const isInside = () => get.rx() >= s[0] && get.rx() < e[0] && get.ry() >= s[1] && get.ry() < e[1];
-				const isChunkSolid = chunk => {
-					let lastClr = chunk.get(0, 0);
-					return chunk.forEach((x, y, clr) => clr === lastClr);
-				};
+				let x = (s[0] * protocol.chunkSize - camera.x) * camera.zoom + 0.5;
+				let y = (s[1] * protocol.chunkSize - camera.y) * camera.zoom + 0.5;
+				let rw = (e[0] - s[0]);
+				let rh = (e[1] - s[1]);
+				let w = rw * camera.zoom * protocol.chunkSize;
+				let h = rh * camera.zoom * protocol.chunkSize;
+				ctx.beginPath();
+				ctx.rect(x, y, w, h);
+				ctx.globalAlpha = 1;
+				ctx.strokeStyle = "#FFFFFF";
+				ctx.stroke();
+				ctx.setLineDash([3, 4]);
+				ctx.strokeStyle = "#000000";
+				ctx.stroke();
+				if (tool.extra.isSure) {
+					ctx.globalAlpha = 0.6;
+					ctx.fillStyle = "#00EE00";
+					ctx.fill();
+				}
+				ctx.globalAlpha = 0.25 + Math.sin(time / 500) / 4;
+				ctx.fillStyle = renderer.patterns.unloaded;
+				ctx.fill();
+				ctx.setLineDash([]);
+				let oldfont = ctx.font;
+				ctx.font = "16px sans-serif";
+				let txt = `${tool.extra.isSure ? "Click again to confirm. " : (!tool.extra.clicking ? "Left/Right click to add/remove protection, respectively. " : "")}(${Math.abs(rw)}x${Math.abs(rh)})`;
+				let txtx = window.innerWidth >> 1;
+				let txty = window.innerHeight >> 1;
+				txtx = Math.max(x, Math.min(txtx, x + w));
+				txty = Math.max(y, Math.min(txty, y + h));
 
-				if (mouse.buttons === 1 && !tool.extra.end) {
-					tool.extra.start = [get.x(), get.y()];
-					tool.extra.clicking = true;
-					tool.setEvent('mousemove', (mouse, event) => {
-						if (tool.extra.start && mouse.buttons === 1) {
-							tool.extra.end = [get.x(), get.y()];
-							return 1;
-						}
-					});
-					const finish = () => {
-						tool.setEvent('mousemove mouseup deselect', null);
-						tool.extra.clicking = false;
-						let s = tool.extra.start;
-						let e = tool.extra.end;
-						if (e) {
-							if (s[0] === e[0] || s[1] === e[1]) {
-								tool.extra.start = null;
-								tool.extra.end = null;
-							}
-							if (s[0] > e[0]) {
-								let tmp = e[0];
-								e[0] = s[0];
-								s[0] = tmp;
-							}
-							if (s[1] > e[1]) {
-								let tmp = e[1];
-								e[1] = s[1];
-								s[1] = tmp;
-							}
-						}
-						renderer.render(renderer.rendertype.FX);
-					};
-					tool.setEvent('deselect', finish);
-					tool.setEvent('mouseup', (mouse, event) => {
-						if (!(mouse.buttons & 1)) {
-							finish();
-						}
-					});
-				} else if (mouse.buttons === 1 && tool.extra.end) {
-					if (isInside() && sure()) {
-						tool.extra.start = null;
-						tool.extra.end = null;
-						let [x, y, w, h] = [s[0], s[1], e[0] - s[0], e[1] - s[1]];
-						for (let i = x; i < x + w; i++) {
-							for (let j = y; j < y + h; j++) {
-								let chunk = misc.world.getChunkAt(i, j);
-								if (chunk && !chunk.locked) {
-									if (keysDown[17] && isChunkSolid(chunk)) {
-										continue;
-									}
-									net.protocol.protectChunk(i, j, 1);
-								}
-							}
-						}
-					} else if (!isInside()) {
-						tool.extra.start = null;
-						tool.extra.end = null;
+				drawText(ctx, txt, txtx, txty, true);
+				ctx.font = oldfont;
+				ctx.lineWidth = oldlinew;
+				return 0;
+			} else {
+				ctx.beginPath();
+				ctx.moveTo(0, fxy + 0.5);
+				ctx.lineTo(window.innerWidth, fxy + 0.5);
+				ctx.moveTo(fxx + 0.5, 0);
+				ctx.lineTo(fxx + 0.5, window.innerHeight);
+
+				//ctx.lineWidth = 1;
+				ctx.globalAlpha = 1;
+				ctx.strokeStyle = "#FFFFFF";
+				ctx.stroke();
+				ctx.setLineDash([3]);
+				ctx.strokeStyle = "#000000";
+				ctx.stroke();
+
+				ctx.setLineDash([]);
+				ctx.lineWidth = oldlinew;
+				return 1;
+			}
+		});
+
+		tool.extra.start = null;
+		tool.extra.end = null;
+		tool.extra.clicking = false;
+		tool.extra.isSure = false;
+
+		let timeout = null;
+
+		const sure = () => {
+			if (tool.extra.isSure) {
+				clearTimeout(timeout);
+				timeout = null;
+				tool.extra.isSure = false;
+				return true;
+			}
+			tool.extra.isSure = true;
+			setTimeout(() => {
+				tool.extra.isSure = false;
+				timeout = null;
+			}, 1000);
+			return false;
+		};
+
+		tool.setEvent('mousedown', (mouse, event) => {
+			let get = {
+				rx() { return mouse.tileX / protocol.chunkSize; },
+				ry() { return mouse.tileY / protocol.chunkSize; },
+				x() { return Math.round(mouse.tileX / protocol.chunkSize); },
+				y() { return Math.round(mouse.tileY / protocol.chunkSize); }
+			};
+			let s = tool.extra.start;
+			let e = tool.extra.end;
+			const isInside = () => get.rx() >= s[0] && get.rx() < e[0] && get.ry() >= s[1] && get.ry() < e[1];
+			const isChunkSolid = chunk => {
+				let lastClr = chunk.get(0, 0);
+				return chunk.forEach((x, y, clr) => clr === lastClr);
+			};
+
+			if (mouse.buttons === 1 && !tool.extra.end) {
+				tool.extra.start = [get.x(), get.y()];
+				tool.extra.clicking = true;
+				tool.setEvent('mousemove', (mouse, event) => {
+					if (tool.extra.start && mouse.buttons === 1) {
+						tool.extra.end = [get.x(), get.y()];
+						return 1;
 					}
-				} else if (mouse.buttons === 2 && tool.extra.end && isInside() && sure()) {
+				});
+				const finish = () => {
+					tool.setEvent('mousemove mouseup deselect', null);
+					tool.extra.clicking = false;
+					let s = tool.extra.start;
+					let e = tool.extra.end;
+					if (e) {
+						if (s[0] === e[0] || s[1] === e[1]) {
+							tool.extra.start = null;
+							tool.extra.end = null;
+						}
+						if (s[0] > e[0]) {
+							let tmp = e[0];
+							e[0] = s[0];
+							s[0] = tmp;
+						}
+						if (s[1] > e[1]) {
+							let tmp = e[1];
+							e[1] = s[1];
+							s[1] = tmp;
+						}
+					}
+					renderer.render(renderer.rendertype.FX);
+				};
+				tool.setEvent('deselect', finish);
+				tool.setEvent('mouseup', (mouse, event) => {
+					if (!(mouse.buttons & 1)) {
+						finish();
+					}
+				});
+			} else if (mouse.buttons === 1 && tool.extra.end) {
+				if (isInside() && sure()) {
 					tool.extra.start = null;
 					tool.extra.end = null;
 					let [x, y, w, h] = [s[0], s[1], e[0] - s[0], e[1] - s[1]];
 					for (let i = x; i < x + w; i++) {
 						for (let j = y; j < y + h; j++) {
 							let chunk = misc.world.getChunkAt(i, j);
-							if (chunk && chunk.locked) {
-								if (keysDown[17] && !isChunkSolid(chunk)) {
+							if (chunk && !chunk.locked) {
+								if (keysDown[17] && isChunkSolid(chunk)) {
 									continue;
 								}
-								net.protocol.protectChunk(i, j, 0);
+								net.protocol.protectChunk(i, j, 1);
 							}
 						}
 					}
+				} else if (!isInside()) {
+					tool.extra.start = null;
+					tool.extra.end = null;
 				}
-			});
-		}
-	));
-
-	/*addTool(new Tool('Area Delete', cursors.selectprotect, PLAYERFX.NONE, RANK.MODERATOR,
-		tool => {
-			tool.setFxRenderer((fx, ctx, time) => {
-				if (!fx.extra.isLocalPlayer) return 1;
-				let x = fx.extra.player.x;
-				let y = fx.extra.player.y;
-				let fxx = (Math.round(x / 256) * protocol.chunkSize - camera.x) * camera.zoom;
-				let fxy = (Math.round(y / 256) * protocol.chunkSize - camera.y) * camera.zoom;
-				let oldlinew = ctx.lineWidth;
-				ctx.lineWidth = 1;
-				if (tool.extra.end) {
-					let s = tool.extra.start;
-					let e = tool.extra.end;
-					let x = (s[0] * protocol.chunkSize - camera.x) * camera.zoom + 0.5;
-					let y = (s[1] * protocol.chunkSize - camera.y) * camera.zoom + 0.5;
-					let rw = (e[0] - s[0]);
-					let rh = (e[1] - s[1]);
-					let w = rw * camera.zoom * protocol.chunkSize;
-					let h = rh * camera.zoom * protocol.chunkSize;
-					ctx.beginPath();
-					ctx.rect(x, y, w, h);
-					ctx.globalAlpha = 1;
-					ctx.strokeStyle = "#FFFFFF";
-					ctx.stroke();
-					ctx.setLineDash([3, 4]);
-					ctx.strokeStyle = "#000000";
-					ctx.stroke();
-					if (tool.extra.isSure) {
-						ctx.globalAlpha = 0.6;
-						ctx.fillStyle = "#00EE00";
-						ctx.fill();
+			} else if (mouse.buttons === 2 && tool.extra.end && isInside() && sure()) {
+				tool.extra.start = null;
+				tool.extra.end = null;
+				let [x, y, w, h] = [s[0], s[1], e[0] - s[0], e[1] - s[1]];
+				for (let i = x; i < x + w; i++) {
+					for (let j = y; j < y + h; j++) {
+						let chunk = misc.world.getChunkAt(i, j);
+						if (chunk && chunk.locked) {
+							if (keysDown[17] && !isChunkSolid(chunk)) {
+								continue;
+							}
+							net.protocol.protectChunk(i, j, 0);
+						}
 					}
-					ctx.globalAlpha = 0.25 + Math.sin(time / 500) / 4;
-					ctx.fillStyle = renderer.patterns.unloaded;
-					ctx.fill();
-					ctx.setLineDash([]);
-					let oldfont = ctx.font;
-					ctx.font = "16px sans-serif";
-					let txt = `${tool.extra.isSure ? "Click again to confirm. " : (!tool.extra.clicking ? "Double click to delete. " : "")}(${Math.abs(rw)}x${Math.abs(rh)})`;
-					let txtx = window.innerWidth >> 1;
-					let txty = window.innerHeight >> 1;
-					txtx = Math.max(x, Math.min(txtx, x + w));
-					txty = Math.max(y, Math.min(txty, y + h));
-
-					drawText(ctx, txt, txtx, txty, true);
-					ctx.font = oldfont;
-					ctx.lineWidth = oldlinew;
-					return 0;
-				} else {
-					ctx.beginPath();
-					ctx.moveTo(0, fxy + 0.5);
-					ctx.lineTo(window.innerWidth, fxy + 0.5);
-					ctx.moveTo(fxx + 0.5, 0);
-					ctx.lineTo(fxx + 0.5, window.innerHeight);
-
-					//ctx.lineWidth = 1;
-					ctx.globalAlpha = 1;
-					ctx.strokeStyle = "#FFFFFF";
-					ctx.stroke();
-					ctx.setLineDash([3]);
-					ctx.strokeStyle = "#000000";
-					ctx.stroke();
-
-					ctx.setLineDash([]);
-					ctx.lineWidth = oldlinew;
-					return 1;
 				}
-			});
+			}
+		});
+	}));
 
-			tool.extra.start = null;
-			tool.extra.end = null;
-			tool.extra.clicking = false;
-			tool.extra.isSure = false;
-
-			let timeout = null;
-
-			const sure = () => {
-				if (tool.extra.isSure) {
-					clearTimeout(timeout);
-					timeout = null;
-					tool.extra.isSure = false;
-					return true;
-				}
-				tool.extra.isSure = true;
-				setTimeout(() => {
-					tool.extra.isSure = false;
-					timeout = null;
-				}, 1000);
-				return false;
-			};
-
-			tool.setEvent('mousedown', (mouse, event) => {
-				let get = {
-					rx() { return mouse.tileX / protocol.chunkSize; },
-					ry() { return mouse.tileY / protocol.chunkSize; },
-					x() { return Math.round(mouse.tileX / protocol.chunkSize); },
-					y() { return Math.round(mouse.tileY / protocol.chunkSize); }
-				};
+	/*addTool(new Tool('Area Delete', cursors.selectprotect, PLAYERFX.NONE, RANK.MODERATOR, tool => {
+		tool.setFxRenderer((fx, ctx, time) => {
+			if (!fx.extra.isLocalPlayer) return 1;
+			let x = fx.extra.player.x;
+			let y = fx.extra.player.y;
+			let fxx = (Math.round(x / 256) * protocol.chunkSize - camera.x) * camera.zoom;
+			let fxy = (Math.round(y / 256) * protocol.chunkSize - camera.y) * camera.zoom;
+			let oldlinew = ctx.lineWidth;
+			ctx.lineWidth = 1;
+			if (tool.extra.end) {
 				let s = tool.extra.start;
 				let e = tool.extra.end;
-				const isInside = () => get.rx() >= s[0] && get.rx() < e[0] && get.ry() >= s[1] && get.ry() < e[1];
-				if (mouse.buttons === 1 && !tool.extra.end) {
-					tool.extra.start = [get.x(), get.y()];
-					tool.extra.clicking = true;
-					tool.setEvent('mousemove', (mouse, event) => {
-						if (tool.extra.start && mouse.buttons === 1) {
-							tool.extra.end = [get.x(), get.y()];
-							return 1;
-						}
-					});
-					const finish = () => {
-						tool.setEvent('mousemove mouseup deselect', null);
-						tool.extra.clicking = false;
-						let s = tool.extra.start;
-						let e = tool.extra.end;
-						if (e) {
-							if (s[0] === e[0] || s[1] === e[1]) {
-								tool.extra.start = null;
-								tool.extra.end = null;
-							}
-							if (s[0] > e[0]) {
-								let tmp = e[0];
-								e[0] = s[0];
-								s[0] = tmp;
-							}
-							if (s[1] > e[1]) {
-								let tmp = e[1];
-								e[1] = s[1];
-								s[1] = tmp;
-							}
-						}
-						renderer.render(renderer.rendertype.FX);
-					};
-					tool.setEvent('deselect', finish);
-					tool.setEvent('mouseup', (mouse, event) => {
-						if (!(mouse.buttons & 1)) {
-							finish();
-						}
-					});
-				} else if (mouse.buttons === 1 && tool.extra.end) {
-					if (isInside() && sure()) {
-						tool.extra.start = null;
-						tool.extra.end = null;
-						let [x, y, w, h] = [s[0], s[1], e[0] - s[0], e[1] - s[1]];
-						for (let i = x; i < x + w; i++) {
-							for (let j = y; j < y + h; j++) {
-								let chunk = misc.world.getChunkAt(i, j);
-								if (chunk && !chunk.locked) {
-									net.protocol.clearChunk(i, j, [255, 255, 255]);
-								}
-							}
-						}
-					} else if (!isInside()) {
-						tool.extra.start = null;
-						tool.extra.end = null;
+				let x = (s[0] * protocol.chunkSize - camera.x) * camera.zoom + 0.5;
+				let y = (s[1] * protocol.chunkSize - camera.y) * camera.zoom + 0.5;
+				let rw = (e[0] - s[0]);
+				let rh = (e[1] - s[1]);
+				let w = rw * camera.zoom * protocol.chunkSize;
+				let h = rh * camera.zoom * protocol.chunkSize;
+				ctx.beginPath();
+				ctx.rect(x, y, w, h);
+				ctx.globalAlpha = 1;
+				ctx.strokeStyle = "#FFFFFF";
+				ctx.stroke();
+				ctx.setLineDash([3, 4]);
+				ctx.strokeStyle = "#000000";
+				ctx.stroke();
+				if (tool.extra.isSure) {
+					ctx.globalAlpha = 0.6;
+					ctx.fillStyle = "#00EE00";
+					ctx.fill();
+				}
+				ctx.globalAlpha = 0.25 + Math.sin(time / 500) / 4;
+				ctx.fillStyle = renderer.patterns.unloaded;
+				ctx.fill();
+				ctx.setLineDash([]);
+				let oldfont = ctx.font;
+				ctx.font = "16px sans-serif";
+				let txt = `${tool.extra.isSure ? "Click again to confirm. " : (!tool.extra.clicking ? "Double click to delete. " : "")}(${Math.abs(rw)}x${Math.abs(rh)})`;
+				let txtx = window.innerWidth >> 1;
+				let txty = window.innerHeight >> 1;
+				txtx = Math.max(x, Math.min(txtx, x + w));
+				txty = Math.max(y, Math.min(txty, y + h));
+
+				drawText(ctx, txt, txtx, txty, true);
+				ctx.font = oldfont;
+				ctx.lineWidth = oldlinew;
+				return 0;
+			} else {
+				ctx.beginPath();
+				ctx.moveTo(0, fxy + 0.5);
+				ctx.lineTo(window.innerWidth, fxy + 0.5);
+				ctx.moveTo(fxx + 0.5, 0);
+				ctx.lineTo(fxx + 0.5, window.innerHeight);
+
+				//ctx.lineWidth = 1;
+				ctx.globalAlpha = 1;
+				ctx.strokeStyle = "#FFFFFF";
+				ctx.stroke();
+				ctx.setLineDash([3]);
+				ctx.strokeStyle = "#000000";
+				ctx.stroke();
+
+				ctx.setLineDash([]);
+				ctx.lineWidth = oldlinew;
+				return 1;
+			}
+		});
+
+		tool.extra.start = null;
+		tool.extra.end = null;
+		tool.extra.clicking = false;
+		tool.extra.isSure = false;
+
+		let timeout = null;
+
+		const sure = () => {
+			if (tool.extra.isSure) {
+				clearTimeout(timeout);
+				timeout = null;
+				tool.extra.isSure = false;
+				return true;
+			}
+			tool.extra.isSure = true;
+			setTimeout(() => {
+				tool.extra.isSure = false;
+				timeout = null;
+			}, 1000);
+			return false;
+		};
+
+		tool.setEvent('mousedown', (mouse, event) => {
+			let get = {
+				rx() { return mouse.tileX / protocol.chunkSize; },
+				ry() { return mouse.tileY / protocol.chunkSize; },
+				x() { return Math.round(mouse.tileX / protocol.chunkSize); },
+				y() { return Math.round(mouse.tileY / protocol.chunkSize); }
+			};
+			let s = tool.extra.start;
+			let e = tool.extra.end;
+			const isInside = () => get.rx() >= s[0] && get.rx() < e[0] && get.ry() >= s[1] && get.ry() < e[1];
+			if (mouse.buttons === 1 && !tool.extra.end) {
+				tool.extra.start = [get.x(), get.y()];
+				tool.extra.clicking = true;
+				tool.setEvent('mousemove', (mouse, event) => {
+					if (tool.extra.start && mouse.buttons === 1) {
+						tool.extra.end = [get.x(), get.y()];
+						return 1;
 					}
-				} else if (mouse.buttons === 2 && tool.extra.end && isInside() && sure()) {
+				});
+				const finish = () => {
+					tool.setEvent('mousemove mouseup deselect', null);
+					tool.extra.clicking = false;
+					let s = tool.extra.start;
+					let e = tool.extra.end;
+					if (e) {
+						if (s[0] === e[0] || s[1] === e[1]) {
+							tool.extra.start = null;
+							tool.extra.end = null;
+						}
+						if (s[0] > e[0]) {
+							let tmp = e[0];
+							e[0] = s[0];
+							s[0] = tmp;
+						}
+						if (s[1] > e[1]) {
+							let tmp = e[1];
+							e[1] = s[1];
+							s[1] = tmp;
+						}
+					}
+					renderer.render(renderer.rendertype.FX);
+				};
+				tool.setEvent('deselect', finish);
+				tool.setEvent('mouseup', (mouse, event) => {
+					if (!(mouse.buttons & 1)) {
+						finish();
+					}
+				});
+			} else if (mouse.buttons === 1 && tool.extra.end) {
+				if (isInside() && sure()) {
 					tool.extra.start = null;
 					tool.extra.end = null;
 					let [x, y, w, h] = [s[0], s[1], e[0] - s[0], e[1] - s[1]];
 					for (let i = x; i < x + w; i++) {
 						for (let j = y; j < y + h; j++) {
 							let chunk = misc.world.getChunkAt(i, j);
-							if (chunk && chunk.locked) {
+							if (chunk && !chunk.locked) {
 								net.protocol.clearChunk(i, j, [255, 255, 255]);
 							}
 						}
 					}
+				} else if (!isInside()) {
+					tool.extra.start = null;
+					tool.extra.end = null;
 				}
-			});
-		}
-	));*/
+			} else if (mouse.buttons === 2 && tool.extra.end && isInside() && sure()) {
+				tool.extra.start = null;
+				tool.extra.end = null;
+				let [x, y, w, h] = [s[0], s[1], e[0] - s[0], e[1] - s[1]];
+				for (let i = x; i < x + w; i++) {
+					for (let j = y; j < y + h; j++) {
+						let chunk = misc.world.getChunkAt(i, j);
+						if (chunk && chunk.locked) {
+							net.protocol.clearChunk(i, j, [255, 255, 255]);
+						}
+					}
+				}
+			}
+		});
+	}));*/
 
 	addTool(new Tool('Paste', cursors.paste, PLAYERFX.NONE, RANK.MODERATOR, tool => {
 		tool.extra.sendQueue = [];
+		tool.extra.canvas = undefined;
 
 		tool.setFxRenderer((fx, ctx, time) => {
+			if (!fx.extra.isLocalPlayer) return 0;
 			let z = camera.zoom;
 			let x = fx.extra.player.x;
 			let y = fx.extra.player.y;
@@ -1622,7 +1596,8 @@ eventSys.once(e.misc.toolsRendered, () => {
 				return 0;
 			}
 
-			if (tool.extra.canvas && fx.extra.isLocalPlayer) {
+
+			if (tool.extra.canvas) {
 				ctx.globalAlpha = 0.5 + Math.sin(time / 500) / 4;
 				ctx.strokeStyle = "#000000";
 				ctx.scale(z, z);
@@ -1638,7 +1613,7 @@ eventSys.once(e.misc.toolsRendered, () => {
 			let tmpBuffer = new Uint32Array(protocol.chunkSize * protocol.chunkSize);
 			let ctx = tool.extra.canvas.getContext("2d");
 			let dat = ctx.getImageData(0, 0, tool.extra.canvas.width, tool.extra.canvas.height);
-			let u32dat = new Uint32Array(dat.data.buffer);
+			let u32dat = new Uint32Array(tool.extra.buffer);
 			let totalChunksW = Math.ceil((absMod(tileX, protocol.chunkSize) + dat.width) / protocol.chunkSize);
 			let totalChunksH = Math.ceil((absMod(tileY, protocol.chunkSize) + dat.height) / protocol.chunkSize);
 			const getModifiedPixel = (x, y) => {
@@ -1910,24 +1885,50 @@ eventSys.once(e.misc.toolsRendered, () => {
 				let y = s[1];
 				let w = e[0] - s[0];
 				let h = e[1] - s[1];
+				let buffer = new ArrayBuffer(w * h * 4);
+				let dv = new DataView(buffer);
 				let c = document.createElement('canvas');
 				c.width = w;
 				c.height = h;
 				let ctx = c.getContext('2d');
 				let d = ctx.createImageData(w, h);
-				for (let i = y; i < y + h; i++) {
-					for (let j = x; j < x + w; j++) {
-						let pix = misc.world.getPixel(j, i);
-						if (!pix) continue;
-						d.data[4 * ((i - y) * w + (j - x))] = pix[0];
-						d.data[4 * ((i - y) * w + (j - x)) + 1] = pix[1];
-						d.data[4 * ((i - y) * w + (j - x)) + 2] = pix[2];
-						d.data[4 * ((i - y) * w + (j - x)) + 3] = 255;
+				let index = 0;
+				for (let j = y; j < y + h; j++) {
+					for (let i = x; i < x + w; i++) {
+						let pix = misc.world.getPixel(i, j);
+						if (!pix) {
+							dv.setUint8(index, 255);
+							d.data[index] = 255;
+							index++;
+							dv.setUint8(index, 255);
+							d.data[index] = 255;
+							index++;
+							dv.setUint8(index, 255);
+							d.data[index] = 255;
+							index++;
+							dv.setUint8(index, 255);
+							d.data[index] = 255;
+							index++;
+						} else {
+							dv.setUint8(index, pix[0]);
+							d.data[index] = pix[0];
+							index++;
+							dv.setUint8(index, pix[1]);
+							d.data[index] = pix[1];
+							index++;
+							dv.setUint8(index, pix[2]);
+							d.data[index] = pix[2];
+							index++;
+							dv.setUint8(index, 255);
+							d.data[index] = 255;
+							index++;
+						}
 					}
 				}
 				ctx.putImageData(d, 0, 0);
 				let paste = tools.paste;
 				paste.extra.canvas = c;
+				paste.extra.buffer = buffer;
 				let oldSelect = paste.events.select;
 				paste.events.select = function () {
 					paste.events.select = oldSelect;
@@ -1936,11 +1937,28 @@ eventSys.once(e.misc.toolsRendered, () => {
 			}
 		});
 	}));
+}
 
-	eventSys.emit(e.misc.toolsInitialized);
-});
+let windowShown = false;
 
-eventSys.once(e.init, () => {
+export function toolsInit() {
+	load_tool_icons(() => {
+		addDefaultTools();
+		updateToolbar();
+		if (windowShown) windowSys.addWindow(toolsWindow);
+
+		(function () {
+			for (let toolName in tools) {
+				if (tools[toolName].rankRequired <= player.rank) {
+					player.tool = toolName;
+					return;
+				}
+			}
+			player.tool = null;
+		})();
+
+		eventSys.emit(e.misc.toolsInitialized);
+	});
 	toolsWindow = new GUIWindow('Tools', {}, wdow => {
 		wdow.container.id = "toole-container";
 		wdow.container.style.cssText = "max-width: 40px";
@@ -1948,20 +1966,15 @@ eventSys.once(e.init, () => {
 	toolOptsWindow = new GUIWindow('Tool Options', {}, w => {
 		w.container.id = 'tool-options-container';
 	});
-});
-
-eventSys.once(e.misc.toolsInitialized, () => {
-	updateToolbar();
-	if (windowShown) {
-		windowSys.addWindow(toolsWindow);
-	}
-});
+}
 
 eventSys.on(e.net.disconnected, () => {
-	showToolsWindow(false);
+	windowShown = false;
+	if (toolsWindow) windowSys.delWindow(toolsWindow);
 	showToolOpts(true);
 });
 
-eventSys.on(e.misc.worldInitialized, () => {
-	showToolsWindow(true);
+eventSys.on(e.net.world.join, () => {
+	windowShown = true;
+	if (toolsWindow) windowSys.addWindow(toolsWindow);
 });
