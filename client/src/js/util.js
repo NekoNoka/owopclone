@@ -22,10 +22,10 @@ export const colorUtils = {
 		return '#' + ('000000' + color).substring(color.length);
 	},
 	toBGRInt(c) {
-		return (c[2] << 16 & 16711680) | (c[1] << 8 & 65280) | (c[0] & 255);
+		return (c[2] << 16 & 0xFF0000) | (c[1] << 8 & 0xFF00) | (c[0] & 0xFF);
 	},
 	toInt(c) {
-		return (c[0] << 16 & 16711680) | (c[1] << 8 & 65280) | (c[2] & 255);
+		return (c[0] << 16 & 0xFF0000) | (c[1] << 8 & 0xFF00) | (c[2] & 0xFF);
 	},
 	fromInt(n) {
 		return [(n & 16711680) >> 16, (n & 65280) >> 8, n & 255];
@@ -44,31 +44,6 @@ export function getDefaultWorld() {
 let time = Date.now();
 export function getTime(update) {
 	return update ? (time = Date.now()) : time;
-}
-
-export function setCookie(name, value) {
-	document.cookie = `${name}=${value}; expires=Fri, 31 Dec 99999 23:59:59 GMT`;
-}
-
-export function getCookie(name) {
-	let cookie = document.cookie.split(';');
-	for (let i = 0; i < cookie.length; i++) {
-		let index = cookie[i].indexOf(name);
-		if (index === 0 || (index === 1 && cookie[i][0] === ' ')) {
-			let offset = index + name.length + 1;
-			return cookie[i].substring(offset, cookie[i].length);
-		}
-	}
-	return null;
-}
-
-export function cookiesEnabled() {
-	return navigator.cookieEnabled;
-}
-
-export function storageEnabled() {
-	try { return !!window.localStorage; }
-	catch (e) { return false };
 }
 
 export function propertyDefaults(obj, defaults) {
@@ -278,7 +253,6 @@ export function createContextMenu(x, y, buttons) {
 	document.body.appendChild(contextMenu);
 	shown = true;
 	let height = contextMenu.offsetHeight;
-	// console.log(height);
 	if (y + height > window.innerHeight - 20) {
 		contextMenu.style.top = (y - height) + "px";
 	} else {
@@ -320,7 +294,6 @@ export class Bucket {
 	canSpend(count) {
 		if (this.infinite) return true;
 		this.allowance += (Date.now() - this.lastCheck) / 1000 * (this.rate / this.time);
-		// console.log(this.allowance);
 		this.lastCheck = Date.now();
 		if (this.allowance > this.rate) this.allowance = this.rate;
 		if (this.allowance < count) return false;

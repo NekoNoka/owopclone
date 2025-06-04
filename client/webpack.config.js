@@ -2,10 +2,8 @@ const fs = require('fs-extra');
 const path = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-// const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 require('dotenv').config();
-/*const ExtractTextPlugin = require('extract-text-webpack-plugin');*/
 
 const srcDir = path.resolve(__dirname, 'src');
 
@@ -109,12 +107,6 @@ const config = {
 		// 	'process.env.IS_LOCALHOST': JSON.stringify(process.env.IS_LOCALHOST || false),
 		// 	'process.env.WS_PORT': JSON.stringify(process.env.WS_PORT || 8081),
 		// }),
-		/*new ScriptExtHtmlWebpackPlugin({
-			defaultAttribute: 'async'
-		}),
-		new ExtractTextPlugin({
-			filename: 'css/styles.css'
-		})*/
 	]
 };
 
@@ -126,7 +118,7 @@ module.exports = async env => {
 		config.output.publicPath = '/';
 	} else {
 		config.mode = "production";
-		config.output.filename = '[name].[hash].js';
+		config.output.filename = '[name].[contenthash].js';
 		console.log(`Cleaning build dir: '${config.output.path}'`);
 		await fs.remove(config.output.path);
 	}

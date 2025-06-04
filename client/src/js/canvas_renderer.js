@@ -1,18 +1,33 @@
 "use strict";
 
-import { EVENTS as e, protocol, options, elements, PublicAPI, activeFx, misc, cameraValues, camera } from "./conf.js";
+import { EVENTS as e, protocol, options, elements, PublicAPI, activeFx, misc } from "./conf.js";
 import { colorUtils as color, eventSys, getTime } from "./util.js";
 
-export function setZoom(z) {
-	z = Math.min(options.zoomLimitMax, Math.max(options.zoomLimitMin, z));
-	if (z !== cameraValues.zoom) {
+const cameraValues = {
+	x: 0,
+	y: 0,
+	zoom: -1
+};
+
+export const camera = {
+	get x() { return cameraValues.x; },
+	get y() { return cameraValues.y; },
+	get zoom() { return cameraValues.zoom; },
+	set zoom(z) {
+		z = Math.min(options.zoomLimitMax, Math.max(options.zoomLimitMin, z));
+		if (z === cameraValues.zoom) return;
 		let x = Math.round(cameraValues.x + window.innerWidth / camera.zoom / 2);
 		let y = Math.round(cameraValues.y + window.innerHeight / camera.zoom / 2);
 		cameraValues.zoom = z;
 		centerCameraTo(x, y);
 		eventSys.emit(e.camera.zoom, z);
-	}
-}
+	},
+	isVisible: isVisible,
+	centerCameraTo: centerCameraTo,
+	moveCameraBy: moveCameraBy,
+	moveCameraTo: moveCameraTo,
+	alignCamera: alignCamera,
+};
 
 const rendererValues = {
 	updateRequired: removeEventListener,
@@ -210,8 +225,7 @@ export function isVisible(x, y, w, h) {
 	let czoom = camera.zoom;
 	let cw = window.innerWidth;
 	let ch = window.innerHeight;
-	return x + w > cx && y + h > cy &&
-		x <= cx + cw / czoom && y <= cy + ch / czoom;
+	return x + w > cx && y + h > cy && x <= cx + cw / czoom && y <= cy + ch / czoom;
 }
 
 export function unloadFarClusters() { /* Slow? */
@@ -229,7 +243,6 @@ export function unloadFarClusters() { /* Slow? */
 			let dx = Math.abs(ctrx / s - c.x) | 0;
 			let dy = Math.abs(ctry / s - c.y) | 0;
 			let dist = dx + dy; /* no sqrt please */
-			//console.log(dist);
 			if (dist > options.unloadDistance) {
 				c.remove();
 			}
@@ -418,11 +431,12 @@ function setGridVisibility(enabled) {
 	requestRender(renderer.rendertype.FX);
 }
 
-function renderGrid(zoom) {
+function renderGrid(color, zoom) {
 	let tmpcanvas = document.createElement("canvas");
 	let ctx = tmpcanvas.getContext("2d");
 	let size = tmpcanvas.width = tmpcanvas.height = Math.round(16 * zoom);
 	ctx.setLineDash([1]);
+	ctx.strokeStyle = color;
 	ctx.globalAlpha = 0.2;
 	if (zoom >= 4) {
 		let fadeMult = Math.min(1, zoom - 4);
@@ -449,7 +463,8 @@ function renderGrid(zoom) {
 
 function setGridZoom(zoom) {
 	if (zoom >= rendererValues.minGridZoom) {
-		rendererValues.gridPattern = renderGrid(zoom);
+		rendererValues.gridPattern = renderGrid("#000000", zoom);
+		// rendererValues.gridPattern = () => { renderGrid("#FF0000", zoom); /* renderGrid("#FFFFFF", zoom); */ }
 	} else {
 		rendererValues.gridPattern = null;
 	}
@@ -494,26 +509,11 @@ function alignCamera() {
 	cameraValues.y = alignedY;
 }
 
-function requestMissingChunks() { /* TODO: move this to World */
-	let x = camera.x / protocol.chunkSize - 2 | 0;
-	let mx = camera.x / protocol.chunkSize + window.innerWidth / camera.zoom / protocol.chunkSize | 0;
-	let cy = camera.y / protocol.chunkSize - 2 | 0;
-	let my = camera.y / protocol.chunkSize + window.innerHeight / camera.zoom / protocol.chunkSize | 0;
-	while (++x <= mx) {
-		let y = cy;
-		while (++y <= my) {
-			misc.world.loadChunk(x, y);
-		}
-	}
-}
-
 function onCameraMove() {
 	eventSys.emit(e.camera.moved, camera);
 	alignCamera();
 	updateVisible();
-	if (misc.world !== null) {
-		requestMissingChunks();
-	}
+	if (misc.world !== null) misc.world.requestMissingChunks();
 	requestRender(renderer.rendertype.FX);
 }
 
@@ -587,7 +587,7 @@ eventSys.on(e.renderer.rmChunk, chunk => {
 	}
 });
 
-eventSys.on(e.renderer.updateChunk, chunk => {
+export function updateChunk(chunk) {
 	let clusterX = Math.floor(chunk.x / protocol.clusterChunkAmount);
 	let clusterY = Math.floor(chunk.y / protocol.clusterChunkAmount);
 	let key = `${clusterX},${clusterY}`;
@@ -600,17 +600,15 @@ eventSys.on(e.renderer.updateChunk, chunk => {
 	if (isVisible(chunk.x * size, chunk.y * size, size, size)) {
 		requestRender(renderer.rendertype.WORLD | renderer.rendertype.FX);
 	}
-});
+}
 
-eventSys.on(e.misc.worldInitialized, () => {
-	requestMissingChunks();
-});
+eventSys.on(e.renderer.updateChunk, updateChunk);
 
-eventSys.once(e.init, () => {
+export function canvas_rendererInit() {
 	rendererValues.animContext = elements.animCanvas.getContext("2d", { alpha: false });
 	window.addEventListener("resize", onResize);
 	onResize();
-	setZoom(options.defaultZoom);
+	camera.zoom = options.defaultZoom;
 	centerCameraTo(0, 0);
 
 	const mkPatternFromUrl = (url, cb) => {
@@ -644,8 +642,7 @@ eventSys.once(e.init, () => {
 		window.requestAnimationFrame(frameLoop);
 	}
 	eventSys.once(e.misc.toolsInitialized, frameLoop);
-});
+}
 
 PublicAPI.camera = camera;
-PublicAPI.cameraValues = cameraValues;
 PublicAPI.renderer = renderer;

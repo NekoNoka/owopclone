@@ -1,9 +1,9 @@
 "use strict";
 
-import { protocol, EVENTS as e, options, RANK, sounds, camera } from "./conf.js";
+import { protocol, EVENTS as e, options, RANK, soundSys } from "./conf.js";
 import { colorUtils, eventSys } from "./util.js";
 import { net } from "./networking.js";
-import { isVisible, renderer } from "./canvas_renderer.js";
+import { isVisible, renderer, camera } from "./canvas_renderer.js";
 import { player } from "./local_player.js";
 import { Player } from "./Player.js";
 import { Fx } from "./Fx.js";
@@ -127,6 +127,7 @@ export class World {
 		eventSys.on(e.net.world.playersLeft, destroyPlayerFunc);
 		eventSys.once(e.net.world.leave, leaveWFunc);
 		eventSys.once(e.net.disconnected, disconnectedFunc);
+		this.requestMissingChunks();
 	}
 
 	makeLockedChunksPath() {
@@ -234,10 +235,17 @@ export class World {
 		}, 100);
 	}
 
-	loadChunk(x, y) {
-		let key = `${x},${y}`;
-		if (!this.chunks[key] && net.isConnected()) {
-			net.protocol.requestChunk(x, y);
+	requestMissingChunks() {
+		let x = camera.x / protocol.chunkSize - 2 | 0;
+		let mx = camera.x / protocol.chunkSize + window.innerWidth / camera.zoom / protocol.chunkSize | 0;
+		let cy = camera.y / protocol.chunkSize - 2 | 0;
+		let my = camera.y / protocol.chunkSize + window.innerHeight / camera.zoom / protocol.chunkSize | 0;
+		while (++x <= mx) {
+			let y = cy;
+			while (++y <= my) {
+				let key = `${x},${y}`;
+				if (!this.chunks[key] && net.isConnected()) net.protocol.requestChunk(x, y);
+			}
 		}
 	}
 
@@ -254,7 +262,6 @@ export class World {
 			let chunk = this.chunks[key];
 			if (chunk) {
 				chunksUpdated[key] = chunk;
-				// console.log(t);
 				chunk.update(t.x, t.y, t.rgb);
 			}
 		}
@@ -264,7 +271,6 @@ export class World {
 	}
 
 	playersMoved(players) {
-		// console.log("moved");
 		let rendered = false;
 		for (const id in players) {
 			let player = this.players[id];
@@ -315,17 +321,17 @@ export class World {
 						rgb: colorUtils.toBGRInt(oldPixel),
 						id: player.id
 					}]);
-					eventSys.emit(e.renderer.updateChunk, chunk);
+					// eventSys.emit(e.renderer.updateChunk, chunk);
 				});
 				if (opcode !== 0) return opcode;
 			}
+			soundSys.place();
 			if (!noUndo) {
 				oldPixel.push(x, y, time);
 				this.undoHistory.push(oldPixel);
 			}
 			chunk.update(x, y, colorUtils.u24_888(color[0], color[1], color[2]));
-			eventSys.emit(e.renderer.updateChunk, chunk);
-			sounds.place();
+			// eventSys.emit(e.renderer.updateChunk, chunk);
 			return true;
 		} else if (chunk && chunk.locked) {
 			this.pathFx.extra.placeTime = time;
