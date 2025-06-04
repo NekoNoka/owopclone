@@ -842,8 +842,12 @@ function addDefaultTools() {
 			}
 		}
 		tool.setEvent("mousedown", (mouse, event) => {
-			if (event.which !== 1 && event.which !== 3) return;
-			tool.extra.button = event.which;
+			let which = event.which;
+			if (event.type === "touchstart") {
+				if (which === 0) which = 1;
+			}
+			if (which !== 1 && which !== 3) return;
+			tool.extra.button = which;
 			tool.extra.fillingColor = misc.world.getPixel(mouse.tileX, mouse.tileY);
 			tool.extra.queue[`${mouse.tileX},${mouse.tileY}`] = { x: mouse.tileX, y: mouse.tileY };
 			PM.startHistory();
