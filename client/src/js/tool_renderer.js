@@ -24,8 +24,7 @@ export const cursors = PublicAPI.cursors = {
 	shield: { imgpos: [2, 3], hotspot: [18, 18] },
 	kick: { imgpos: [2, 1], hotspot: [3, 6] },
 	ban: { imgpos: [2, 2], hotspot: [10, 4] },
-	write: { imgpos: [1, 3], hotspot: [10, 4] }, // fix hotspot
-	shotgun: { imgpos: [0, 4], hotspot: [18, 18] }
+	write: { imgpos: [1, 3], hotspot: [10, 4] } // fix hotspot
 };
 
 function reduce(canvas) { /* Removes unused space from the image */

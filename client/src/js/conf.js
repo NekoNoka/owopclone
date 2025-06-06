@@ -6,6 +6,17 @@ import launchSoundUrl from "../audio/launch.mp3";
 import placeSoundUrl from "../audio/place.mp3";
 import clickSoundUrl from "../audio/click.mp3";
 
+export const RANK = {
+	NONE: 0,
+	USER: 1,
+	// DONOR: 2,
+	ARTIST: 2,
+	MODERATOR: 3,
+	ADMIN: 4,
+	DEVELOPER: 5,
+	OWNER: 6,
+};
+
 export const PublicAPI = window.NWOP = window.WorldOfPixels = window.OWOP = {
 	RANK: RANK,
 	util: {
@@ -91,17 +102,6 @@ export const activeFx = [];
 let evtId = 0;
 
 export const keysDown = {};
-
-export const RANK = {
-	NONE: 0,
-	USER: 1,
-	// DONOR: 2,
-	ARTIST: 2,
-	MODERATOR: 3,
-	ADMIN: 4,
-	DEVELOPER: 5,
-	OWNER: 6,
-};
 
 export const EVENTS = PublicAPI.events = {
 	loaded: ++evtId,
