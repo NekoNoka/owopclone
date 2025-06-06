@@ -33,16 +33,6 @@ const config = {
 				}
 			}]
 		}, {
-			/* Polyfills shouldn't be merged with app.js, resolve them with an url */
-			include: path.resolve(srcDir, 'js', 'polyfill'),
-			use: [{
-				loader: 'file-loader',
-				options: {
-					outputPath: 'polyfill/',
-					name: '[name].[ext]'
-				}
-			}]
-		}, {
 			include: path.resolve(srcDir, 'img'),
 			use: [{
 				loader: 'file-loader',
