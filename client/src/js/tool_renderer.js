@@ -28,6 +28,7 @@ export const cursors = PublicAPI.cursors = {
 };
 
 function reduce(canvas) { /* Removes unused space from the image */
+	console.log(canvas);
 	let nw = canvas.width;
 	let nh = canvas.height;
 	let ctx = canvas.getContext('2d');
@@ -35,6 +36,7 @@ function reduce(canvas) { /* Removes unused space from the image */
 	let u32dat = new Uint32Array(idat.data.buffer);
 	let xoff = 0;
 	let yoff = 0;
+	console.log(idat, u32dat);
 	for (let y = 0, x, i = 0; y < idat.height; y++) {
 		for (x = idat.width; x--; i += u32dat[y * idat.width + x] >> 26);
 		if (i) { break; }
@@ -53,8 +55,11 @@ function reduce(canvas) { /* Removes unused space from the image */
 		nh--;
 	}
 	for (let x = idat.width, y, i = 0; x--;) {
+		console.log(1, x, y, i, idat, u32dat);
 		for (y = nh; y--; i += u32dat[y * idat.width + x] >> 26);
+		console.log(2, x, y, i, idat, u32dat);
 		if (i) { break; }
+		console.log(3, x, y, i, idat, u32dat);
 		nw--;
 	}
 	canvas.width = nw;
